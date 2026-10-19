@@ -78,3 +78,16 @@ export async function expectNoHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
   expect(overflow).toBeLessThanOrEqual(0)
 }
+
+export async function signIn(page: Page, credentials = demoUser) {
+  await page.goto('/perfil')
+  await loginThroughDialog(page, credentials)
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(page.getByTestId('profile-form')).toBeVisible()
+}
+
+export async function signOut(page: Page) {
+  await page.goto('/perfil')
+  await page.getByRole('button', { name: 'Sair' }).first().click()
+  await page.waitForURL((url) => url.pathname === '/')
+}
