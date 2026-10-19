@@ -1,0 +1,12 @@
+---
+description: Regras obrigatórias de qualidade para o desafio Jungle Gaming
+alwaysApply: true
+---
+
+- Leia AGENTS.md e a documentação em docs antes de editar o código.
+- README oficial manda; use o Figma real para tokens/assets e não suponha layout.
+- Cada funcionalidade tem interface, API simulada MSW, estado, falhas e evidência Playwright.
+- Socket.IO real via socket.io-client com binding MSW; não faça dispatch de eventos de rede diretamente na UI.
+- ETH em strings decimais; checkout idempotente; conta isolada por usuário.
+- Manter TASKS.md e evidências de comandos executados. Não marcar pronto sem prova.
+- Não efetuar publicação pública ou submissão sem OK.
