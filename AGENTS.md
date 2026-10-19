@@ -21,3 +21,13 @@
 
 ## Limites
 Nunca publicar deploy, abrir PR público, submeter candidatura, enviar e-mail, solicitar cartão de crédito, comprar assinatura ou mudar permissões sem confirmação do Cauã. A leitura de ferramentas de design deve ser somente leitura. Nenhuma tentativa de ocultar registros de acesso do proprietário de arquivo.
+
+## Cursor Cloud
+
+Este repositório ainda não tem `package.json` nem servidor de aplicação. Em login shell (`bash -lc`), Node.js 22.23.3 e pnpm 10.33.4 já estão no PATH. Chrome para verificação visual: `/usr/local/bin/google-chrome`.
+
+O install do ambiente executa `pnpm install --frozen-lockfile` quando existe `pnpm-lock.yaml`, ou `pnpm install` quando existe só `package.json`. Sem esses arquivos, o install termina sem instalar dependências.
+
+O start sobe `pnpm run dev --host 0.0.0.0 --port 5173` somente se `package.json` definir o script `dev`. Sem `--host`, o Vite 6 escuta apenas em IPv6 (`::1`) e `curl http://127.0.0.1:5173` falha. Não colocar um `--` extra antes de `--host`: o pnpm 10 repassa esse `--` ao Vite e ignora o host. Se `127.0.0.1:5173` já responder, o start não sobe outro processo.
+
+O pnpm 10 não executa lifecycle scripts de dependências sem aprovação no projeto (`pnpm.onlyBuiltDependencies` ou `pnpm approve-builds`).
