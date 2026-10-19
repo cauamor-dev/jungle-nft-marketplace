@@ -6,7 +6,7 @@ type PriceProps = { valueEth: string; compareEth?: string | null; className?: st
 export function Price({ valueEth, compareEth, className }: PriceProps) {
   return (
     <p className={cn('flex items-center gap-3 text-base font-bold leading-4 text-text-accent md:text-lg', className)}>
-      <span>{displayEth(valueEth)} ETH</span>
+      <span data-testid="price">{displayEth(valueEth)} ETH</span>
       {compareEth && (
         <span className="font-normal text-secondary">{displayEth(compareEth)} ETH</span>
       )}

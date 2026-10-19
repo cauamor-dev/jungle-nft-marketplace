@@ -105,7 +105,8 @@ function useCartActions(cart: Cart, checkout: () => void) {
     setQuantity: (item: CartItem, quantity: number) => update.mutate({ key: item.key, quantity }, { onError }),
     remove: (item: CartItem) =>
       remove.mutate(item.key, { onSuccess: () => notify(`${item.title} saiu do carrinho.`, 'info'), onError }),
-    applyCoupon: (code: string) => applyCoupon.mutate(code, { onError }),
+    applyCoupon: (code: string, handlers: { onSuccess: () => void; onFail: (message: string) => void }) =>
+      applyCoupon.mutate(code, { onSuccess: handlers.onSuccess, onError: (error) => handlers.onFail(error.message) }),
     removeCoupon: () => removeCoupon.mutate(undefined, { onError }),
     checkout,
     couponPending: applyCoupon.isPending,
@@ -128,14 +129,16 @@ function EmptyCart() {
 
 function CouponForm({ cart, actions, compact }: { cart: Cart; actions: Actions; compact?: boolean }) {
   const [code, setCode] = useState('')
+  const [failure, setFailure] = useState<string | null>(null)
   const status = cart.couponStatus
+  const message = failure ?? (status === 'expired' || status === 'invalid' ? couponMessages[status] : null)
 
   function submit(event: FormEvent) {
     event.preventDefault()
     const value = code.trim()
     if (!value) return
-    actions.applyCoupon(value)
-    setCode('')
+    setFailure(null)
+    actions.applyCoupon(value, { onSuccess: () => setCode(''), onFail: setFailure })
   }
 
   return (
@@ -158,7 +161,7 @@ function CouponForm({ cart, actions, compact }: { cart: Cart; actions: Actions; 
             onChange={(event) => setCode(event.target.value)}
             placeholder="Digite o código promocional..."
             aria-label="Código promocional"
-            aria-invalid={status === 'expired' || status === 'invalid'}
+            aria-invalid={Boolean(message)}
             aria-describedby="coupon-message"
             autoComplete="off"
             className="min-w-0 flex-1 bg-transparent text-xs placeholder:text-secondary focus-visible:outline-offset-4"
@@ -176,7 +179,7 @@ function CouponForm({ cart, actions, compact }: { cart: Cart; actions: Actions; 
         </form>
       )}
       <p id="coupon-message" role="status" className="min-h-0 text-xs text-text-coral" data-testid="coupon-message">
-        {(status === 'expired' || status === 'invalid') && couponMessages[status]}
+        {message}
       </p>
     </div>
   )
