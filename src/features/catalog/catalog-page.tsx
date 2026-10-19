@@ -30,7 +30,7 @@ export function CatalogPage({ variant, search, onSearchChange }: CatalogPageProp
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-6 pt-10 md:gap-8 md:pt-8 xl:px-0 lg:gap-24">
       <MobileSearch value={search.q ?? ''} onSubmit={(q) => update({ q: q || undefined })} onOpenFilters={() => setFiltersOpen(true)} />
 
-      {variant === 'home' && <Hero />}
+      {variant === 'home' ? <Hero /> : <h1 className="sr-only">Mercado de NFTs</h1>}
 
       <div id="mercado" className="flex scroll-mt-6 gap-12">
         <aside aria-label="Filtros" className="hidden w-[310px] shrink-0 flex-col gap-6 lg:flex">

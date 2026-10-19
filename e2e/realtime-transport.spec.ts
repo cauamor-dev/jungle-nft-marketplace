@@ -3,6 +3,18 @@ import { api, demoScenario, openMockPanel } from './helpers'
 
 const log = (page: import('@playwright/test').Page) => page.getByTestId('activity-log')
 
+const collector = {
+  displayName: 'Marina Duarte',
+  username: 'marina.duarte',
+  profileName: 'marina-duarte',
+  email: 'demo1@example.test',
+  ensName: 'marina',
+  ensSuffix: 'eth',
+  referralCode: 'KURIO-2026',
+  walletType: 'metamask',
+  walletAddress: '0xA91F4c2b7D3e89aB10C5f6E72d048b9C13a5E82C',
+}
+
 test.describe('transporte Socket.IO via MSW', () => {
   test('conecta pelo socket.io-client e aplica nft.updated sem refetch', async ({ page }) => {
     const realSockets: string[] = []
@@ -46,7 +58,7 @@ test.describe('transporte Socket.IO via MSW', () => {
     await expect(page.getByTestId('session-user')).toHaveText('demo1@example.test')
     await expect(log(page).locator('[data-kind="connected"]')).toHaveCount(1)
 
-    await api(page, 'POST', '/api/cart/items', { nftId: 'nft_03', editionId: 'nft_03_std', quantity: 1 })
+    await api(page, 'POST', '/api/cart/items', { nftId: 'nft_03', editionId: 'nft_03_open', quantity: 1 })
     await api(page, 'POST', '/api/wallets/wallet_1/connect')
     const quote = await api<{ id: string }>(page, 'POST', '/api/quotes', { network: 'ethereum' })
     const order = await api<{ id: string }>(
@@ -57,7 +69,7 @@ test.describe('transporte Socket.IO via MSW', () => {
         quoteId: quote.body.id,
         walletId: 'wallet_1',
         network: 'ethereum',
-        collector: { fullName: 'Marina Duarte', email: 'demo1@example.test' },
+        collector,
       },
       { 'Idempotency-Key': 'e2e-spike-order' },
     )
@@ -73,7 +85,7 @@ test.describe('transporte Socket.IO via MSW', () => {
     await expect(page.getByTestId('session-user')).toHaveText('demo1@example.test')
     await expect(log(page).locator('[data-kind="connected"]')).toHaveCount(1)
 
-    await api(page, 'POST', '/api/cart/items', { nftId: 'nft_03', editionId: 'nft_03_std', quantity: 1 })
+    await api(page, 'POST', '/api/cart/items', { nftId: 'nft_03', editionId: 'nft_03_open', quantity: 1 })
     await api(page, 'POST', '/api/wallets/wallet_1/connect')
     const quote = await api<{ id: string }>(page, 'POST', '/api/quotes', { network: 'ethereum' })
     const order = await api<{ id: string }>(
@@ -84,7 +96,7 @@ test.describe('transporte Socket.IO via MSW', () => {
         quoteId: quote.body.id,
         walletId: 'wallet_1',
         network: 'ethereum',
-        collector: { fullName: 'Marina Duarte', email: 'demo1@example.test' },
+        collector,
       },
       { 'Idempotency-Key': 'e2e-switch-user' },
     )

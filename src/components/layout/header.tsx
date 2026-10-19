@@ -27,10 +27,10 @@ export function Header({ active, divider = false }: HeaderProps) {
     <header className="mx-auto hidden w-full max-w-[1200px] px-6 md:block md:pt-6 xl:px-0">
       <div className={cn(divider && 'border-b-[0.5px] border-primary')}>
         <div className="flex h-[45px] items-start justify-between">
-          <Link to="/" className="mt-[8px] w-40 text-sm font-bold tracking-[1.4px] text-foreground" aria-label="Kurio, página inicial">
+          <Link to="/" className="mt-[8px] w-24 shrink-0 text-sm lg:w-40 font-bold tracking-[1.4px] text-foreground" aria-label="Kurio, página inicial">
             KURIO
           </Link>
-          <nav aria-label="Principal" className="flex gap-10">
+          <nav aria-label="Principal" className="flex gap-6 lg:gap-10">
             {navItems.map((item) => {
               const isActive = item.section === active
               return (
@@ -64,7 +64,7 @@ function HeaderActions({ onToggleSearch, searching }: { onToggleSearch: () => vo
   const { open } = useAuthDialog()
 
   return (
-    <div className="flex items-center gap-7">
+    <div className="flex shrink-0 items-center gap-5 lg:gap-7">
       <button
         type="button"
         onClick={onToggleSearch}

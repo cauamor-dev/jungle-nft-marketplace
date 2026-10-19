@@ -404,13 +404,13 @@ function PaymentForm({ user, wallets, cart }: PaymentFormProps) {
       <nav aria-label="Trilha de navegação" className="text-[15px] font-bold leading-4">
         <Link to="/" className="hover:text-text-accent">Início</Link> / <Link to="/mercado" className="hover:text-text-accent">Mercado</Link> / Pagamento
       </nav>
-      <div className="flex items-start gap-8">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         <section aria-labelledby="collector-title" className="flex min-w-0 flex-1 flex-col gap-3">
           <h1 id="collector-title" className="text-[17px] font-bold leading-4">Perfil do colecionador</h1>
           <CollectorForm values={values} errors={errors} onChange={setField} otherWallets={otherWallets} />
         </section>
 
-        <aside aria-label="Resumo do pedido" className="flex w-[405px] shrink-0 flex-col gap-5">
+        <aside aria-label="Resumo do pedido" className="flex w-full shrink-0 flex-col gap-5 lg:w-[405px]">
           {summary}
           <section aria-labelledby="provider-title" className="flex flex-col gap-5">
             <h2 id="provider-title" className="text-center text-[17px] font-bold leading-4">Carteira e rede</h2>

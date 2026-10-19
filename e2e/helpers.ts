@@ -69,7 +69,9 @@ export async function addFromDetail(page: Page, nftId: string) {
 export async function goToPaymentLoggedIn(page: Page, nftId = 'nft_12') {
   await addFromDetail(page, nftId)
   await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
-  await loginThroughDialog(page)
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.or(page.getByTestId('payment-page'))).toBeVisible()
+  if (await dialog.isVisible()) await loginThroughDialog(page)
   await page.waitForURL('**/pagamento')
   await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeEnabled()
 }

@@ -212,8 +212,8 @@ function NftDetail({ nft }: { nft: Nft }) {
           <Link to="/" className="hover:text-text-accent">Início</Link> / <Link to="/mercado" className="hover:text-text-accent">Mercado</Link>
         </nav>
 
-        <div className="flex gap-8">
-          <div className="shrink-0">
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <div className="shrink-0 self-center lg:self-start">
             <Gallery images={nft.images} title={nft.title} unavailable={unavailable} />
           </div>
 

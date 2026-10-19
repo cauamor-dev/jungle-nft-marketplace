@@ -196,7 +196,7 @@ function DesktopCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
         </nav>
         <h1 className="sr-only">Carrinho</h1>
 
-        <div className="flex items-start gap-[86px]">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-[86px]">
           <section aria-label="Itens do carrinho" className="min-w-0 flex-1">
             {actions.empty ? (
               <EmptyCart />
@@ -220,7 +220,7 @@ function DesktopCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
             )}
           </section>
 
-          <aside aria-label="Resumo da carteira" className="flex w-[332px] shrink-0 flex-col gap-6">
+          <aside aria-label="Resumo da carteira" className="flex w-full shrink-0 flex-col gap-6 lg:w-[332px]">
             <div className="flex flex-col gap-3">
               <h2 className="text-lg font-bold leading-4">Resumo da carteira</h2>
               <div className="h-px bg-line-soft" />
