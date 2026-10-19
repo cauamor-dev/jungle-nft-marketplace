@@ -1,4 +1,5 @@
 import type {
+  EnsSuffix,
   Nft,
   Order,
   OrderUpdatedEvent,
@@ -12,7 +13,10 @@ export type UserRecord = {
   id: string
   email: string
   name: string
-  bio: string
+  username: string
+  ensName: string
+  ensSuffix: EnsSuffix
+  walletNickname: string
   avatarUrl: string | null
   passwordSalt: string
   passwordHash: string

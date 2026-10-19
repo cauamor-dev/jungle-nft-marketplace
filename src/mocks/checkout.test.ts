@@ -14,13 +14,12 @@ import type { CreateOrderInput } from '@/api/contracts'
 import { getAttemptKey, clearAttempt } from '@/features/checkout/checkout-attempt'
 import { submitOrder } from '@/features/checkout/place-order'
 import { getDb } from '@/mocks/db'
-import { demoScenario, loginAs, sleep } from '@/test/helpers'
+import { collector, demoScenario, loginAs, sleep } from '@/test/helpers'
 
-const collector = { fullName: 'Marina Duarte', email: 'demo1@example.test' }
 
 async function prepareCheckout() {
   await loginAs('demo1@example.test')
-  await addCartItem({ nftId: 'nft_03', editionId: 'nft_03_std', quantity: 2 })
+  await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_1of50', quantity: 2 })
   await connectWallet('wallet_1')
   const quote = await createQuote('ethereum')
   const input: CreateOrderInput = { quoteId: quote.id, walletId: 'wallet_1', network: 'ethereum', collector }
@@ -41,14 +40,14 @@ describe('cotação', () => {
 
   it('congela preços e totais e expira em cinco minutos', async () => {
     const { quote } = await prepareCheckout()
-    expect(quote.totalEth).toBe('0.0871')
+    expect(quote.totalEth).toBe('0.101')
     expect(quote.items[0]).toMatchObject({ quantity: 2, unitPriceEth: '0.0425', lineTotalEth: '0.085' })
     expect(new Date(quote.expiresAt).getTime() - new Date(quote.createdAt).getTime()).toBe(5 * 60 * 1000)
   })
 
   it('recusa cupom que expirou entre carrinho e cotação', async () => {
     await loginAs('demo1@example.test')
-    await addCartItem({ nftId: 'nft_03', editionId: 'nft_03_std', quantity: 1 })
+    await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_1of50', quantity: 1 })
     await applyCoupon('JUNGLE10')
     await demoScenario('expired-coupon')
     await expect(createQuote('ethereum')).rejects.toMatchObject({ status: 422, code: 'COUPON_EXPIRED' })
@@ -58,8 +57,8 @@ describe('cotação', () => {
 describe('pedido confirmado', () => {
   it('só confirma depois da resposta da API e remove apenas o comprado', async () => {
     const { input } = await prepareCheckout()
-    await addCartItem({ nftId: 'nft_05', editionId: 'nft_05_std', quantity: 1 })
-    const stockBefore = (await getNft('nft_03')).editions[0].stock
+    await addCartItem({ nftId: 'nft_05', editionId: 'nft_05_1of50', quantity: 1 })
+    const stockBefore = (await getNft('nft_12')).editions[2].stock
 
     // adicionar item mudou a versão do carrinho: gera nova cotação para o carrinho completo
     const fresh = await createQuote('ethereum')
@@ -71,28 +70,28 @@ describe('pedido confirmado', () => {
     expect(settled.status).toBe('confirmed')
     expect(settled.txReference).toMatch(/^0x[0-9a-f]{64}$/)
     expect(settled.explorerUrl).toContain(settled.txReference ?? 'x')
-    expect((await getNft('nft_03')).editions[0].stock).toBe(stockBefore - 2)
+    expect((await getNft('nft_12')).editions[2].stock).toBe(stockBefore - 2)
     expect((await getCart()).items).toEqual([])
   })
 
   it('preserva no carrinho o que foi adicionado depois da cotação', async () => {
     const { input } = await prepareCheckout()
     const order = await createOrder(input, 'key-partial')
-    await addCartItem({ nftId: 'nft_05', editionId: 'nft_05_std', quantity: 1 })
+    await addCartItem({ nftId: 'nft_05', editionId: 'nft_05_1of50', quantity: 1 })
     await waitForSettlement(order.id)
     const cart = await getCart()
-    expect(cart.items.map((item) => item.key)).toEqual(['nft_05:nft_05_std'])
+    expect(cart.items.map((item) => item.key)).toEqual(['nft_05:nft_05_1of50'])
   })
 
   it('mantém o recibo imutável mesmo se o preço do catálogo mudar', async () => {
     const { input } = await prepareCheckout()
     const order = await createOrder(input, 'key-receipt')
     const settled = await waitForSettlement(order.id)
-    await demoScenario('price-changed', { nftId: 'nft_03', priceEth: '9.99' })
+    await demoScenario('price-changed', { nftId: 'nft_12', priceEth: '9.99' })
     const later = await getOrder(order.id)
     expect(later.receipt).toEqual(settled.receipt)
     expect(later.receipt.items[0].unitPriceEth).toBe('0.0425')
-    expect(later.receipt.totalEth).toBe('0.0871')
+    expect(later.receipt.totalEth).toBe('0.101')
   })
 
   it('gera eventos pending -> confirmed e nunca regride', async () => {
@@ -114,20 +113,20 @@ describe('pedido recusado', () => {
   it('preserva carrinho e estoque e informa o motivo', async () => {
     await demoScenario('payment-rejected')
     const { input } = await prepareCheckout()
-    const stockBefore = (await getNft('nft_03')).editions[0].stock
+    const stockBefore = (await getNft('nft_12')).editions[2].stock
     const order = await createOrder(input, 'key-rejected')
     const settled = await waitForSettlement(order.id)
     expect(settled.status).toBe('rejected')
     expect(settled.rejectionReason).toBeTruthy()
     expect(settled.txReference).toBeNull()
     expect((await getCart()).items).toHaveLength(1)
-    expect((await getNft('nft_03')).editions[0].stock).toBe(stockBefore)
+    expect((await getNft('nft_12')).editions[2].stock).toBe(stockBefore)
   })
 
   it('recusa se o estoque acabar antes da confirmação', async () => {
     const { input } = await prepareCheckout()
     const order = await createOrder(input, 'key-out-of-stock')
-    await demoScenario('edition-sold-out', { nftId: 'nft_03', editionId: 'nft_03_std' })
+    await demoScenario('edition-sold-out', { nftId: 'nft_12', editionId: 'nft_12_1of50' })
     const settled = await waitForSettlement(order.id)
     expect(settled.status).toBe('rejected')
     expect(settled.rejectionReason).toContain('estoque')
@@ -148,7 +147,7 @@ describe('idempotência', () => {
     const { input } = await prepareCheckout()
     await createOrder(input, 'key-conflict')
     await expect(
-      createOrder({ ...input, collector: { ...collector, fullName: 'Outra Pessoa' } }, 'key-conflict'),
+      createOrder({ ...input, collector: { ...collector, displayName: 'Outra Pessoa' } }, 'key-conflict'),
     ).rejects.toMatchObject({ status: 409, code: 'IDEMPOTENCY_KEY_REUSED' })
   })
 
@@ -196,13 +195,13 @@ describe('idempotência', () => {
 describe('revalidação antes de confirmar', () => {
   it('bloqueia pedido com cotação de preço desatualizado e devolve a nova', async () => {
     const { input, quote } = await prepareCheckout()
-    await demoScenario('price-changed', { nftId: 'nft_03', priceEth: '0.05' })
+    await demoScenario('price-changed', { nftId: 'nft_12', priceEth: '0.05' })
     await expect(createOrder(input, 'key-price')).rejects.toMatchObject({
       status: 409,
       code: 'QUOTE_STALE',
       details: {
         reasons: expect.arrayContaining(['PRICE_CHANGED']),
-        currentQuote: { subtotalEth: '0.1', totalEth: '0.1021' },
+        currentQuote: { subtotalEth: '0.1', totalEth: '0.116' },
       },
     })
     const db = await getDb()
@@ -211,12 +210,12 @@ describe('revalidação antes de confirmar', () => {
     const refreshed = await createQuote('ethereum')
     expect(refreshed.id).not.toBe(quote.id)
     const order = await createOrder({ ...input, quoteId: refreshed.id }, 'key-price-2')
-    expect(order.receipt.totalEth).toBe('0.1021')
+    expect(order.receipt.totalEth).toBe('0.116')
   })
 
   it('bloqueia quando a edição esgota e a cotação nova não é possível', async () => {
     const { input } = await prepareCheckout()
-    await demoScenario('edition-sold-out', { nftId: 'nft_03', editionId: 'nft_03_std' })
+    await demoScenario('edition-sold-out', { nftId: 'nft_12', editionId: 'nft_12_1of50' })
     await expect(createOrder(input, 'key-soldout')).rejects.toMatchObject({
       status: 409,
       code: 'QUOTE_STALE',
@@ -227,7 +226,7 @@ describe('revalidação antes de confirmar', () => {
 
   it('bloqueia quando o carrinho mudou depois da cotação', async () => {
     const { input } = await prepareCheckout()
-    await addCartItem({ nftId: 'nft_05', editionId: 'nft_05_std', quantity: 1 })
+    await addCartItem({ nftId: 'nft_05', editionId: 'nft_05_1of50', quantity: 1 })
     await expect(createOrder(input, 'key-cart')).rejects.toMatchObject({
       code: 'QUOTE_STALE',
       details: { reasons: expect.arrayContaining(['CART_CHANGED']) },
@@ -236,7 +235,7 @@ describe('revalidação antes de confirmar', () => {
 
   it('exige carteira conectada e rede compatível', async () => {
     await loginAs('demo1@example.test')
-    await addCartItem({ nftId: 'nft_03', editionId: 'nft_03_std', quantity: 1 })
+    await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_1of50', quantity: 1 })
     const quote = await createQuote('ethereum')
     const input: CreateOrderInput = { quoteId: quote.id, walletId: 'wallet_1', network: 'ethereum', collector }
     await expect(createOrder(input, 'key-wallet')).rejects.toMatchObject({ status: 409, code: 'WALLET_NOT_CONNECTED' })
@@ -251,10 +250,10 @@ describe('revalidação antes de confirmar', () => {
   it('valida os dados do colecionador', async () => {
     const { input } = await prepareCheckout()
     await expect(
-      createOrder({ ...input, collector: { fullName: 'A', email: 'x' } }, 'key-collector'),
+      createOrder({ ...input, collector: { ...collector, displayName: 'A', email: 'x' } }, 'key-collector'),
     ).rejects.toMatchObject({
       status: 422,
-      fieldErrors: { 'collector.fullName': expect.any(String), 'collector.email': expect.any(String) },
+      fieldErrors: { 'collector.displayName': expect.any(String), 'collector.email': expect.any(String) },
     })
   })
 

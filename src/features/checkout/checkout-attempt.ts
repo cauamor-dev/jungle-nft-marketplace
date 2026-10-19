@@ -5,7 +5,7 @@ const STORAGE_KEY = 'jg-checkout-attempt'
 type Attempt = { userId: string; signature: string; idempotencyKey: string }
 
 function signatureOf(input: CreateOrderInput) {
-  return JSON.stringify([input.quoteId, input.walletId, input.network, input.collector.fullName, input.collector.email])
+  return JSON.stringify([input.quoteId, input.walletId, input.network, input.collector])
 }
 
 function load(): Attempt | null {

@@ -2,13 +2,26 @@ import { z } from 'zod'
 
 export const decimalString = z.string().regex(/^\d+(\.\d{1,18})?$/, 'Valor decimal inválido')
 
-export const networks = ['ethereum', 'polygon', 'arbitrum'] as const
+export const networks = ['ethereum', 'polygon', 'solana'] as const
 export const networkSchema = z.enum(networks)
 export type Network = z.infer<typeof networkSchema>
 
-export const categories = ['art', 'music', 'collectibles', 'photography', 'gaming'] as const
+export const categories = [
+  'art',
+  'photography',
+  'music',
+  'art3d',
+  'collectibles',
+  'generative',
+  'games',
+  'subscriptions',
+  'utility',
+] as const
 export const categorySchema = z.enum(categories)
 export type Category = z.infer<typeof categorySchema>
+
+export const listings = ['all', 'new', 'trending'] as const
+export type Listing = (typeof listings)[number]
 
 export const sortOptions = ['recent', 'price-asc', 'price-desc', 'name'] as const
 export const sortSchema = z.enum(sortOptions)
@@ -25,11 +38,18 @@ export type ApiErrorBody = z.infer<typeof apiErrorSchema>
 
 // Sessão e conta
 
+export const ensSuffixes = ['eth', 'xyz', 'art'] as const
+export const ensSuffixSchema = z.enum(ensSuffixes)
+export type EnsSuffix = z.infer<typeof ensSuffixSchema>
+
 export const userSchema = z.object({
   id: z.string(),
   email: z.string(),
   name: z.string(),
-  bio: z.string(),
+  username: z.string(),
+  ensName: z.string(),
+  ensSuffix: ensSuffixSchema,
+  walletNickname: z.string(),
   avatarUrl: z.string().nullable(),
 })
 export type User = z.infer<typeof userSchema>
@@ -59,7 +79,7 @@ export const loginResponseSchema = z.object({
 export type LoginResponse = z.infer<typeof loginResponseSchema>
 
 export type LoginInput = { email: string; password: string }
-export type RegisterInput = { name: string; email: string; password: string }
+export type RegisterInput = { username: string; email: string; password: string }
 
 // Catálogo
 
@@ -71,6 +91,9 @@ export const editionSchema = z.object({
 })
 export type Edition = z.infer<typeof editionSchema>
 
+export const imageSchema = z.object({ src: z.string(), thumbSrc: z.string(), alt: z.string() })
+export type NftImage = z.infer<typeof imageSchema>
+
 export const nftSchema = z.object({
   id: z.string(),
   slug: z.string(),
@@ -79,8 +102,20 @@ export const nftSchema = z.object({
   creator: z.string(),
   category: categorySchema,
   chain: networkSchema,
-  images: z.array(z.object({ src: z.string(), alt: z.string() })),
+  images: z.array(imageSchema),
   priceEth: decimalString,
+  compareAtPriceEth: decimalString.nullable(),
+  tokenId: z.string(),
+  collection: z.string(),
+  attributes: z.array(z.string()),
+  rating: z.object({ average: z.string(), count: z.number().int().nonnegative() }),
+  badge: z.string().nullable(),
+  isNew: z.boolean(),
+  trending: z.boolean(),
+  details: z.object({
+    overview: z.array(z.string()),
+    sections: z.array(z.object({ label: z.string(), body: z.string() })),
+  }),
   editions: z.array(editionSchema),
   version: z.number().int().positive(),
   featured: z.boolean(),
@@ -97,6 +132,9 @@ export type NftListParams = {
   page?: number
   pageSize?: number
   featured?: boolean
+  listing?: Listing
+  minPrice?: string
+  maxPrice?: string
 }
 
 const facetSchema = z.array(z.object({ value: z.string(), count: z.number() }))
@@ -121,7 +159,7 @@ export const cartItemSchema = z.object({
   editionId: z.string(),
   title: z.string(),
   editionLabel: z.string(),
-  image: z.object({ src: z.string(), alt: z.string() }).nullable(),
+  image: imageSchema.nullable(),
   quantity: z.number().int().positive(),
   unitPriceEth: decimalString,
   addedPriceEth: decimalString,
@@ -179,9 +217,25 @@ export type Quote = z.infer<typeof quoteSchema>
 export const orderStatusSchema = z.enum(['pending', 'confirmed', 'rejected'])
 export type OrderStatus = z.infer<typeof orderStatusSchema>
 
+export const walletTypes = ['metamask', 'walletconnect', 'coinbase'] as const
+export const walletTypeSchema = z.enum(walletTypes)
+export type WalletType = z.infer<typeof walletTypeSchema>
+
+export const evmAddressPattern = /^0x[0-9a-fA-F]{40}$/
+export const referralCodePattern = /^[A-Za-z0-9-]{4,20}$/
+
 export const collectorSchema = z.object({
-  fullName: z.string().min(3, 'Informe o nome completo'),
+  displayName: z.string().trim().min(2, 'Informe o nome de exibição'),
+  username: z.string().trim().min(3, 'Use ao menos 3 caracteres'),
+  profileName: z.string().trim().min(2, 'Informe o nome do perfil'),
   email: z.email('E-mail inválido'),
+  ensName: z.string().trim().min(2, 'Informe o nome ENS'),
+  ensSuffix: ensSuffixSchema,
+  referralCode: z.string().regex(referralCodePattern, 'Use de 4 a 20 letras, números ou hífen'),
+  walletType: walletTypeSchema,
+  walletAddress: z.string().regex(evmAddressPattern, 'Endereço inválido: use 0x seguido de 40 caracteres hexadecimais'),
+  secondaryAddress: z.string().trim().max(120).optional(),
+  note: z.string().trim().max(280, 'Use até 280 caracteres').optional(),
 })
 export type Collector = z.infer<typeof collectorSchema>
 
@@ -225,14 +279,29 @@ export type CreateOrderInput = {
 
 // Perfil e carteiras
 
-export type UpdateProfileInput = { name: string; email: string; bio: string }
+export type UpdateProfileInput = {
+  name: string
+  username: string
+  email: string
+  ensName: string
+  ensSuffix: EnsSuffix
+  walletNickname: string
+}
 export type ChangePasswordInput = { currentPassword: string; newPassword: string }
 
 export const walletSchema = z.object({
   id: z.string(),
+  displayName: z.string(),
   label: z.string(),
+  profileName: z.string(),
   address: z.string(),
+  secondaryAddress: z.string(),
   network: networkSchema,
+  walletType: walletTypeSchema,
+  referralCode: z.string(),
+  email: z.string(),
+  ensName: z.string(),
+  ensSuffix: ensSuffixSchema,
   kind: z.enum(['primary', 'secondary']),
   connection: z.enum(['connected', 'disconnected']),
 })
@@ -240,12 +309,7 @@ export type Wallet = z.infer<typeof walletSchema>
 
 export const walletListSchema = z.object({ items: z.array(walletSchema) })
 
-export type WalletInput = {
-  label: string
-  address: string
-  network: Network
-  kind: 'primary' | 'secondary'
-}
+export type WalletInput = Omit<Wallet, 'id' | 'connection'>
 
 // Eventos Socket.IO
 

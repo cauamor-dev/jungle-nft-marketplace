@@ -79,6 +79,12 @@ export const orderHandlers = [
       })
     }
 
+    if (body.collector.referralCode.toUpperCase().startsWith('INVALIDO')) {
+      throw new MockHttpError(422, 'VALIDATION_ERROR', 'Verifique os campos informados.', {
+        fieldErrors: { 'collector.referralCode': 'Código de indicação não reconhecido.' },
+      })
+    }
+
     const wallet = db.wallets.find((candidate) => candidate.id === body.walletId && candidate.userId === user.id)
     if (!wallet) throw new MockHttpError(404, 'WALLET_NOT_FOUND', 'Carteira não encontrada.')
     if (wallet.connection !== 'connected') {

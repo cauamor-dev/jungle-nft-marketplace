@@ -5,7 +5,16 @@ import { MockHttpError } from '../http-error'
 export const SESSION_TTL_MS = 2 * 60 * 60 * 1000
 
 export function toUser(user: UserRecord): User {
-  return { id: user.id, email: user.email, name: user.name, bio: user.bio, avatarUrl: user.avatarUrl }
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    username: user.username,
+    ensName: user.ensName,
+    ensSuffix: user.ensSuffix,
+    walletNickname: user.walletNickname,
+    avatarUrl: user.avatarUrl,
+  }
 }
 
 export function createSession(db: DbState, userId: string): SessionRecord {

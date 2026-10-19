@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test'
 import { api, demoReset, demoScenario, openMockPanel } from './helpers'
 
+const collector = {
+          displayName: 'Marina Duarte', username: 'marina.duarte', profileName: 'marina-duarte', email: 'demo1@example.test',
+          ensName: 'marina', ensSuffix: 'eth', referralCode: 'KURIO-2026', walletType: 'metamask',
+          walletAddress: '0xA91F4c2b7D3e89aB10C5f6E72d048b9C13a5E82C',
+        }
+
 type Order = { id: string; status: string; txReference: string | null }
 
 test.describe('persistência dos mocks após refresh', () => {
@@ -9,7 +15,7 @@ test.describe('persistência dos mocks após refresh', () => {
     await page.getByRole('button', { name: 'Entrar como demo1' }).click()
     await expect(page.getByTestId('session-user')).toHaveText('demo1@example.test')
 
-    await api(page, 'POST', '/api/cart/items', { nftId: 'nft_03', editionId: 'nft_03_std', quantity: 2 })
+    await api(page, 'POST', '/api/cart/items', { nftId: 'nft_12', editionId: 'nft_12_1of50', quantity: 2 })
     await api(page, 'POST', '/api/wallets/wallet_1/connect')
     const quote = await api<{ id: string }>(page, 'POST', '/api/quotes', { network: 'ethereum' })
     const created = await api<Order>(
@@ -20,7 +26,7 @@ test.describe('persistência dos mocks após refresh', () => {
         quoteId: quote.body.id,
         walletId: 'wallet_1',
         network: 'ethereum',
-        collector: { fullName: 'Marina Duarte', email: 'demo1@example.test' },
+        collector: collector,
       },
       { 'Idempotency-Key': 'e2e-reload' },
     )
@@ -35,7 +41,7 @@ test.describe('persistência dos mocks após refresh', () => {
       quoteId: quote.body.id,
       walletId: 'wallet_1',
       network: 'ethereum',
-      collector: { fullName: 'Marina Duarte', email: 'demo1@example.test' },
+      collector: collector,
     }, { 'Idempotency-Key': 'e2e-reload' })
     expect(recovered.status).toBe(200)
     expect(recovered.body.id).toBe(created.body.id)
@@ -54,6 +60,6 @@ test.describe('persistência dos mocks após refresh', () => {
 
     await demoReset(page)
     await page.reload()
-    await expect(page.getByTestId('nft-state')).toContainText('0.0125 ETH, versão 1')
+    await expect(page.getByTestId('nft-state')).toContainText('1.19 ETH, versão 1')
   })
 })

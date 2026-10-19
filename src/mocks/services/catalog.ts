@@ -1,5 +1,16 @@
-import { categories, networks, sortOptions, type Category, type Network, type Nft, type NftList, type Sort } from '@/api/contracts'
-import { compareEth } from '@/domain/money'
+import {
+  categories,
+  listings,
+  networks,
+  sortOptions,
+  type Category,
+  type Listing,
+  type Network,
+  type Nft,
+  type NftList,
+  type Sort,
+} from '@/api/contracts'
+import { compareEth, isDecimalString } from '@/domain/money'
 import type { DbState } from '../db'
 
 export type CatalogQuery = {
@@ -10,14 +21,21 @@ export type CatalogQuery = {
   page: number
   pageSize: number
   featured: boolean
+  listing: Listing
+  minPrice: string | null
+  maxPrice: string | null
 }
 
-export const DEFAULT_PAGE_SIZE = 12
+export const DEFAULT_PAGE_SIZE = 9
 export const MAX_PAGE_SIZE = 48
 
 function positiveInt(value: string | null, fallback: number) {
   const parsed = Number(value)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
+}
+
+function priceParam(value: string | null) {
+  return value && isDecimalString(value) ? value : null
 }
 
 export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
@@ -30,6 +48,9 @@ export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
     page: positiveInt(params.get('page'), 1),
     pageSize: Math.min(positiveInt(params.get('pageSize'), DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE),
     featured: params.get('featured') === 'true',
+    listing: listings.includes(params.get('listing') as Listing) ? (params.get('listing') as Listing) : 'all',
+    minPrice: priceParam(params.get('minPrice')),
+    maxPrice: priceParam(params.get('maxPrice')),
   }
 }
 
@@ -39,10 +60,14 @@ function normalize(text: string) {
 
 function matches(nft: Nft, query: CatalogQuery) {
   if (query.featured && !nft.featured) return false
+  if (query.listing === 'new' && !nft.isNew) return false
+  if (query.listing === 'trending' && !nft.trending) return false
+  if (query.minPrice && compareEth(nft.priceEth, query.minPrice) < 0) return false
+  if (query.maxPrice && compareEth(nft.priceEth, query.maxPrice) > 0) return false
   if (query.categories.length > 0 && !query.categories.includes(nft.category)) return false
   if (query.chains.length > 0 && !query.chains.includes(nft.chain)) return false
   if (query.q) {
-    const haystack = normalize(`${nft.title} ${nft.creator}`)
+    const haystack = normalize(`${nft.title} ${nft.collection} ${nft.attributes.join(' ')}`)
     return haystack.includes(normalize(query.q))
   }
   return true

@@ -8,7 +8,7 @@ import { findCart, getOrCreateCart, mergeGuestCart } from '../services/cart'
 import { parseBody, readJson, route } from './route'
 
 const registerSchema = z.object({
-  name: z.string().trim().min(2, 'Informe seu nome'),
+  username: z.string().trim().min(3, 'Use ao menos 3 caracteres').max(30, 'Use até 30 caracteres').regex(/^[A-Za-z0-9._-]+$/, 'Use letras, números, ponto, hífen ou sublinhado'),
   email: z.email('E-mail inválido'),
   password: z.string(),
 })
@@ -33,12 +33,20 @@ export const authHandlers = [
         fieldErrors: { email: 'Este e-mail já está em uso.' },
       })
     }
+    if (db.users.some((user) => user.username.toLowerCase() === input.username.toLowerCase())) {
+      throw new MockHttpError(409, 'USERNAME_TAKEN', 'Este nome de usuário já está em uso.', {
+        fieldErrors: { username: 'Este nome de usuário já está em uso.' },
+      })
+    }
     const { salt, hash } = await hashPassword(input.password)
     const user = {
       id: nextId(db, 'user'),
       email,
-      name: input.name,
-      bio: '',
+      name: input.username,
+      username: input.username,
+      ensName: '',
+      ensSuffix: 'eth' as const,
+      walletNickname: '',
       avatarUrl: null,
       passwordSalt: salt,
       passwordHash: hash,

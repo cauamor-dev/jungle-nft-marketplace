@@ -1,6 +1,12 @@
 import { HttpResponse } from 'msw'
 import { z } from 'zod'
-import { networkSchema } from '@/api/contracts'
+import {
+  ensSuffixSchema,
+  evmAddressPattern,
+  networkSchema,
+  referralCodePattern,
+  walletTypeSchema,
+} from '@/api/contracts'
 import { nextId, persist, type DbState, type WalletRecord } from '../db'
 import { MockHttpError } from '../http-error'
 import { requireSession, toUser, validatePassword } from '../services/auth'
@@ -11,9 +17,12 @@ const MAX_AVATAR_BYTES = 512 * 1024
 const AVATAR_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 
 const profileSchema = z.object({
-  name: z.string().trim().min(2, 'Informe seu nome'),
+  name: z.string().trim().min(2, 'Informe o nome de exibição'),
+  username: z.string().trim().min(3, 'Use ao menos 3 caracteres').max(30, 'Use até 30 caracteres'),
   email: z.email('E-mail inválido'),
-  bio: z.string().max(160, 'A bio aceita até 160 caracteres'),
+  ensName: z.string().trim().min(2, 'Informe o nome ENS').max(60, 'Use até 60 caracteres'),
+  ensSuffix: ensSuffixSchema,
+  walletNickname: z.string().trim().min(2, 'Informe o apelido da carteira').max(40, 'Use até 40 caracteres'),
 })
 
 const passwordSchema = z.object({
@@ -22,9 +31,17 @@ const passwordSchema = z.object({
 })
 
 const walletSchema = z.object({
-  label: z.string().trim().min(2, 'Informe um nome para a carteira').max(40, 'Use até 40 caracteres'),
-  address: z.string().regex(/^0x[0-9a-fA-F]{40}$/, 'Endereço inválido: use 0x seguido de 40 caracteres hexadecimais'),
+  displayName: z.string().trim().min(2, 'Informe o nome de exibição'),
+  label: z.string().trim().min(2, 'Informe o apelido da carteira').max(40, 'Use até 40 caracteres'),
+  profileName: z.string().trim().min(2, 'Informe o nome do perfil'),
+  address: z.string().regex(evmAddressPattern, 'Endereço inválido: use 0x seguido de 40 caracteres hexadecimais'),
+  secondaryAddress: z.string().trim().max(120, 'Use até 120 caracteres'),
   network: networkSchema,
+  walletType: walletTypeSchema,
+  referralCode: z.string().regex(referralCodePattern, 'Use de 4 a 20 letras, números ou hífen'),
+  email: z.email('E-mail inválido'),
+  ensName: z.string().trim().min(2, 'Informe o nome ENS'),
+  ensSuffix: ensSuffixSchema,
   kind: z.enum(['primary', 'secondary']),
 })
 
@@ -83,7 +100,19 @@ export const accountHandlers = [
         fieldErrors: { email: 'Este e-mail já está em uso.' },
       })
     }
-    Object.assign(user, { name: input.name, email, bio: input.bio })
+    if (db.users.some((other) => other.id !== user.id && other.username.toLowerCase() === input.username.toLowerCase())) {
+      throw new MockHttpError(409, 'USERNAME_TAKEN', 'Este nome de usuário já está em uso.', {
+        fieldErrors: { username: 'Este nome de usuário já está em uso.' },
+      })
+    }
+    Object.assign(user, {
+      name: input.name,
+      username: input.username,
+      email,
+      ensName: input.ensName,
+      ensSuffix: input.ensSuffix,
+      walletNickname: input.walletNickname,
+    })
     persist()
     return { ...toUser(user) }
   }),
@@ -172,7 +201,9 @@ export const accountHandlers = [
     if (db.scenario.walletRefusal) {
       throw new MockHttpError(403, 'WALLET_REJECTED', 'A carteira recusou a conexão.')
     }
+    const body = parseBody(z.object({ provider: walletTypeSchema.optional() }), await readJson(request).catch(() => ({})))
     wallet.connection = 'connected'
+    if (body.provider) wallet.walletType = body.provider
     persist()
     return { ...toPublicWallet(wallet) }
   }),

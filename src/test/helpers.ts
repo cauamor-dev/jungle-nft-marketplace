@@ -9,6 +9,18 @@ export async function loginAs(email: string) {
   return result
 }
 
+export const collector = {
+  displayName: 'Marina Duarte',
+  username: 'marina.duarte',
+  profileName: 'marina-duarte',
+  email: 'demo1@example.test',
+  ensName: 'marina',
+  ensSuffix: 'eth' as const,
+  referralCode: 'KURIO-2026',
+  walletType: 'metamask' as const,
+  walletAddress: '0xA91F4c2b7D3e89aB10C5f6E72d048b9C13a5E82C',
+}
+
 export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export async function demoScenario(name: string, params: Record<string, unknown> = {}) {

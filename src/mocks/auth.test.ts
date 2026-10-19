@@ -15,24 +15,25 @@ import {
   updateProfile,
   uploadAvatar,
 } from '@/api/endpoints'
+import type { WalletInput } from '@/api/contracts'
 import { clearSessionToken } from '@/api/session-storage'
 import { getDb } from '@/mocks/db'
 import { demoScenario, DEMO_PASSWORD, loginAs } from '@/test/helpers'
 
 describe('conta e sessão', () => {
   it('cadastra e depois permite login', async () => {
-    const user = await register({ name: 'Ana Souza', email: 'ana@example.test', password: 'Senha123' })
+    const user = await register({ username: 'ana.souza', email: 'ana@example.test', password: 'Senha123' })
     expect(user.email).toBe('ana@example.test')
     const result = await login({ email: 'ana@example.test', password: 'Senha123' })
     expect(result.session.user.id).toBe(user.id)
   })
 
   it('responde 409 em e-mail repetido e 422 em senha fraca', async () => {
-    await expect(register({ name: 'Outra', email: 'DEMO1@example.test', password: 'Senha123' })).rejects.toMatchObject({
+    await expect(register({ username: 'user.outra', email: 'DEMO1@example.test', password: 'Senha123' })).rejects.toMatchObject({
       status: 409,
       fieldErrors: { email: expect.any(String) },
     })
-    await expect(register({ name: 'Fraca', email: 'fraca@example.test', password: 'abc' })).rejects.toMatchObject({
+    await expect(register({ username: 'user.fraca', email: 'fraca@example.test', password: 'abc' })).rejects.toMatchObject({
       status: 422,
       fieldErrors: { password: expect.any(String) },
     })
@@ -40,13 +41,13 @@ describe('conta e sessão', () => {
 
   it('força conflito de cadastro no cenário registration-conflict', async () => {
     await demoScenario('registration-conflict')
-    await expect(register({ name: 'Nova Pessoa', email: 'nova@example.test', password: 'Senha123' })).rejects.toMatchObject({
+    await expect(register({ username: 'user.novapessoa', email: 'nova@example.test', password: 'Senha123' })).rejects.toMatchObject({
       status: 409,
     })
   })
 
   it('nunca guarda a senha em claro', async () => {
-    await register({ name: 'Ana Souza', email: 'ana@example.test', password: 'Senha123' })
+    await register({ username: 'ana.souza', email: 'ana@example.test', password: 'Senha123' })
     const db = await getDb()
     const stored = JSON.stringify(db.users)
     expect(stored).not.toContain('Senha123')
@@ -108,12 +109,12 @@ describe('isolamento entre usuários', () => {
 describe('perfil', () => {
   it('atualiza dados, valida e-mail duplicado e persiste', async () => {
     await loginAs('demo1@example.test')
-    const updated = await updateProfile({ name: 'Marina D.', email: 'marina@example.test', bio: 'Nova bio' })
+    const updated = await updateProfile({ name: 'Marina D.', username: 'marina.d', email: 'marina@example.test', ensName: 'marina', ensSuffix: 'eth', walletNickname: 'Principal' })
     expect(updated.name).toBe('Marina D.')
-    await expect(updateProfile({ name: 'Marina D.', email: 'demo2@example.test', bio: '' })).rejects.toMatchObject({
+    await expect(updateProfile({ name: 'Marina D.', username: 'marina.d', email: 'demo2@example.test', ensName: 'marina', ensSuffix: 'eth', walletNickname: 'Principal' })).rejects.toMatchObject({
       status: 409,
     })
-    await expect(updateProfile({ name: 'M', email: 'invalido', bio: '' })).rejects.toMatchObject({
+    await expect(updateProfile({ name: 'M', username: 'marina.d', email: 'invalido', ensName: 'marina', ensSuffix: 'eth', walletNickname: 'Principal' })).rejects.toMatchObject({
       status: 422,
       fieldErrors: { name: expect.any(String), email: expect.any(String) },
     })
@@ -146,23 +147,29 @@ describe('perfil', () => {
   })
 })
 
+const newWallet: WalletInput = {
+  displayName: 'Rafael Torres',
+  label: 'Nova',
+  profileName: 'rafael-torres',
+  address: '0x1111111111111111111111111111111111111111',
+  secondaryAddress: '',
+  network: 'polygon',
+  walletType: 'metamask',
+  referralCode: 'KURIO-2026',
+  email: 'demo2@example.test',
+  ensName: 'rafael',
+  ensSuffix: 'eth',
+  kind: 'secondary',
+}
+
 describe('carteiras', () => {
   it('mantém uma principal e uma secundária e valida endereço', async () => {
     await loginAs('demo2@example.test')
-    await expect(
-      createWallet({ label: 'Outra principal', address: '0x1111111111111111111111111111111111111111', network: 'polygon', kind: 'primary' }),
-    ).rejects.toMatchObject({ status: 409, fieldErrors: { kind: expect.any(String) } })
+    await expect(createWallet({ ...newWallet, label: 'Outra principal', kind: 'primary' })).rejects.toMatchObject({ status: 409, fieldErrors: { kind: expect.any(String) } })
 
-    await expect(
-      createWallet({ label: 'Curta', address: '0x123', network: 'polygon', kind: 'secondary' }),
-    ).rejects.toMatchObject({ status: 422, fieldErrors: { address: expect.any(String) } })
+    await expect(createWallet({ ...newWallet, label: 'Curta', address: '0x123', kind: 'secondary' })).rejects.toMatchObject({ status: 422, fieldErrors: { address: expect.any(String) } })
 
-    const created = await createWallet({
-      label: 'Reserva',
-      address: '0x1111111111111111111111111111111111111111',
-      network: 'arbitrum',
-      kind: 'secondary',
-    })
+    const created = await createWallet({ ...newWallet, label: 'Reserva', network: 'solana', kind: 'secondary' })
     expect(created.connection).toBe('disconnected')
     expect((await listWallets()).items).toHaveLength(2)
   })

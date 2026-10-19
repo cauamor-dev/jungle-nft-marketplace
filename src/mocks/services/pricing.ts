@@ -3,9 +3,9 @@ import { addEth, isZeroEth, minEth, multiplyEth, percentOfEth, subtractEth, type
 import type { CouponRecord, DbState } from '../db'
 
 export const networkFees: Record<Network, DecimalString> = {
-  ethereum: '0.0021',
-  polygon: '0.0003',
-  arbitrum: '0.0005',
+  ethereum: '0.016',
+  polygon: '0.002',
+  solana: '0.0005',
 }
 
 export type CouponResult =

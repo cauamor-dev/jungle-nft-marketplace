@@ -16,6 +16,9 @@ function cleanParams(params: NftListParams) {
     page: params.page ?? 1,
     pageSize: params.pageSize,
     featured: params.featured || undefined,
+    listing: params.listing && params.listing !== 'all' ? params.listing : undefined,
+    minPrice: params.minPrice || undefined,
+    maxPrice: params.maxPrice || undefined,
   }
 }
 

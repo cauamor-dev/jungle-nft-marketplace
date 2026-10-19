@@ -5,12 +5,12 @@ import { demoScenario } from '@/test/helpers'
 
 describe('catálogo', () => {
   it('pagina e informa o total', async () => {
-    const first = await listNfts({ page: 1, pageSize: 10 })
-    const last = await listNfts({ page: 4, pageSize: 10 })
-    expect(first.items).toHaveLength(10)
+    const first = await listNfts({ page: 1, pageSize: 9 })
+    const last = await listNfts({ page: 4, pageSize: 9 })
+    expect(first.items).toHaveLength(9)
     expect(first.total).toBe(36)
     expect(first.totalPages).toBe(4)
-    expect(last.items).toHaveLength(6)
+    expect(last.items).toHaveLength(9)
   })
 
   it('combina busca, categoria e rede', async () => {
@@ -23,9 +23,9 @@ describe('catálogo', () => {
       expect(nft.chain).toBe('ethereum')
     }
 
-    const bySearch = await listNfts({ q: 'aurora' })
-    expect(bySearch.items.map((nft) => nft.title)).toEqual(['Aurora Cinética'])
-    expect((await listNfts({ q: 'AURORA CINETICA' })).total).toBe(1)
+    const bySearch = await listNfts({ q: 'emerald' })
+    expect(bySearch.items.map((nft) => nft.title)).toEqual(['Emerald Ape #0042'])
+    expect((await listNfts({ q: 'EMERALD APE' })).total).toBe(1)
   })
 
   it('ordena por preço com comparação decimal', async () => {
@@ -56,7 +56,7 @@ describe('catálogo', () => {
   })
 
   it('detalha um NFT e responde 404 para um inexistente', async () => {
-    expect((await getNft('nft_01')).title).toBe('Aurora Cinética')
+    expect((await getNft('nft_01')).title).toBe('Emerald Ape #0042')
     await expect(getNft('nft_999')).rejects.toMatchObject({ status: 404, code: 'NFT_NOT_FOUND' })
     await expect(getNft('nft_999')).rejects.toBeInstanceOf(ApiError)
   })
