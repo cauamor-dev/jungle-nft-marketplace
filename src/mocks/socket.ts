@@ -6,13 +6,20 @@ import { registerConnection, type HubConnection } from './socket-hub'
 
 // O binding só entende o namespace padrão e eventos de texto, e responde ao handshake com um sid fixo.
 // Por isso o cliente usa apenas WebSocket (sem long-polling) e a identificação do usuário vai num evento próprio.
+// O MSW remove o prefixo /socket.io/ da URL antes de comparar, então o link precisa aceitar qualquer caminho.
 const PING_INTERVAL_MS = 25_000
-const chat = ws.link('*/socket.io/')
+const link = ws.link('*')
 
 let counter = 0
 
 export const socketHandlers = [
-  chat.addEventListener('connection', async (connection) => {
+  link.addEventListener('connection', async (connection) => {
+    // Outros WebSockets da página (como o HMR do Vite no desenvolvimento) seguem para o servidor real.
+    if (!connection.client.url.searchParams.has('EIO')) {
+      connection.server.connect()
+      return
+    }
+
     const db = await getDb()
     if (db.scenario.socketBlocked) {
       connection.client.close(1013, 'indisponível')

@@ -14,6 +14,7 @@ function summary(db: Awaited<ReturnType<typeof getDb>>) {
     scenario: db.scenario,
     socketConnections: connectionCount(),
     events: db.events.length,
+    pendingOrders: db.orders.filter((order) => order.status === 'pending').length,
     availableScenarios: scenarioNames,
   }
 }

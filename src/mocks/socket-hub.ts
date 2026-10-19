@@ -19,7 +19,11 @@ export function registerConnection(connection: HubConnection) {
 }
 
 export function disconnectAll() {
-  for (const connection of [...connections]) connection.close()
+  // Remove do registro antes de fechar: o evento de close do servidor chega depois do cliente notar a queda.
+  for (const connection of [...connections]) {
+    connections.delete(connection)
+    connection.close()
+  }
 }
 
 export function connectionCount() {
