@@ -1,0 +1,13 @@
+---
+description: Testes, responsividade e acessibilidade
+globs: e2e/**,src/**/*.test.ts,src/**/*.tsx
+alwaysApply: false
+---
+
+- Playwright observa a UI e as operações de rede. Não contornar com estado artificial no componente. Testes de socket passam pelo `socket.io-client`; testes de REST passam pelos handlers MSW.
+- Cada teste parte de estado isolado (reset do cenário). Controlar relógio, latência e eventos; sem `sleep` arbitrário.
+- Não remover assert para fazer teste passar. Se falhar, corrigir o produto ou registrar a falha em `TASKS.md`.
+- Viewports de avaliação: 390, 768 e 1440. Sem overflow horizontal indevido.
+- Foco visível, teclado funcional, labels e erros associados aos campos, focus trap em diálogos/drawers, `prefers-reduced-motion` desliga shimmer e transições.
+- Skeletons com shimmer preservam as dimensões do conteúdo.
+- Resultados de Lighthouse e E2E são registrados como saíram, com versões e ambiente. Nunca inventar métrica.

@@ -1,0 +1,12 @@
+---
+description: Ações que exigem autorização explícita do Cauã
+alwaysApply: true
+---
+
+Nunca, sem confirmação do Cauã:
+- publicar deploy ou URL pública;
+- abrir PR público, tornar o repositório público ou submeter o teste à empresa;
+- enviar e-mail ou formulário;
+- criar custos (cartão, assinatura) ou mudar permissões.
+
+Não escrever no repositório `junglegaming/frontend-challenge` (somente leitura). Dados sempre fictícios.

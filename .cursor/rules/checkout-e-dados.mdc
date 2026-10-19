@@ -1,0 +1,25 @@
+---
+description: Invariantes de negócio, dinheiro, sessão, checkout e tempo real
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: false
+---
+
+## Dinheiro
+- ETH trafega e é persistido como string decimal. Contas com `decimal.js`. Nunca `Number`/`parseFloat` em valores monetários.
+- Quantidades são inteiros positivos, limitadas por estoque e `maxPerBuyer`.
+
+## Sessão e isolamento
+- Todo dado privado (perfil, favoritos, carrinho autenticado, carteiras, pedidos) pertence a um `userId`.
+- `queryKey` de dado privado inclui o usuário. Logout e troca de usuário limpam cache, cancelam requests, desconectam o socket e removem listeners.
+- Senhas nunca em claro, nem no store do mock. Apenas credenciais fictícias `.test`.
+
+## Checkout
+- A cotação sempre é conferida pela API antes do pedido; mudança de preço/estoque/cupom/taxa exige nova confirmação.
+- Mesma `Idempotency-Key` + mesmo payload devolve o mesmo pedido; mesma chave com payload diferente responde 409.
+- Timeout depois da criação não autoriza segunda compra: recupera o pedido existente.
+- Estados: `pending -> confirmed | rejected`. Estados terminais não regridem.
+- Recibo usa snapshot imutável. Só mostrar confirmação com resposta `confirmed` da API mock.
+
+## Tempo real
+- `nft.updated` e `order.updated` chegam por `socket.io-client` + `@mswjs/socket.io-binding`. Proibido simular evento por setter, callback ou escrita direta no cache.
+- Eventos têm `eventId`, recurso, `version`; duplicados e antigos são descartados. Reconexão reconcilia via REST. Evento privado só vale para o usuário da sessão atual.
