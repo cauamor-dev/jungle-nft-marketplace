@@ -113,14 +113,13 @@ function FooterText({ children }: { children: React.ReactNode }) {
 }
 
 function Newsletter() {
-  const [status, setStatus] = useState<'idle' | 'invalid' | 'done'>('idle')
+  const [status, setStatus] = useState<'idle' | 'invalid' | 'unavailable'>('idle')
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const email = String(new FormData(event.currentTarget).get('email') ?? '').trim()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setStatus('invalid')
-    setStatus('done')
-    event.currentTarget.reset()
+    setStatus('unavailable')
   }
 
   return (
@@ -157,8 +156,8 @@ function Newsletter() {
           </button>
         </div>
         <p role="status" className="text-[13px] leading-[22px] text-text-secondary">
-          {status === 'done'
-            ? 'Pronto! Você vai receber os próximos lançamentos da Kurio.'
+          {status === 'unavailable'
+            ? 'Os alertas de lançamento não fazem parte desta demonstração. Nenhum e-mail foi cadastrado.'
             : status === 'invalid'
               ? 'Informe um e-mail válido.'
               : 'Receba lançamentos selecionados, histórias de criadores e novidades do mercado.'}

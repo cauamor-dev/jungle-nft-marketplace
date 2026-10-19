@@ -11,7 +11,7 @@ import { Carousel, CarouselItem } from '@/components/ui/carousel'
 import { QuantityStepper } from '@/components/ui/quantity-stepper'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/toast'
-import { displayEth } from '@/domain/money'
+import { compareEth, displayEth } from '@/domain/money'
 import { useAuthDialog } from '@/features/auth/auth-context'
 import { useSession } from '@/features/auth/session'
 import { useIsDesktop } from '@/lib/use-media-query'
@@ -27,6 +27,9 @@ const couponMessages = {
 function issueMessage(item: CartItem) {
   if (item.issue === 'SOLD_OUT') return 'Esgotado: remova este item para continuar.'
   if (item.issue === 'QUANTITY_EXCEEDS_AVAILABLE') return `Só restam ${item.availableQuantity} unidades: reduza a quantidade.`
+  if (compareEth(item.unitPriceEth, item.addedPriceEth) !== 0) {
+    return `O preço mudou de ${displayEth(item.addedPriceEth)} para ${displayEth(item.unitPriceEth)} ETH.`
+  }
   return null
 }
 

@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/toast'
 import { isApiError } from '@/domain/errors'
 import { apiFieldErrors, passwordMessage, passwordRule, readForm, validate, type FieldErrors } from '@/lib/form'
 import { cn } from '@/lib/cn'
+import type { LoginResponse } from '@/api/contracts'
 import * as api from '@/api/endpoints'
 import { useAuthDialog, type AuthMode } from './auth-context'
 import { useLogin } from './session'
@@ -152,8 +153,14 @@ function FormError({ message }: { message: string | null }) {
 const submitClass =
   'mt-6 flex h-[60px] w-full items-center justify-center rounded-[10px] bg-primary text-base font-bold text-ink hover:bg-text-accent disabled:opacity-60 md:h-[45px] md:rounded-[5px]'
 
+function announceCartMerge(result: LoginResponse, notify: (message: string, tone?: 'info') => void) {
+  if (result.cartMerge.conflicts.length === 0) return
+  notify('Nem todos os itens do carrinho de visitante couberam na conta. A quantidade foi ajustada ao estoque ou ao limite da edição.')
+}
+
 function LoginForm({ onDone }: { onDone: () => void }) {
   const login = useLogin()
+  const { notify } = useToast()
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -164,7 +171,8 @@ function LoginForm({ onDone }: { onDone: () => void }) {
     if ('errors' in parsed) return setErrors(parsed.errors)
     setErrors({})
     try {
-      await login.mutateAsync(parsed.data)
+      const result = await login.mutateAsync(parsed.data)
+      announceCartMerge(result, notify)
       onDone()
     } catch (error) {
       setErrors(apiFieldErrors(error))
@@ -210,6 +218,7 @@ function ForgotPassword() {
 
 function RegisterForm({ onDone }: { onDone: () => void }) {
   const login = useLogin()
+  const { notify } = useToast()
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -223,7 +232,8 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
     setPending(true)
     try {
       await api.register({ username: parsed.data.username, email: parsed.data.email, password: parsed.data.password })
-      await login.mutateAsync({ email: parsed.data.email, password: parsed.data.password })
+      const result = await login.mutateAsync({ email: parsed.data.email, password: parsed.data.password })
+      announceCartMerge(result, notify)
       onDone()
     } catch (error) {
       setErrors(apiFieldErrors(error))
