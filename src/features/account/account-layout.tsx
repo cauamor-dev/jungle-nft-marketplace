@@ -53,7 +53,7 @@ function AccountSidebar() {
 
   return (
     <nav aria-label="Minha conta" className="flex shrink-0 flex-col bg-surface-card py-2 lg:w-[310px]">
-      <p className="p-2.5 text-center text-lg font-bold leading-4 max-lg:text-left">Meu perfil</p>
+      <p className="p-2.5 text-lg font-bold leading-4">Meu perfil</p>
       <ul className="flex gap-1 overflow-x-auto scrollbar-none lg:flex-col lg:gap-0 lg:overflow-visible">
         {links.map((link) => {
           const active = 'exact' in link ? pathname === link.to : pathname.startsWith(link.to)

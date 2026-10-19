@@ -32,7 +32,7 @@ export function PaymentSummary({ quote, cart, refreshing, reconfirm }: PaymentSu
                 <li key={`${item.nftId}:${item.editionId}`} className="flex h-[70px] items-center gap-2 bg-surface-card pl-1 pr-4" data-testid="quote-item">
                   {image && <img src={image.thumbSrc} alt="" width={66} height={66} className="size-[66px] rounded-lg object-cover" />}
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5 leading-4">
-                    <span className="truncate font-bold">{item.title}</span>
+                    <span className="font-bold">{item.title}</span>
                     <span className="text-sm text-secondary">Edição {item.editionLabel}</span>
                   </div>
                   <span className="text-sm text-text-secondary">(x {item.quantity})</span>

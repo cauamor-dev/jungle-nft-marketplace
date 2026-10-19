@@ -400,7 +400,7 @@ function PaymentForm({ user, wallets, cart }: PaymentFormProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-3 px-6 pt-8 xl:px-0" data-testid="payment-page">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-6 pt-8 xl:px-0" data-testid="payment-page">
       <nav aria-label="Trilha de navegação" className="text-[15px] font-bold leading-4">
         <Link to="/" className="hover:text-text-accent">Início</Link> / <Link to="/mercado" className="hover:text-text-accent">Mercado</Link> / Pagamento
       </nav>

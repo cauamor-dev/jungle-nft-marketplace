@@ -76,7 +76,7 @@ export function Footer() {
               </ul>
             </div>
             <div className="flex flex-col gap-3">
-              <h2 className="text-lg font-bold leading-4">Carteiras compatíveis</h2>
+              <h2 className="whitespace-nowrap text-lg font-bold leading-4">Carteiras compatíveis</h2>
               <p className="flex h-[26px] items-center justify-center rounded-md border border-line-soft bg-surface-dark text-[9px] font-bold tracking-[0.1px] text-text-accent">
                 METAMASK&nbsp;&nbsp;·&nbsp;&nbsp;WALLETCONNECT&nbsp;&nbsp;·&nbsp;&nbsp;COINBASE
               </p>

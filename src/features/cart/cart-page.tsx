@@ -33,6 +33,7 @@ function issueMessage(item: CartItem) {
 export function CartPage() {
   const cart = useCart()
   const desktop = useIsDesktop()
+  const checkout = useCheckoutIntent()
 
   if (cart.isPending) return <CartSkeleton />
   if (cart.error || !cart.data) {
@@ -43,7 +44,35 @@ export function CartPage() {
       </div>
     )
   }
-  return desktop ? <DesktopCart cart={cart.data} /> : <MobileCart cart={cart.data} />
+  return desktop ? <DesktopCart cart={cart.data} checkout={checkout} /> : <MobileCart cart={cart.data} checkout={checkout} />
+}
+
+// Ao tocar em "Conectar e finalizar" sem sessão, abre o login e segue para o pagamento assim que a sessão existir.
+// A intenção fica fora das telas de desktop/mobile porque o carrinho é recarregado (e a tela remontada) no login.
+function useCheckoutIntent() {
+  const navigate = useNavigate()
+  const { data: session } = useSession()
+  const { open, mode } = useAuthDialog()
+  const [wanted, setWanted] = useState(false)
+  const dialogShown = useRef(false)
+
+  useEffect(() => {
+    if (!wanted) return
+    if (session) void navigate({ to: '/pagamento' })
+    else if (mode) dialogShown.current = true
+    else if (dialogShown.current) {
+      dialogShown.current = false
+      setWanted(false)
+    }
+  }, [wanted, session, mode, navigate])
+
+  return () => {
+    if (session) void navigate({ to: '/pagamento' })
+    else {
+      setWanted(true)
+      open('login')
+    }
+  }
 }
 
 function CartSkeleton() {
@@ -57,31 +86,15 @@ function CartSkeleton() {
 }
 
 // Fluxo compartilhado entre desktop e mobile: cupom, remoção, quantidade e ida ao pagamento.
-function useCartActions(cart: Cart) {
-  const navigate = useNavigate()
+function useCartActions(cart: Cart, checkout: () => void) {
   const { notify } = useToast()
-  const { data: session } = useSession()
-  const { open, mode } = useAuthDialog()
   const update = useUpdateCartItem()
   const remove = useRemoveCartItem()
   const applyCoupon = useApplyCoupon()
   const removeCoupon = useRemoveCoupon()
-  const [wantsCheckout, setWantsCheckout] = useState(false)
 
   const blocked = cart.items.some((item) => item.issue !== null)
   const empty = cart.items.length === 0
-
-  const dialogShown = useRef(false)
-
-  useEffect(() => {
-    if (!wantsCheckout) return
-    if (session) void navigate({ to: '/pagamento' })
-    else if (mode) dialogShown.current = true
-    else if (dialogShown.current) {
-      dialogShown.current = false
-      setWantsCheckout(false)
-    }
-  }, [wantsCheckout, session, mode, navigate])
 
   const onError = (error: Error) => notify(error.message, 'error')
 
@@ -94,13 +107,7 @@ function useCartActions(cart: Cart) {
       remove.mutate(item.key, { onSuccess: () => notify(`${item.title} saiu do carrinho.`, 'info'), onError }),
     applyCoupon: (code: string) => applyCoupon.mutate(code, { onError }),
     removeCoupon: () => removeCoupon.mutate(undefined, { onError }),
-    checkout: () => {
-      if (session) void navigate({ to: '/pagamento' })
-      else {
-        setWantsCheckout(true)
-        open('login')
-      }
-    },
+    checkout,
     couponPending: applyCoupon.isPending,
   }
 }
@@ -175,8 +182,8 @@ function CouponForm({ cart, actions, compact }: { cart: Cart; actions: Actions; 
   )
 }
 
-function DesktopCart({ cart }: { cart: Cart }) {
-  const actions = useCartActions(cart)
+function DesktopCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
+  const actions = useCartActions(cart, checkout)
 
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-24 px-6 pt-8 xl:px-0" data-testid="cart-page">
@@ -191,7 +198,7 @@ function DesktopCart({ cart }: { cart: Cart }) {
             {actions.empty ? (
               <EmptyCart />
             ) : (
-              <table className="w-full border-separate border-spacing-y-3 text-left">
+              <table className="-mt-3 w-full border-separate border-spacing-y-3 text-left">
                 <thead>
                   <tr className="text-[15px] font-medium leading-4">
                     <th scope="col" className="font-medium">NFTs</th>
@@ -281,8 +288,8 @@ function DesktopRow({ item, actions }: { item: CartItem; actions: Actions }) {
   )
 }
 
-function MobileCart({ cart }: { cart: Cart }) {
-  const actions = useCartActions(cart)
+function MobileCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
+  const actions = useCartActions(cart, checkout)
   const router = useRouter()
   const navigate = useNavigate()
 
