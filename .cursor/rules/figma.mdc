@@ -1,0 +1,11 @@
+---
+description: Figma como referência visual obrigatória e somente leitura
+alwaysApply: true
+---
+
+- Arquivo em uso: cópia do Cauã, https://www.figma.com/design/Bb4Q88ctx6wy2ETFpDyJ23/Frontend-Challenge--Copy-?node-id=0-1 (key `Bb4Q88ctx6wy2ETFpDyJ23`). O original `Ff0SksUi7UFtPWUO8kyNtw` não abre com o assento atual.
+- Acesso somente leitura: nada de comentários, camadas, edições ou anotações no arquivo da empresa. Não prometer invisibilidade: o MCP pode registrar acessos.
+- Não invente cores, tipografia, medidas, imagens ou textos. Cada token e asset precisa vir do Figma (MCP ou exportação que o Cauã tenha permissão de usar).
+- Se a cópia voltar a ficar inacessível: não improvisar layout. Registrar o bloqueio em `FIGMA_AUDIT.md` e `TASKS.md` e seguir só com trabalho que não depende do visual.
+- Não marcar "fidelidade ao Figma" como validada sem screenshot do frame original e screenshot do produto nas larguras 390, 768 e 1440.
+- Desvios de layout ou de asset entram em `ARCHITECTURE.md`.

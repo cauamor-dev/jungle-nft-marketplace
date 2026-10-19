@@ -1,0 +1,12 @@
+---
+description: Regras gerais de engenharia do desafio Jungle Gaming
+alwaysApply: true
+---
+
+- O README oficial do desafio (https://github.com/junglegaming/frontend-challenge/blob/main/README.md) é o contrato. Os documentos de `docs/` são plano opinativo; em divergência, vale o README.
+- Leia `AGENTS.md` e `docs/` antes de mexer no código.
+- Stack: Vite, React, TypeScript `strict`, pnpm, TanStack Router, TanStack Query, Axios, Tailwind, shadcn/ui, MSW, `socket.io-client`, Playwright, Lighthouse. Cada uma deve ser usada de verdade, não só instalada.
+- Fluxo de dados da UI: componente -> hook (Query) -> Axios -> rede interceptada pelo MSW -> store do mock. A UI nunca importa fixtures nem o store.
+- Código simples e legível: funções pequenas, nomes descritivos, sem abstração prematura, sem arquivos gigantes, sem comentários que apenas narram o código.
+- Commits pequenos, com mensagens naturais. Trabalhar sempre em branch própria.
+- `TASKS.md` é a fonte de progresso. Só marque `done` com comando executado ou arquivo de evidência.
