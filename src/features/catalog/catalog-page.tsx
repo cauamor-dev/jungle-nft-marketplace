@@ -77,6 +77,7 @@ function Results({ list, onClear }: { list: ReturnType<typeof useNftList>; onCle
   if (list.data.items.length === 0) return <EmptyResults onClear={onClear} />
   return (
     <div aria-busy={list.isFetching} className={list.isFetching ? 'opacity-70 transition-opacity' : 'transition-opacity'}>
+      <h2 className="sr-only">Resultados</h2>
       <p className="sr-only" role="status">
         {list.data.total} {list.data.total === 1 ? 'NFT encontrado' : 'NFTs encontrados'}
       </p>

@@ -1,16 +1,19 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import { lazy } from 'react'
 import { CatalogPage } from '@/features/catalog/catalog-page'
 import { parseSearch, stringifySearch, validateCatalogSearch } from '@/features/catalog/search'
-import { ActivityPage } from '@/features/account/activity-page'
-import { FavoritesPage } from '@/features/account/favorites-page'
-import { ProfilePage } from '@/features/account/profile-page'
-import { WalletsPage } from '@/features/account/wallets-page'
-import { CartPage } from '@/features/cart/cart-page'
-import { PaymentPage } from '@/features/checkout/payment-page'
-import { NftDetailPage } from '@/features/nft/nft-detail-page'
-import { OrderReceiptPage } from '@/features/orders/order-receipt-page'
-import { MockPanelPage } from '@/features/dev/mock-panel-page'
-import { NotFoundPage, RootLayout } from './layout'
+import { NotFoundPage, RootLayout, RouteFallback } from './layout'
+
+// Só catálogo e layout entram no bundle inicial; as demais telas são carregadas na primeira visita.
+const ActivityPage = lazy(() => import('@/features/account/activity-page').then((m) => ({ default: m.ActivityPage })))
+const FavoritesPage = lazy(() => import('@/features/account/favorites-page').then((m) => ({ default: m.FavoritesPage })))
+const ProfilePage = lazy(() => import('@/features/account/profile-page').then((m) => ({ default: m.ProfilePage })))
+const WalletsPage = lazy(() => import('@/features/account/wallets-page').then((m) => ({ default: m.WalletsPage })))
+const CartPage = lazy(() => import('@/features/cart/cart-page').then((m) => ({ default: m.CartPage })))
+const PaymentPage = lazy(() => import('@/features/checkout/payment-page').then((m) => ({ default: m.PaymentPage })))
+const NftDetailPage = lazy(() => import('@/features/nft/nft-detail-page').then((m) => ({ default: m.NftDetailPage })))
+const OrderReceiptPage = lazy(() => import('@/features/orders/order-receipt-page').then((m) => ({ default: m.OrderReceiptPage })))
+const MockPanelPage = lazy(() => import('@/features/dev/mock-panel-page').then((m) => ({ default: m.MockPanelPage })))
 
 const rootRoute = createRootRoute({ component: RootLayout, notFoundComponent: NotFoundPage })
 
@@ -82,7 +85,15 @@ const routeTree = rootRoute.addChildren([
   mocksRoute,
 ])
 
-export const router = createRouter({ routeTree, parseSearch, stringifySearch, defaultPreload: 'intent' })
+export const router = createRouter({
+  routeTree,
+  parseSearch,
+  stringifySearch,
+  defaultPreload: 'intent',
+  defaultPendingComponent: RouteFallback,
+  defaultPendingMs: 0,
+  defaultPendingMinMs: 0,
+})
 
 declare module '@tanstack/react-router' {
   interface Register {

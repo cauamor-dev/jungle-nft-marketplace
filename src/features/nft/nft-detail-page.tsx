@@ -39,7 +39,7 @@ export function NftDetailPage({ id }: { id: string }) {
 
 function DetailSkeleton() {
   return (
-    <div role="status" aria-label="Carregando NFT" className="mx-auto flex w-full max-w-[1200px] gap-8 px-6 pt-8 xl:px-0">
+    <div role="status" aria-label="Carregando NFT" className="mx-auto flex w-full max-w-[1200px] items-start gap-8 px-6 pt-8 md:min-h-[1500px] xl:px-0">
       <Skeleton className="size-[444px] max-md:size-full max-md:h-[360px]" />
       <div className="hidden flex-1 flex-col gap-4 md:flex">
         <Skeleton className="h-8 w-2/3" />

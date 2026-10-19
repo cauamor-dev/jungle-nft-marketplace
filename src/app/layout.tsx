@@ -50,3 +50,7 @@ export function NotFoundPage() {
     </div>
   )
 }
+
+export function RouteFallback() {
+  return <div role="status" aria-label="Carregando página" className="min-h-[70dvh]" />
+}

@@ -4,9 +4,10 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'playwright-report', 'test-results', 'public/mockServiceWorker.js'] },
+  { ignores: ['dist', 'playwright-report', 'test-results', 'lighthouse', 'public/mockServiceWorker.js'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  { files: ['scripts/**/*.mjs'], languageOptions: { globals: globals.node } },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
