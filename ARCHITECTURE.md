@@ -1,6 +1,6 @@
 # Arquitetura
 
-Este documento descreve o que existe no código hoje. Itens que dependem do Figma (telas, tokens, desvios visuais) estão em "Pendências".
+Este documento descreve o que existe no código hoje. Desvios em relação ao Figma estão em [FIGMA_AUDIT.md](FIGMA_AUDIT.md); limites conhecidos estão em "Limites", no fim.
 
 ## Fluxo de dados
 
@@ -54,7 +54,7 @@ No cliente, `submitOrder` (`src/features/checkout/place-order.ts`) compartilha u
 
 ## Dinheiro
 
-ETH trafega como string decimal. `src/domain/money.ts` é o único lugar com `decimal.js` (18 casas, arredondamento para baixo). Quantidades são inteiros. Subtotal, desconto, taxa e total são sempre calculados no mock; o cliente só exibe. Taxa de rede fixa por rede: Ethereum 0,0021, Polygon 0,0003, Arbitrum 0,0005 ETH, cobrada uma vez por pedido.
+ETH trafega como string decimal. `src/domain/money.ts` é o único lugar com `decimal.js` (18 casas, arredondamento para baixo). Quantidades são inteiros. Subtotal, desconto, taxa e total são sempre calculados no mock; o cliente só exibe. Taxa de rede fixa por rede: Ethereum 0,016, Polygon 0,002, Solana 0,0005 ETH, cobrada uma vez por pedido.
 
 ## Sessão
 
@@ -63,7 +63,7 @@ ETH trafega como string decimal. `src/domain/money.ts` é o único lugar com `de
 - Resposta 401 com `SESSION_EXPIRED` ou `UNAUTHENTICATED` dispara `onSessionInvalid`, que limpa o token e o cache privado.
 - Logout, troca de usuário e sessão inválida passam por `resetPrivateState`: cancela e remove todas as queries sob `['private']` e apaga a tentativa de checkout. O `RealtimeProvider` recria o cliente do socket quando o `userId` muda; o anterior desconecta, remove listeners e esquece versões vistas.
 - Visitante tem um `X-Guest-Id` (em `localStorage`) que identifica o carrinho anônimo no mock. No login o carrinho é migrado: soma sem passar de `min(estoque, maxPerBuyer)`, o excedente volta em `cartMerge.conflicts`.
-- Retomada do checkout após expiração: **pendente** (ver abaixo).
+- Retomada do checkout após expiração: `/pagamento` fica dentro de `RequireAuth`, que abre o login quando não há sessão e renderiza a página no mesmo lugar depois de entrar. Os campos do formulário e a carteira escolhida ficam em `sessionStorage` por usuário (`checkout-draft.ts`) e são apagados no logout. O foco volta ao elemento que abriu o diálogo ao fechá-lo.
 
 ## Cache (TanStack Query)
 
@@ -71,7 +71,8 @@ ETH trafega como string decimal. `src/domain/money.ts` é o único lugar com `de
 - Retry: até 2 vezes, só para falha de rede ou 5xx. 4xx é resposta definitiva. Mutations não repetem sozinhas.
 - Chaves: catálogo em `['nfts', ...]` com parâmetros normalizados (arrays ordenados, `page` padrão 1). Dado privado sempre em `['private', dono, ...]`, onde `dono` é `user:<id>` ou `guest:<id>` (`src/api/query-keys.ts`).
 - Requisições recebem o `AbortSignal` do Query para descartar respostas obsoletas.
-- Atualização otimista com rollback (favoritos): **pendente**, depende da tela de detalhe.
+- Favoritos: atualização otimista em `features/favorites/queries.ts`. A mutation cancela as consultas, grava o novo estado no cache, e em caso de erro restaura o anterior (a tela de detalhe avisa por toast); ao final invalida. Visitante que favorita é levado ao login e a ação é concluída depois.
+- Catálogo mantém a página anterior enquanto carrega a nova (`keepPreviousData`) e marca a área com `aria-busy`.
 
 ## Tempo real
 
@@ -107,12 +108,29 @@ Toda mudança no store passa por `publishNftUpdated` / `publishOrderUpdated`, qu
 
 - Rede e rede de carteira: a taxa depende da rede escolhida no checkout, não da rede do NFT. O pedido exige que carteira, cotação e rede escolhida coincidam.
 - Estoque só baixa na confirmação, para o carrinho do próprio comprador não ficar "acima do disponível" enquanto o pedido está pendente.
-- Imagens de NFT nas fixtures apontam para `/assets/nfts/<slug>-<n>.webp`, caminhos que ainda não existem. Nenhuma imagem foi inventada; os arquivos virão do Figma.
-- Textos, nomes e preços das fixtures são fictícios e provisórios.
+- Imagens de NFT: as fixtures reaproveitam as quatro artes exportadas do Figma (`src/assets/nfts`, WebP em 400 e 800 px). Nenhuma imagem foi criada fora do arquivo.
+- Textos, nomes e preços das fixtures são fictícios.
 
-## Pendências
+## Interface
 
-- Telas, tokens, tipografia e fidelidade visual: bloqueado pelo acesso ao Figma.
-- Componentes shadcn/ui: serão adicionados com as telas, já adaptados ao Figma.
-- Retomada do checkout após expiração de sessão, favoritos otimistas, URL de busca/filtros e demais fluxos de UI.
-- Testes E2E E01 a E12 completos, regressão visual, Lighthouse e deploy: dependem das telas (e o deploy, da autorização do Cauã).
+- **Rotas**: TanStack Router em código. Só o catálogo entra no bundle inicial; as demais páginas usam `React.lazy` com `RouteFallback` (`role=status`). A busca do catálogo é lida e escrita na URL por `parseSearch`/`stringifySearch` próprios; valores inválidos são saneados em `validateCatalogSearch`.
+- **Breakpoints**: `useIsDesktop()` (768 px) escolhe uma única variante (mobile ou desktop) por tela, sem renderizar as duas. Detalhe, carrinho e pagamento empilham abaixo de `lg` (1024 px), o que cobre o tablet de 768 px sem overflow.
+- **Cotação aceita**: `quote-signature.ts` resume preços, taxa e total da cotação. Se a assinatura muda (evento de socket ou 409 `QUOTE_STALE`), o botão de pagar fica desabilitado até o usuário aceitar os novos valores.
+- **Carrinho**: item com preço diferente do momento em que foi adicionado mostra o valor antigo e o atual. No login, se o carrinho do visitante não couber inteiro (estoque ou limite da edição), um aviso informa o ajuste. O campo de lançamentos do rodapé valida o e-mail e deixa claro que o cadastro não acontece nesta demonstração.
+- **Carteira**: uma carteira digitada no pagamento é cadastrada antes do pedido; o pedido só é criado se a conexão da carteira tiver sucesso.
+- **Recibo**: `/pedido/:id` mostra o snapshot congelado do pedido. O status vem da API e do socket; com o socket derrubado, `order-receipt` consulta a REST a cada 4 s enquanto o pedido está pendente.
+- **Movimento**: shimmer dos skeletons e transições são desativados com `prefers-reduced-motion`.
+
+## Testes
+
+- `pnpm test` (Vitest, MSW em Node): contratos, dinheiro, auth, catálogo, carrinho, checkout.
+- `pnpm test:e2e` (Playwright, 1440 e 390): as specs usam só a UI e a rede, com cenários do mock via `/__demo/scenario`. `reuseExistingServer` é `false` para nunca testar um `dist` antigo.
+- Regressão visual: baselines de início, detalhe, carrinho e pagamento em `e2e/responsive.spec.ts-snapshots`, com `maxDiffPixelRatio` de 0,005. Elas foram geradas pelo próprio app depois da conferência manual com o Figma, então protegem contra regressões e não provam fidelidade.
+
+## Limites
+
+- O mock não tem backend: sessão, pedidos e estoque vivem em `localStorage` e valem por navegador.
+- O binding de Socket.IO do MSW não suporta namespaces, acknowledgments nem binários (ver "Tempo real").
+- Três testes são pulados no projeto mobile (ordenação, teclado do header e foco por Tab), porque o controle ou o cenário só existe a partir de 768 px.
+- O Lighthouse reporta uma categoria extra no v13 (`agentic-browsing`, 50), fora das metas do desafio.
+- `vercel.json` (fallback de SPA) não foi exercitado em ambiente publicado.

@@ -1,6 +1,6 @@
 # Documentação do pacote vs. README oficial
 
-Comparação feita em 19/10/2026 entre `docs/` e o README oficial (https://github.com/junglegaming/frontend-challenge/blob/main/README.md). Onde há diferença, o README oficial prevalece. A coluna "Decisão" indica o que o código segue.
+Comparação feita em 19/10/2026 entre `docs/` e o README oficial. O item 9 (assets bloqueados pelo Figma) ficou desatualizado: a cópia do arquivo abriu e as artes usadas nas telas vieram dela. O restante desta tabela registra a decisão daquela leitura. (https://github.com/junglegaming/frontend-challenge/blob/main/README.md). Onde há diferença, o README oficial prevalece. A coluna "Decisão" indica o que o código segue.
 
 | # | Tema | O que o README oficial exige | O que a documentação diz | Decisão |
 | --- | --- | --- | --- | --- |

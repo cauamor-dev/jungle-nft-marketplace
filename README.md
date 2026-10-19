@@ -4,9 +4,11 @@ Implementação do desafio descrito em https://github.com/junglegaming/frontend-
 
 ## Estado atual
 
-A fundação técnica está pronta: mocks MSW com REST e Socket.IO, contratos tipados, camada Axios, cache com TanStack Query, cliente de tempo real e testes. **As nove telas ainda não existem**: o arquivo do Figma não pôde ser lido (ver [FIGMA_AUDIT.md](FIGMA_AUDIT.md)) e o layout não é inventado. O progresso e as evidências estão em [TASKS.md](TASKS.md).
+Todas as telas do Figma estão implementadas (início, detalhe, carrinho, pagamento, recibo, login e cadastro, perfil, carteiras, atividade e favoritos), em desktop e mobile, sobre mocks MSW com REST e Socket.IO. Testes e medições executados estão em [TASKS.md](TASKS.md); a conferência visual e as divergências em [FIGMA_AUDIT.md](FIGMA_AUDIT.md); decisões técnicas em [ARCHITECTURE.md](ARCHITECTURE.md).
 
-O que já pode ser exercitado no navegador é o painel técnico em `/dev/mocks`, que escolhe cenários, faz login com os usuários de demonstração e mostra a atividade do Socket.IO.
+Rotas: `/` e `/mercado` (catálogo, com busca, filtros, ordenação e página na URL), `/nft/:id`, `/carrinho`, `/pagamento`, `/pedido/:orderId`, `/perfil`, `/perfil/carteiras`, `/perfil/atividade`, `/perfil/favoritos`. Login e cadastro abrem em diálogo. `/dev/mocks` é um painel técnico para escolher cenários e ver a atividade do Socket.IO.
+
+Nada foi publicado: não há deploy nem envio à empresa.
 
 ## Requisitos
 
@@ -24,11 +26,10 @@ O que já pode ser exercitado no navegador é o painel técnico em `/dev/mocks`,
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm lint` | ESLint |
 | `pnpm test` | Testes de unidade e de API dos mocks (Vitest + MSW em Node) |
-| `pnpm test:e2e` | Playwright em Chromium, viewports desktop (1440) e mobile (390). Compila e sobe o preview sozinho |
+| `pnpm test:e2e` | Playwright em Chromium, viewports desktop (1440) e mobile (390). Compila e sobe o preview na porta 4173 sozinho (pare qualquer `pnpm preview` antes) |
+| `pnpm lighthouse` | Lighthouse 3x por página e perfil (início e detalhe, mobile e desktop), mediana e metas. Precisa do preview em `http://localhost:4173`; grava em `lighthouse/` |
 
 Na primeira execução do Playwright: `pnpm exec playwright install chromium`.
-
-O comando de auditoria Lighthouse ainda não existe: depende das telas finais (ver `TASKS.md`).
 
 ## Variáveis de ambiente
 
@@ -96,10 +97,12 @@ await fetch('/__demo/reset', { method: 'POST' })
 src/
   api/        contratos (Zod), cliente Axios, endpoints, chaves de query
   domain/     dinheiro (decimal.js), máquina de estados do pedido, erros
-  features/   sessão, checkout (chave de idempotência e reenvio), cliente Socket.IO, painel técnico
+  components/ layout, UI base (radix) e componentes de NFT
+  features/   catálogo, NFT, carrinho, checkout, pedidos, conta, auth, favoritos, tempo real, painel técnico
   mocks/      store, fixtures, handlers MSW, cenários, socket
-  app/        providers, roteador, montagem
-e2e/          testes Playwright
+  app/        providers, roteador, layout
+e2e/          testes Playwright (e baselines visuais)
+scripts/      Lighthouse
 ```
 
 Documentação de contratos, sessão, cache e tempo real: [ARCHITECTURE.md](ARCHITECTURE.md).
