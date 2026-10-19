@@ -77,7 +77,7 @@ const extraTitles = [
 ]
 
 const extraArtworks: Artwork[] = ['esmeralda', 'dourado', 'violeta', 'ivory']
-const extraPrices = ['0.0125', '0.025', '0.0425', '0.08', '0.15', '0.2', '0.35', '0.5', '0.75', '1.2', '2.5', '0.0069']
+const extraPrices = ['0.02', '0.025', '0.0425', '0.08', '0.15', '0.2', '0.35', '0.5', '0.75', '1.2', '2.5', '12.3']
 const collections = ['Kurio Apes', 'Kurio Nomads', 'Kurio Vessels', 'Kurio Barons', 'Kurio Beats', 'Kurio Blooms']
 
 export const unavailableNftId = 'nft_18'
@@ -126,7 +126,7 @@ function buildNfts(): Nft[] {
     const limitedSoldOut = id === soldOutEditionNftId
     const editions = buildEditions(id, index, fullySoldOut, limitedSoldOut)
     const artwork = artworks[entry.artwork]
-    const title = `${entry.title} #${entry.tokenNumber}`
+    const title = `${entry.title} #${entry.tokenNumber.slice(1)}`
     const image: NftImage = { src: artwork.src, thumbSrc: artwork.thumbSrc, alt: `${title}: ${artwork.alt}` }
     return {
       id,

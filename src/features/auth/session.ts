@@ -5,6 +5,7 @@ import { guestOwner, queryKeys, userOwner } from '@/api/query-keys'
 import type { LoginInput, Session } from '@/api/contracts'
 import { isApiError } from '@/domain/errors'
 import { clearAttempt } from '@/features/checkout/checkout-attempt'
+import { clearDrafts } from '@/features/checkout/checkout-draft'
 
 export function useSession() {
   return useQuery({
@@ -56,6 +57,7 @@ export function useLogout() {
     mutationFn: () => api.logout().catch(() => undefined),
     onSettled: async () => {
       clearSessionToken()
+      clearDrafts()
       await resetPrivateState(queryClient)
       queryClient.setQueryData(queryKeys.session, null)
     },

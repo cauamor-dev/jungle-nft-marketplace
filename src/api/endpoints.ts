@@ -20,6 +20,7 @@ import {
   type NftListParams,
   type RegisterInput,
   type UpdateProfileInput,
+  type WalletType,
   type WalletInput,
 } from './contracts'
 import { http } from './http'
@@ -101,5 +102,6 @@ export const changePassword = (input: ChangePasswordInput) => http.put('/api/pro
 export const listWallets = (options?: Options) => parse(walletListSchema, http.get('/api/wallets', options))
 export const createWallet = (input: WalletInput) => parse(walletSchema, http.post('/api/wallets', input))
 export const updateWallet = (id: string, input: WalletInput) => parse(walletSchema, http.patch(`/api/wallets/${id}`, input))
-export const connectWallet = (id: string) => parse(walletSchema, http.post(`/api/wallets/${id}/connect`))
+export const connectWallet = (id: string, provider?: WalletType) =>
+  parse(walletSchema, http.post(`/api/wallets/${id}/connect`, provider ? { provider } : {}))
 export const disconnectWallet = (id: string) => parse(walletSchema, http.post(`/api/wallets/${id}/disconnect`))

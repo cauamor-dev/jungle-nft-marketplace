@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   addEth,
   compareEth,
+  displayEth,
   formatEth,
   isDecimalString,
   multiplyEth,
@@ -52,5 +53,8 @@ describe('money', () => {
   it('formata para exibição sem perder casas relevantes', () => {
     expect(formatEth('1.5')).toBe('1,50')
     expect(formatEth('0.012345')).toBe('0,012345')
+    expect(displayEth('26.846')).toBe('26.846')
+    expect(displayEth('1.1')).toBe('1.10')
+    expect(displayEth('0')).toBe('0.00')
   })
 })

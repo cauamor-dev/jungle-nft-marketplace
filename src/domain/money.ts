@@ -59,3 +59,13 @@ export function formatEth(value: DecimalString, minimumFractionDigits = 2): stri
   const [integer, fraction = ''] = normalizeEth(value).split('.')
   return `${integer},${fraction.padEnd(minimumFractionDigits, '0')}`
 }
+
+// Valor como aparece nas telas: ponto decimal e ao menos duas casas ("1.19", "0.016").
+export function displayEth(value: DecimalString, minimumFractionDigits = 2): string {
+  return formatEth(value, minimumFractionDigits).replace(',', '.')
+}
+
+// Desconto como no design: "(-) 00.00" quando não há cupom, "(-) 2.68 ETH" quando há.
+export function displayDiscount(value: DecimalString): string {
+  return isZeroEth(value) ? '(-) 00.00' : `(-) ${displayEth(value)} ETH`
+}

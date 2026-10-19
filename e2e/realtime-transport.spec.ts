@@ -13,7 +13,7 @@ test.describe('transporte Socket.IO via MSW', () => {
     })
 
     await openMockPanel(page)
-    await expect(page.getByTestId('nft-state')).toContainText('0.0125 ETH, versão 1')
+    await expect(page.getByTestId('nft-state')).toContainText('1.19 ETH, versão 1')
     const requestsBefore = detailRequests.length
 
     await demoScenario(page, 'price-changed', { nftId: 'nft_01', priceEth: '0.0999' })
@@ -114,7 +114,7 @@ test.describe('transporte Socket.IO via MSW', () => {
 
     // Este evento é emitido sem nenhum socket conectado e se perde.
     await demoScenario(page, 'price-changed', { nftId: 'nft_01', priceEth: '0.5' })
-    await expect(page.getByTestId('nft-state')).toContainText('0.0125 ETH')
+    await expect(page.getByTestId('nft-state')).toContainText('1.19 ETH')
 
     await demoScenario(page, 'reconnect-pending-order')
     await expect(log(page).locator('[data-kind="reconnected"]')).toHaveCount(1, { timeout: 15_000 })

@@ -24,17 +24,17 @@ describe('catálogo', () => {
     }
 
     const bySearch = await listNfts({ q: 'emerald' })
-    expect(bySearch.items.map((nft) => nft.title)).toEqual(['Emerald Ape #0042'])
+    expect(bySearch.items.map((nft) => nft.title)).toEqual(['Emerald Ape #042'])
     expect((await listNfts({ q: 'EMERALD APE' })).total).toBe(1)
   })
 
   it('ordena por preço com comparação decimal', async () => {
     const asc = await listNfts({ sort: 'price-asc', pageSize: 48 })
     const prices = asc.items.map((nft) => nft.priceEth)
-    expect(prices[0]).toBe('0.0069')
-    expect(prices.at(-1)).toBe('2.5')
+    expect(prices[0]).toBe('0.02')
+    expect(prices.at(-1)).toBe('12.3')
     const desc = await listNfts({ sort: 'price-desc', pageSize: 48 })
-    expect(desc.items[0].priceEth).toBe('2.5')
+    expect(desc.items[0].priceEth).toBe('12.3')
   })
 
   it('lista só os destaques', async () => {
@@ -43,9 +43,16 @@ describe('catálogo', () => {
     expect(featured.items.every((nft) => nft.featured)).toBe(true)
   })
 
-  it('retorna facetas calculadas sobre o resultado filtrado', async () => {
-    const result = await listNfts({ chain: ['polygon'], pageSize: 48 })
-    expect(result.facets.chains).toEqual([{ value: 'polygon', count: result.total }])
+  it('calcula cada faceta ignorando o próprio filtro', async () => {
+    const all = await listNfts({ pageSize: 48 })
+    const result = await listNfts({ chain: ['ethereum'], category: ['art'], pageSize: 48 })
+    const ethereumOnly = await listNfts({ chain: ['ethereum'], pageSize: 48 })
+    const artOnly = await listNfts({ category: ['art'], pageSize: 48 })
+
+    expect(result.facets.categories).toEqual(ethereumOnly.facets.categories)
+    expect(result.facets.chains).toEqual(artOnly.facets.chains)
+    expect(all.facets.chains.reduce((sum, facet) => sum + facet.count, 0)).toBe(all.total)
+    expect(result.facets.categories.find((facet) => facet.value === 'art')?.count).toBe(result.total)
   })
 
   it('devolve resultado vazio no cenário empty-results', async () => {
@@ -56,7 +63,7 @@ describe('catálogo', () => {
   })
 
   it('detalha um NFT e responde 404 para um inexistente', async () => {
-    expect((await getNft('nft_01')).title).toBe('Emerald Ape #0042')
+    expect((await getNft('nft_01')).title).toBe('Emerald Ape #042')
     await expect(getNft('nft_999')).rejects.toMatchObject({ status: 404, code: 'NFT_NOT_FOUND' })
     await expect(getNft('nft_999')).rejects.toBeInstanceOf(ApiError)
   })

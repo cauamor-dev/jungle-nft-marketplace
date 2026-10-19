@@ -58,14 +58,14 @@ function normalize(text: string) {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 }
 
-function matches(nft: Nft, query: CatalogQuery) {
+function matches(nft: Nft, query: CatalogQuery, ignore?: 'category' | 'chain') {
   if (query.featured && !nft.featured) return false
   if (query.listing === 'new' && !nft.isNew) return false
   if (query.listing === 'trending' && !nft.trending) return false
   if (query.minPrice && compareEth(nft.priceEth, query.minPrice) < 0) return false
   if (query.maxPrice && compareEth(nft.priceEth, query.maxPrice) > 0) return false
-  if (query.categories.length > 0 && !query.categories.includes(nft.category)) return false
-  if (query.chains.length > 0 && !query.chains.includes(nft.chain)) return false
+  if (ignore !== 'category' && query.categories.length > 0 && !query.categories.includes(nft.category)) return false
+  if (ignore !== 'chain' && query.chains.length > 0 && !query.chains.includes(nft.chain)) return false
   if (query.q) {
     const haystack = normalize(`${nft.title} ${nft.collection} ${nft.attributes.join(' ')}`)
     return haystack.includes(normalize(query.q))
@@ -87,7 +87,8 @@ function countBy<T extends string>(items: Nft[], pick: (nft: Nft) => T) {
 }
 
 export function listNfts(db: DbState, query: CatalogQuery): NftList {
-  const filtered = db.scenario.catalogEmpty ? [] : db.nfts.filter((nft) => matches(nft, query))
+  const source = db.scenario.catalogEmpty ? [] : db.nfts
+  const filtered = source.filter((nft) => matches(nft, query))
   const sorted = [...filtered].sort(comparators[query.sort])
   const totalPages = Math.max(1, Math.ceil(sorted.length / query.pageSize))
   const start = (query.page - 1) * query.pageSize
@@ -98,8 +99,9 @@ export function listNfts(db: DbState, query: CatalogQuery): NftList {
     total: sorted.length,
     totalPages,
     facets: {
-      categories: countBy(filtered, (nft) => nft.category),
-      chains: countBy(filtered, (nft) => nft.chain),
+      // Cada faceta ignora o próprio filtro, para o usuário ver quanto cada opção acrescentaria.
+      categories: countBy(source.filter((nft) => matches(nft, query, 'category')), (nft) => nft.category),
+      chains: countBy(source.filter((nft) => matches(nft, query, 'chain')), (nft) => nft.chain),
     },
   }
 }
