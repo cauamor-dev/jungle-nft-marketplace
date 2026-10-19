@@ -99,7 +99,7 @@ test.describe('acessibilidade', () => {
 })
 
 test.describe('regressão visual', () => {
-  const shot = { animations: 'disabled' as const, maxDiffPixelRatio: 0.02 }
+  const shot = { animations: 'disabled' as const, maxDiffPixelRatio: 0.005 }
 
   test('início', async ({ page }, info) => {
     await page.goto('/')

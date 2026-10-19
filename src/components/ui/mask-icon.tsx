@@ -3,9 +3,11 @@ import { cn } from '@/lib/cn'
 
 // Ícone monocromático a partir de um SVG: a cor vem do texto, então estados ativo/inativo trocam só a classe.
 export function MaskIcon({ src, className }: { src: string; className?: string }) {
+  // Ícones pequenos viram data URI no build; sem aspas o espaço e os parênteses invalidam o url().
+  const url = `url(${JSON.stringify(src)})`
   const style: CSSProperties = {
-    maskImage: `url(${src})`,
-    WebkitMaskImage: `url(${src})`,
+    maskImage: url,
+    WebkitMaskImage: url,
     maskRepeat: 'no-repeat',
     WebkitMaskRepeat: 'no-repeat',
     maskPosition: 'center',
