@@ -8,6 +8,10 @@ export async function openMockPanel(page: Page) {
 
 // Chama as rotas /__demo pelo navegador, para a requisição passar pelo service worker do MSW.
 export async function demoScenario(page: Page, name: string, params: Record<string, unknown> = {}) {
+  // Logo depois do carregamento o MSW pode ainda não estar ativo e o preview devolveria o index.html no lugar do JSON.
+  await expect
+    .poll(async () => page.evaluate(() => fetch('/__demo/state').then((response) => response.headers.get('content-type') ?? '')), { timeout: 10_000 })
+    .toContain('json')
   const status = await page.evaluate(
     async ({ name, params }) => {
       const response = await fetch('/__demo/scenario', {

@@ -11,12 +11,12 @@ const orderPosts = (page: Page) => {
   return keys
 }
 
+const cartSize = async (page: Page) => (await api<{ items: unknown[] }>(page, 'GET', '/api/cart')).body.items.length
 const ordersOf = async (page: Page) => (await api<{ items: { id: string; status: string }[] }>(page, 'GET', '/api/orders')).body.items
 
 test.describe('carrinho', () => {
   test('visitante adiciona, altera quantidade, remove e o carrinho sobrevive ao refresh', async ({ page }) => {
     await addFromDetail(page, 'nft_12')
-    await expect(page.getByTestId('cart-count').first()).toHaveText('1').catch(() => undefined)
 
     const item = page.locator('[data-testid="cart-item"]:visible').first()
     const before = await page.locator('[data-testid="total"]:visible').first().textContent()
@@ -87,7 +87,7 @@ test.describe('checkout', () => {
     expect(keys[0]).toBeTruthy()
 
     await expect(async () => expect((await ordersOf(page)).map((order) => order.status)).toEqual(['confirmed'])).toPass()
-    await expect(page.getByTestId('cart-count').first()).toHaveText('0').catch(() => undefined)
+    expect(await cartSize(page)).toBe(0)
   })
 
   test('cliques repetidos em confirmar criam um único pedido', async ({ page }) => {
@@ -163,6 +163,7 @@ test.describe('checkout', () => {
     await page.waitForURL('**/pedido/**')
     await expect(page.getByTestId('order-receipt')).toHaveAttribute('data-status', 'rejected', { timeout: 20_000 })
     await expect(page.getByTestId('order-message')).toBeVisible()
+    expect(await cartSize(page)).toBe(1)
   })
 
   test('sessão expirada na hora de pagar leva ao login e devolve ao pagamento com os dados preservados', async ({ page }) => {

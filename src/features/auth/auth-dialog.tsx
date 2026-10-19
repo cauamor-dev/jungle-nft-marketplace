@@ -39,7 +39,7 @@ const inputClass =
   'h-[50px] w-full rounded-[10px] border border-line bg-transparent px-4 text-sm text-foreground placeholder:text-secondary focus-visible:border-primary aria-[invalid=true]:border-text-coral md:h-10 md:rounded-[5px]'
 
 export function AuthDialog() {
-  const { mode, close, setMode } = useAuthDialog()
+  const { mode, close, setMode, restoreFocus } = useAuthDialog()
 
   return (
     <Dialog open={mode !== null} onOpenChange={(open) => !open && close()}>
@@ -47,6 +47,10 @@ export function AuthDialog() {
         closeLabel="Fechar"
         className="max-md:inset-0 max-md:left-0 max-md:top-0 max-md:h-dvh max-md:max-h-none max-md:w-screen max-md:translate-x-0 max-md:translate-y-0 max-md:border-b-0 max-md:bg-ink md:w-[500px]"
         aria-describedby="auth-description"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          restoreFocus()
+        }}
       >
         {mode && <AuthForms mode={mode} onMode={setMode} onDone={close} />}
       </DialogContent>
