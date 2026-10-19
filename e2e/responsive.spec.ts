@@ -90,6 +90,18 @@ test.describe('acessibilidade', () => {
     for (const duration of durations) expect(duration).toBeLessThan(0.01)
   })
 
+  test('o formulário de lançamentos não confirma um cadastro inexistente', async ({ page }) => {
+    await page.goto('/')
+    await settle(page)
+    const email = page.getByLabel('E-mail para receber lançamentos')
+    await email.fill('nao-e-email')
+    await page.getByRole('button', { name: 'Enviar' }).click()
+    await expect(page.getByText('Informe um e-mail válido.')).toBeVisible()
+    await email.fill('pessoa@example.test')
+    await page.getByRole('button', { name: 'Enviar' }).click()
+    await expect(page.getByText('Nenhum e-mail foi cadastrado.')).toBeVisible()
+  })
+
   test('imagens têm texto alternativo ou são decorativas', async ({ page }) => {
     await page.goto('/')
     await settle(page)

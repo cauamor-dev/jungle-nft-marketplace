@@ -72,6 +72,29 @@ test.describe('catálogo', () => {
     await expect(page).toHaveURL(/maxPrice=/)
   })
 
+  test('filtro reinicia a página e o histórico restaura a lista anterior', async ({ page }) => {
+    await page.goto('/mercado')
+    await expect(cards(page)).toHaveCount(9)
+    await page.getByRole('link', { name: 'Página 2' }).click()
+    await expect(page).toHaveURL(/page=2/)
+
+    const isMobile = (page.viewportSize()?.width ?? 0) < 768
+    if (isMobile) await page.getByRole('button', { name: 'Abrir filtros' }).click()
+    const filters = isMobile ? page.getByRole('dialog') : page.getByRole('complementary', { name: 'Filtros' })
+    await filters.getByText('Música').click()
+    await expect(page).toHaveURL(/category=music/)
+    await expect(page).not.toHaveURL(/[?&]page=/)
+    await settled(page)
+    if (isMobile) await page.keyboard.press('Escape')
+
+    await page.goBack()
+    await expect(page).toHaveURL(/page=2/)
+    await expect(page).not.toHaveURL(/category=music/)
+    await settled(page)
+    await expect(page.getByRole('link', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page')
+    await expect(cards(page)).toHaveCount(9)
+  })
+
   test('ordena por preço crescente (desktop)', async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 0) < 768, 'A ordenação aparece a partir de 768px, como no design')
     await page.goto('/mercado')
@@ -86,6 +109,11 @@ test.describe('catálogo', () => {
       .map((value) => Number(String(value).replace(',', '.')))
     expect(prices.length).toBeGreaterThan(1)
     expect([...prices].sort((a, b) => a - b)).toEqual(prices)
+
+    await page.goBack()
+    await expect(page).not.toHaveURL(/sort=price-asc/)
+    await settled(page)
+    await expect(cards(page)).toHaveCount(9)
   })
 
   test('URL com filtros inválidos é saneada e a página continua utilizável', async ({ page }) => {

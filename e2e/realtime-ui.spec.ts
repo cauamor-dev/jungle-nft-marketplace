@@ -18,6 +18,7 @@ test.describe('tempo real na interface', () => {
     const before = await total.textContent()
     await demoScenario(page, 'price-changed', { nftId: 'nft_12', priceEth: '0.5' })
     await expect(total).not.toHaveText(before!)
+    await expect(page.getByTestId('cart-item-issue').first()).toContainText('O preço mudou')
   })
 
   test('pedido pendente com socket derrubado conclui pela consulta REST', async ({ page }) => {

@@ -100,4 +100,20 @@ test.describe('autenticação', () => {
     await page.goto('/carrinho')
     await expect(page.locator('[data-testid="cart-item"]:visible')).toHaveCount(1)
   })
+
+  test('login avisa quando o carrinho do visitante não cabe inteiro na conta', async ({ page }) => {
+    await signIn(page)
+    const held = await api(page, 'POST', '/api/cart/items', { nftId: 'nft_01', editionId: 'nft_01_1of50', quantity: 8 })
+    expect(held.status).toBe(201)
+    await signOut(page)
+
+    const guest = await api(page, 'POST', '/api/cart/items', { nftId: 'nft_01', editionId: 'nft_01_1of50', quantity: 3 })
+    expect(guest.status).toBe(201)
+    await page.goto('/perfil')
+    await loginThroughDialog(page)
+    await expect(page.getByText('Nem todos os itens do carrinho de visitante couberam na conta.')).toBeVisible()
+
+    await page.goto('/carrinho')
+    await expect(page.locator('[data-testid="cart-item"]:visible output')).toHaveText('10')
+  })
 })
