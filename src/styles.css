@@ -22,6 +22,13 @@
   --color-danger: #f0805f;
 
   --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-rise-in: rise-in 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
   --animate-heart-pop: heart-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
   @keyframes heart-pop {
     0% {
@@ -140,6 +147,28 @@
   }
   &[data-state='closed'] {
     animation: dialog-out 140ms ease-in;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* Painel que sobe da borda inferior (filtros no mobile) */
+@utility sheet-panel {
+  &[data-state='open'] {
+    animation: sheet-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  &[data-state='closed'] {
+    animation: sheet-out 180ms ease-in;
   }
 }
 

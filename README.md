@@ -27,15 +27,18 @@ Nada foi publicado: não há deploy nem envio à empresa.
 | `pnpm lint` | ESLint |
 | `pnpm test` | Testes de unidade e de API dos mocks (Vitest + MSW em Node) |
 | `pnpm test:e2e` | Playwright em Chromium, viewports desktop (1440) e mobile (390). Compila e sobe o preview na porta 4173 sozinho (pare qualquer `pnpm preview` antes) |
-| `pnpm lighthouse` | Lighthouse 3x por página e perfil (início e detalhe, mobile e desktop), mediana e metas. Precisa do preview em `http://localhost:4173`; grava em `lighthouse/` |
+| `pnpm lighthouse` | Lighthouse 3x por página e perfil (início e detalhe, mobile e desktop), mediana e metas. Precisa do preview em `http://localhost:4173`; grava `lighthouse/summary.json` e o relatório HTML/JSON da execução mediana de cada combinação (as demais ficam em `lighthouse/runs/`, fora do git) |
 
 Na primeira execução do Playwright: `pnpm exec playwright install chromium`.
+
+Os testes de regressão visual comparam com baselines geradas em Linux com Chromium 141. Em outro sistema ou versão eles são pulados com o motivo; para gerar baselines do seu ambiente: `pnpm test:e2e -g "regressão visual" --update-snapshots`. Relatório HTML em `playwright-report/` e traces das falhas em `test-results/`.
 
 ## Variáveis de ambiente
 
 | Variável | Padrão | Efeito |
 | --- | --- | --- |
 | `VITE_ENABLE_MOCKS` | `true` | `false` desliga o MSW. O build de demonstração deve manter ligado |
+| `PW_CHROMIUM_PATH` | vazio | Opcional. Caminho de um Chromium já instalado para o Playwright e o Lighthouse usarem, sem download |
 
 ## Credenciais fictícias
 
@@ -91,13 +94,26 @@ await fetch('/__demo/reset', { method: 'POST' })
 - **Preço mudou durante o checkout**: com um item no carrinho e uma cotação gerada, ative `price-changed` para o mesmo NFT. `POST /api/orders` responde 409 `QUOTE_STALE` com a nova cotação.
 - **Queda do socket com pedido pendente**: crie o pedido, ative `disconnect-pending-order`, espere o pedido concluir (1,5 s), ative `reconnect-pending-order`. Depois da reconexão o cliente consulta a REST.
 
+## Deploy
+
+Ainda não publicado. O `vercel.json` já define instalação pelo lockfile, build, pasta `dist`, fallback de SPA (tudo que não é `assets/` nem `mockServiceWorker.js` cai no `index.html`) e cabeçalhos de cache e segurança.
+
+1. Na Vercel, importe o repositório (o framework Vite é detectado). Nenhuma variável é obrigatória: os mocks já vêm ligados.
+2. Depois do deploy, confira na URL HTTPS:
+   - abrir direto e dar refresh em `/nft/nft_01`, `/carrinho` e `/perfil/carteiras`;
+   - `/mockServiceWorker.js` responde JavaScript, não o `index.html`;
+   - `/dev/mocks` mostra `connected` no log do Socket.IO;
+   - uma compra completa com `demo1@example.test` chega ao recibo confirmado.
+
+Pela CLI: `pnpm dlx vercel` (pré-visualização) e `pnpm dlx vercel --prod`.
+
 ## Estrutura
 
 ```text
 src/
   api/        contratos (Zod), cliente Axios, endpoints, chaves de query
   domain/     dinheiro (decimal.js), máquina de estados do pedido, erros
-  components/ layout, UI base (radix) e componentes de NFT
+  components/ layout, UI base (padrão shadcn/ui sobre Radix, ver components.json) e componentes de NFT
   features/   catálogo, NFT, carrinho, checkout, pedidos, conta, auth, favoritos, tempo real, painel técnico
   mocks/      store, fixtures, handlers MSW, cenários, socket
   app/        providers, roteador, layout

@@ -2,13 +2,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from '@/api/endpoints'
 import { queryKeys } from '@/api/query-keys'
 import type { AddCartItemInput, Cart, Network } from '@/api/contracts'
-import { useOwner } from '@/features/auth/session'
+import { useOwner, useSession } from '@/features/auth/session'
 
 export function useCart(network?: Network) {
   const owner = useOwner()
+  // Espera a sessão resolver: antes disso o dono seria o visitante e o carrinho da conta cairia na chave errada.
+  const { isPending: sessionPending } = useSession()
   return useQuery({
     queryKey: queryKeys.private(owner).cart(network),
     queryFn: ({ signal }) => api.getCart(network, { signal }),
+    enabled: !sessionPending,
   })
 }
 

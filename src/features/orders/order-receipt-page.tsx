@@ -44,7 +44,7 @@ function Receipt({ orderId }: { orderId: string }) {
         <h1 className="text-2xl font-bold">Pedido indisponível</h1>
         <p className="text-sm text-text-secondary">{message}</p>
         <div className="flex gap-3">
-          <Button onClick={() => void refetch()}>Tentar de novo</Button>
+          {!(isApiError(error) && error.status < 500) && <Button onClick={() => void refetch()}>Tentar de novo</Button>}
           <Button variant="outline" asChild>
             <Link to="/mercado">Voltar ao mercado</Link>
           </Button>
@@ -57,7 +57,7 @@ function Receipt({ orderId }: { orderId: string }) {
     <div className="mx-auto flex min-h-dvh w-full max-w-[578px] items-start px-0 py-0 md:items-center md:px-4 md:py-10">
       <article
         aria-labelledby="receipt-title"
-        className="relative w-full overflow-hidden border-b-[10px] border-primary bg-surface-card"
+        className="relative w-full animate-rise-in overflow-hidden border-b-[10px] border-primary bg-surface-card"
         data-testid="order-receipt"
         data-status={order.status}
       >
@@ -71,7 +71,7 @@ function Receipt({ orderId }: { orderId: string }) {
         </button>
 
         <header className="flex min-h-[156px] flex-col items-center justify-center gap-4 px-6 py-5">
-          {order.status === 'confirmed' && <img src={thankYou} alt="" className="size-20" />}
+          {order.status === 'confirmed' && <img src={thankYou} alt="" className="size-20 animate-heart-pop" />}
           {order.status === 'pending' && <span aria-hidden="true" className="size-12 animate-spin rounded-full border-4 border-line-soft border-t-primary" />}
           {order.status === 'rejected' && <span aria-hidden="true" className="grid size-14 place-items-center rounded-full border-2 border-text-coral text-3xl text-text-coral">!</span>}
           <h1 id="receipt-title" className="text-center text-base font-bold text-text-secondary" role="status">

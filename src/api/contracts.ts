@@ -50,7 +50,8 @@ export const userSchema = z.object({
   ensName: z.string(),
   ensSuffix: ensSuffixSchema,
   walletNickname: z.string(),
-  avatarUrl: z.string().nullable(),
+  // Só imagem embutida: evita que um valor arbitrário vire src de <img> (ex.: URL externa de rastreio)
+  avatarUrl: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).nullable(),
 })
 export type User = z.infer<typeof userSchema>
 

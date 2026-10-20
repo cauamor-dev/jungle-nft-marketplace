@@ -26,6 +26,22 @@ O arquivo original (`Ff0SksUi7UFtPWUO8kyNtw`) não foi lido: a conta conectada t
 | Mobile / Login (`16:1022`) | 414 × 896 | diálogo em < 768 px | Screenshot do app |
 | Mobile / Cadastro (`16:1228`) | 414 × 896 | diálogo em < 768 px | Screenshot do app |
 
+## Revisão de 20/10/2026
+
+Nova leitura da cópia pelo Figma MCP (somente `get_screenshot`). 13 dos 15 frames foram baixados; Mobile / Login (`16:1022`) e Mobile / Cadastro (`16:1228`) ficaram de fora porque a conta atingiu o limite de chamadas do MCP no plano Starter. Esses dois foram conferidos na rodada anterior e o diálogo mobile não mudou desde então.
+
+Cada frame foi comparado com a tela do build (`pnpm build` + `pnpm preview`) em 1440 px e 414 px, além das baselines do Playwright em 390 px. Desvios corrigidos nesta revisão:
+
+| Tela | Desvio | Correção |
+| --- | --- | --- |
+| Carrinho (desktop) | Colunas Preço/Edições/Total estreitas; o preço quebrava em duas linhas | Larguras do Figma em `xl` (138/136/145 px) e valores sem quebra |
+| Pagamento e Carteiras | Rádios e checkbox nativos (brancos) | Anel cor de cobre do Figma (`radio-control`, `check-control` em `styles.css`) |
+| Pagamento (desktop) | Título do NFT no resumo quebrava sem limite | Até duas linhas, preço e quantidade sem quebra |
+| Início (mobile e promos) | Ícone "Arrow - Right" exportado na vertical: aparecia "EXPLORAR ↓"; nas promos, seta cobre sobre botão cobre | Rotação de -90° como no frame; promos usam a versão escura do ícone |
+| Início (mobile) | Título do hero quebrava em três linhas em 390 px; faltavam os pontos do carrossel | Título em duas linhas com tamanho proporcional à largura; pontos do frame (`hero-dots-mobile.svg`) |
+| Confirmação | Botão "Ver no Etherscan" menor que no frame (30 px) | 47 px, texto 15 px |
+| Perfil e Carteiras | Barra lateral esticava até o fim do formulário | Altura do conteúdo, como no frame |
+
 ## Como as referências foram obtidas
 
 - Contexto de design e screenshots por frame foram baixados para um diretório temporário fora do repositório (`/tmp/figma`). A comparação foi feita abrindo o app em 1440 e 390 e conferindo posição, tamanho, tipografia e cores com o frame correspondente.
@@ -41,5 +57,8 @@ O arquivo original (`Ff0SksUi7UFtPWUO8kyNtw`) não foi lido: a conta conectada t
 - **ID do token**: o Figma exibe "ID do token"; o domínio do app trabalha com edições, então aparece "Edição X".
 - **Tablet (768 px)**: não há frame. Abaixo de 1024 px os layouts de detalhe, carrinho e pagamento empilham; a troca entre variante mobile e desktop acontece em 768 px.
 - **Continuar explorando**: no Figma não há destino; leva ao mercado.
+- **Ver no Etherscan**: não existe transação real, então o botão abre um diálogo "Explorador simulado" com o hash, a rede e os valores que a API devolveu, em vez de um link externo que não teria o registro.
+- **Ordem das carteiras no pagamento**: o Figma mostra um chip combinado e só duas opções na lista; o app lista as três carteiras aceitas pela API (MetaMask, WalletConnect, Coinbase Wallet), cada uma selecionável.
+- **Carteira selecionada no mobile**: ganha borda cor de cobre, para o estado não depender só do rádio.
 
 O gate de fidelidade visual não é "validado" por métrica automática: a conferência foi visual, por screenshot, e a regressão visual do Playwright só protege contra mudanças futuras (baselines geradas pelo próprio app).

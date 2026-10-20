@@ -110,8 +110,23 @@ test.describe('acessibilidade', () => {
   })
 })
 
+// Screenshots dependem do sistema e da versão do Chromium (rasterização e largura dos glifos).
+// As baselines versionadas foram geradas em Linux com o Chromium abaixo; em outro ambiente a
+// comparação daria falso negativo, então o teste é pulado com o motivo e o comando para gerar baselines locais.
+const BASELINE_PLATFORM = 'linux'
+const BASELINE_CHROMIUM_MAJOR = '141'
+
 test.describe('regressão visual', () => {
   const shot = { animations: 'disabled' as const, maxDiffPixelRatio: 0.005 }
+
+  test.beforeEach(({ browser }) => {
+    const major = browser.version().split('.')[0]
+    test.skip(
+      process.platform !== BASELINE_PLATFORM || major !== BASELINE_CHROMIUM_MAJOR,
+      `baselines de ${BASELINE_PLATFORM}/Chromium ${BASELINE_CHROMIUM_MAJOR}; este ambiente é ${process.platform}/Chromium ${major}. ` +
+        'Gere baselines locais com: pnpm test:e2e -g "regressão visual" --update-snapshots',
+    )
+  })
 
   test('início', async ({ page }, info) => {
     await page.goto('/')

@@ -12,7 +12,7 @@ const orderPosts = (page: Page) => {
 }
 
 const cartSize = async (page: Page) => (await api<{ items: unknown[] }>(page, 'GET', '/api/cart')).body.items.length
-const ordersOf = async (page: Page) => (await api<{ items: { id: string; status: string }[] }>(page, 'GET', '/api/orders')).body.items
+const ordersOf = async (page: Page) => (await api<{ items: { id: string; status: string; txReference: string | null }[] }>(page, 'GET', '/api/orders')).body.items
 
 test.describe('carrinho', () => {
   test('visitante adiciona, altera quantidade, remove e o carrinho sobrevive ao refresh', async ({ page }) => {
@@ -88,6 +88,15 @@ test.describe('checkout', () => {
 
     await expect(async () => expect((await ordersOf(page)).map((order) => order.status)).toEqual(['confirmed'])).toPass()
     expect(await cartSize(page)).toBe(0)
+
+    // O "explorador" é simulado: mostra o hash que a API devolveu, sem abrir site externo
+    const [order] = await ordersOf(page)
+    await page.getByRole('button', { name: 'Ver no Etherscan' }).click()
+    const explorer = page.getByRole('dialog', { name: 'Explorador simulado' })
+    await expect(explorer.getByTestId('explorer-details')).toContainText(order.txReference!)
+    await page.keyboard.press('Escape')
+    await expect(explorer).toBeHidden()
+    await expect(page.getByRole('button', { name: 'Ver no Etherscan' })).toBeFocused()
   })
 
   test('cliques repetidos em confirmar criam um único pedido', async ({ page }) => {
@@ -200,7 +209,8 @@ test.describe('checkout', () => {
     await page.goto(orderUrl)
     await expect(page.getByRole('dialog')).toBeVisible()
     await loginThroughDialog(page, { email: 'demo2@example.test', password: 'Demo@1234' })
-    await expect(page.getByTestId('order-error')).toBeVisible()
+    await expect(page.getByTestId('order-error')).toContainText('Você não tem acesso a este pedido.')
+    await expect(page.getByRole('button', { name: 'Tentar de novo' })).toHaveCount(0)
     await expect(page.getByTestId('order-receipt')).toHaveCount(0)
   })
 })

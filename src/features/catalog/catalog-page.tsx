@@ -131,7 +131,7 @@ function FilterSheet({ open, onOpenChange, search, facets, onChange }: FilterShe
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         closeLabel="Fechar filtros"
-        className="top-auto bottom-0 left-0 max-h-[88dvh] w-full max-w-none translate-x-0 translate-y-0 rounded-t-2xl border-b-0 md:left-1/2 md:top-1/2 md:bottom-auto md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-none lg:hidden"
+        className="max-md:sheet-panel top-auto bottom-0 left-0 max-h-[88dvh] w-full max-w-none translate-x-0 translate-y-0 rounded-t-2xl border-b-0 md:left-1/2 md:top-1/2 md:bottom-auto md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-none lg:hidden"
         aria-describedby="filters-description"
       >
         <DialogTitle className="px-5 pt-5 text-lg font-bold">Filtros</DialogTitle>

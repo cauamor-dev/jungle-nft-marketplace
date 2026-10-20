@@ -63,7 +63,8 @@ ETH trafega como string decimal. `src/domain/money.ts` é o único lugar com `de
 - Resposta 401 com `SESSION_EXPIRED` ou `UNAUTHENTICATED` dispara `onSessionInvalid`, que limpa o token e o cache privado.
 - Logout, troca de usuário e sessão inválida passam por `resetPrivateState`: cancela e remove todas as queries sob `['private']` e apaga a tentativa de checkout. O `RealtimeProvider` recria o cliente do socket quando o `userId` muda; o anterior desconecta, remove listeners e esquece versões vistas.
 - Visitante tem um `X-Guest-Id` (em `localStorage`) que identifica o carrinho anônimo no mock. No login o carrinho é migrado: soma sem passar de `min(estoque, maxPerBuyer)`, o excedente volta em `cartMerge.conflicts`.
-- Retomada do checkout após expiração: `/pagamento` fica dentro de `RequireAuth`, que abre o login quando não há sessão e renderiza a página no mesmo lugar depois de entrar. Os campos do formulário e a carteira escolhida ficam em `sessionStorage` por usuário (`checkout-draft.ts`) e são apagados no logout. O foco volta ao elemento que abriu o diálogo ao fechá-lo.
+- Rotas privadas (`/pagamento`, `/pedido/:id`, `/perfil/*`) ficam sob um layout sem caminho do TanStack Router (`id: 'privado'` em `src/app/router.tsx`). O `beforeLoad` resolve a sessão com `ensureQueryData` (o `queryClient` chega pelo contexto do router) e o componente do layout aplica `RequireAuth`, com o texto vindo do `staticData` da rota.
+- Retomada do checkout após expiração: sem sessão, o guard abre o login no próprio endereço e renderiza a página no mesmo lugar depois de entrar. Os campos do formulário e a carteira escolhida ficam em `sessionStorage` por usuário (`checkout-draft.ts`) e são apagados no logout. O foco volta ao elemento que abriu o diálogo ao fechá-lo.
 
 ## Cache (TanStack Query)
 
@@ -113,19 +114,22 @@ Toda mudança no store passa por `publishNftUpdated` / `publishOrderUpdated`, qu
 
 ## Interface
 
-- **Rotas**: TanStack Router em código. Só o catálogo entra no bundle inicial; as demais páginas usam `React.lazy` com `RouteFallback` (`role=status`). A busca do catálogo é lida e escrita na URL por `parseSearch`/`stringifySearch` próprios; valores inválidos são saneados em `validateCatalogSearch`.
+- **Rotas**: TanStack Router em código, com contexto tipado (`createRootRouteWithContext`) e o layout privado descrito em "Sessão". Só o catálogo entra no bundle inicial; as demais páginas usam `React.lazy` com `RouteFallback` (`role=status`). A busca do catálogo é lida e escrita na URL por `parseSearch`/`stringifySearch` próprios; valores inválidos são saneados em `validateCatalogSearch`.
 - **Breakpoints**: `useIsDesktop()` (768 px) escolhe uma única variante (mobile ou desktop) por tela, sem renderizar as duas. Detalhe, carrinho e pagamento empilham abaixo de `lg` (1024 px), o que cobre o tablet de 768 px sem overflow.
 - **Cotação aceita**: `quote-signature.ts` resume preços, taxa e total da cotação. Se a assinatura muda (evento de socket ou 409 `QUOTE_STALE`), o botão de pagar fica desabilitado até o usuário aceitar os novos valores.
 - **Carrinho**: item com preço diferente do momento em que foi adicionado mostra o valor antigo e o atual. No login, se o carrinho do visitante não couber inteiro (estoque ou limite da edição), um aviso informa o ajuste. O campo de lançamentos do rodapé valida o e-mail e deixa claro que o cadastro não acontece nesta demonstração.
 - **Carteira**: uma carteira digitada no pagamento é cadastrada antes do pedido; o pedido só é criado se a conexão da carteira tiver sucesso.
-- **Recibo**: `/pedido/:id` mostra o snapshot congelado do pedido. O status vem da API e do socket; com o socket derrubado, `order-receipt` consulta a REST a cada 4 s enquanto o pedido está pendente.
-- **Movimento**: shimmer dos skeletons e transições são desativados com `prefers-reduced-motion`.
+- **Recibo**: `/pedido/:id` mostra o snapshot congelado do pedido. "Ver no Etherscan" abre um diálogo de explorador simulado com o hash e os valores da API; não há link externo, porque nenhuma transação existe fora do mock. 403/404 mostram "Pedido indisponível" sem botão de nova tentativa. O status vem da API e do socket; com o socket derrubado, `order-receipt` consulta a REST a cada 4 s enquanto o pedido está pendente.
+- **Movimento**: diálogos abrem com opacidade e escala (o filtro mobile sobe da borda), cards aproximam a imagem no hover, botões reagem ao toque, toasts e recibo entram com um deslocamento curto e o coração do favorito pulsa ao marcar. Só `transform` e `opacity`, sem animar layout. Tudo isso e o shimmer são desligados com `prefers-reduced-motion`.
+- **shadcn/ui**: as primitivas de `src/components/ui` seguem o padrão do shadcn (Radix + `cva` + `cn`), com `components.json` na raiz para o CLI.
 
 ## Testes
 
 - `pnpm test` (Vitest, MSW em Node): contratos, dinheiro, auth, catálogo, carrinho, checkout.
 - `pnpm test:e2e` (Playwright, 1440 e 390): as specs usam só a UI e a rede, com cenários do mock via `/__demo/scenario`. `reuseExistingServer` é `false` para nunca testar um `dist` antigo.
 - Regressão visual: baselines de início, detalhe, carrinho e pagamento em `e2e/responsive.spec.ts-snapshots`, com `maxDiffPixelRatio` de 0,005. Elas foram geradas pelo próprio app depois da conferência manual com o Figma, então protegem contra regressões e não provam fidelidade.
+- A rasterização de texto muda entre sistemas e versões do Chromium (glifos deslocam frações de pixel e uma linha pode quebrar diferente). As baselines atuais são de Linux com Chromium 141; em outro ambiente os 8 testes visuais são pulados com o motivo e o comando para gerar baselines locais (`pnpm test:e2e -g "regressão visual" --update-snapshots`). Os demais testes rodam em qualquer ambiente.
+- `PW_CHROMIUM_PATH` aponta o Playwright e o script de Lighthouse para um Chromium já instalado, sem download.
 
 ## Limites
 
