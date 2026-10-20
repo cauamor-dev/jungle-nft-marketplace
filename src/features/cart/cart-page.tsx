@@ -199,7 +199,7 @@ function DesktopCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
         </nav>
         <h1 className="sr-only">Carrinho</h1>
 
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-[86px]">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start xl:gap-[86px]">
           <section aria-label="Itens do carrinho" className="min-w-0 flex-1">
             {actions.empty ? (
               <EmptyCart />
@@ -208,10 +208,10 @@ function DesktopCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
                 <thead>
                   <tr className="text-[15px] font-medium leading-4">
                     <th scope="col" className="font-medium">NFTs</th>
-                    <th scope="col" className="w-[112px] font-medium xl:w-[138px]">Preço</th>
-                    <th scope="col" className="w-[112px] font-medium xl:w-[136px]">Edições</th>
-                    <th scope="col" className="w-[120px] font-medium xl:w-[145px]">Total</th>
-                    <th scope="col" className="w-[52px]"><span className="sr-only">Remover</span></th>
+                    <th scope="col" className="w-[104px] font-medium xl:w-[138px]">Preço</th>
+                    <th scope="col" className="w-[100px] font-medium xl:w-[136px]">Edições</th>
+                    <th scope="col" className="w-[104px] font-medium xl:w-[145px]">Total</th>
+                    <th scope="col" className="w-[48px] xl:w-[52px]"><span className="sr-only">Remover</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -260,7 +260,7 @@ function DesktopRow({ item, actions }: { item: CartItem; actions: Actions }) {
         <div className="flex items-center gap-4">
           <img src={item.image?.thumbSrc} alt={item.image?.alt ?? ''} width={70} height={70} className="size-[70px] rounded-md object-cover" />
           <div className="flex min-w-0 flex-col gap-1.5 leading-4">
-            <Link to="/nft/$id" params={{ id: item.nftId }} title={item.title} className="truncate font-bold hover:text-text-accent">
+            <Link to="/nft/$id" params={{ id: item.nftId }} title={item.title} className="line-clamp-2 break-words font-bold hover:text-text-accent">
               {item.title}
             </Link>
             <span className="text-sm text-secondary">Edição {item.editionLabel}</span>
@@ -357,7 +357,7 @@ function MobileRow({ item, actions }: { item: CartItem; actions: Actions }) {
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <Link to="/nft/$id" params={{ id: item.nftId }} title={item.title} className="relative block font-bold touch-target">
-              <span className="block truncate">{item.title}</span>
+              <span className="break-words">{item.title}</span>
             </Link>
             <p className="text-sm text-secondary">Edição: {item.editionLabel}</p>
           </div>
