@@ -53,7 +53,8 @@ export function NotFoundPage() {
 }
 
 export function RouteFallback() {
-  return <div role="status" aria-label="Carregando página" className="min-h-[70dvh]" />
+  // Ocupa a tela toda para o rodapé não aparecer e depois ser empurrado (CLS) enquanto o chunk da rota carrega
+  return <div role="status" aria-label="Carregando página" className="min-h-dvh" />
 }
 
 // Layout das rotas privadas: o texto do aviso de login vem do staticData da rota aberta.

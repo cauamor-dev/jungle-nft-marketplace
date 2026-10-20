@@ -1,26 +1,29 @@
 # TASKS
 
 Status: `todo`, `doing`, `done`, `blocked`. `done` só com evidência (comando executado ou arquivo).
-Branch de trabalho: `cursor/fundacao-tecnica-145e` (PR em rascunho). Nada foi publicado, enviado à empresa ou implantado.
+Branch de trabalho: `claude/revisao-final-jungle`, criada a partir de `cursor/fundacao-tecnica-145e` (PR #2 preservado). Nada foi publicado, enviado à empresa ou implantado. A auditoria completa desta revisão, com P0/P1/P2, está em [RELEASE_AUDIT.md](RELEASE_AUDIT.md).
 
-## Resumo das verificações (última execução)
+## Resumo das verificações (20/10/2026, container Linux, Node 22.22, Chromium 141)
 
-| Verificação | Resultado | Evidência |
-| --- | --- | --- |
-| `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` | Sem erros; Vitest: 6 arquivos, 63 testes passando | [log](/opt/cursor/artifacts/verificacao-unidade-build.log) |
-| `pnpm test:e2e` (Chromium, 1440 e 390) | 161 passaram, 3 puladas (mobile), 0 falhas, 3,9 min | [log](/opt/cursor/artifacts/playwright-e2e.log) |
-| `pnpm lighthouse` (3 execuções, mediana) | Todas as metas atingidas | [lighthouse/summary.json](lighthouse/summary.json) e relatórios em `/opt/cursor/artifacts/lighthouse/` |
+| Verificação | Resultado |
+| --- | --- |
+| `pnpm install --frozen-lockfile` em clone novo | ok |
+| `pnpm typecheck`, `pnpm lint`, `pnpm build` | sem erros |
+| `pnpm test` (Vitest) | 6 arquivos, 63 testes passando |
+| `pnpm test:e2e` antes das mudanças | 154 passaram, 3 pulados, 7 falharam (só regressão visual, por diferença de Chromium) |
+| `pnpm test:e2e` final | 161 passaram, 3 pulados (justificados no `test.skip`: ordenação, teclado do header e foco por Tab só existem a partir de 768 px), 0 falhas, 4,5 min. Inclui os 8 testes visuais com as baselines novas |
+| `pnpm lighthouse` (3 execuções, mediana) | Todas as metas atingidas; relatórios em [lighthouse/](lighthouse/) |
 
-Lighthouse 13.5.0 contra `pnpm preview` (build com mocks ligados), medianas de Performance / Accessibility / Best Practices / SEO. Metas: 90 / 95 / 95 / 90.
+Lighthouse 13.5.0 contra `pnpm preview` (build de produção com mocks ligados, cenário padrão). Medianas de Performance / Accessibility / Best Practices / SEO e métricas medianas. Metas: 90 / 95 / 95 / 90.
 
-| Página | Perfil | Perf | A11y | BP | SEO |
-| --- | --- | --- | --- | --- | --- |
-| Início (`/`) | mobile | 91 | 100 | 100 | 100 |
-| Detalhe (`/nft/nft_12`) | mobile | 92 | 100 | 100 | 100 |
-| Início | desktop | 100 | 100 | 100 | 100 |
-| Detalhe | desktop | 98 | 100 | 100 | 100 |
+| Página | Perfil | Perf | A11y | BP | SEO | LCP | TBT | CLS |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Início (`/`) | mobile | 93 | 100 | 100 | 100 | 2,68 s | 172 ms | 0 |
+| Detalhe (`/nft/nft_12`) | mobile | 92 | 100 | 100 | 100 | 3,10 s | 17 ms | 0 |
+| Início | desktop | 100 | 100 | 100 | 100 | 0,73 s | 0 ms | 0,0002 |
+| Detalhe | desktop | 100 | 100 | 100 | 100 | 0,82 s | 0 ms | 0 |
 
-A margem de Performance em Início mobile é pequena (execuções 95, 91, 91; LCP ~2,7 s, TBT 140 a 234 ms): o build de demonstração carrega o MSW. O Lighthouse 13 também reporta `agentic-browsing` (50), categoria que o desafio não pede.
+No mobile o LCP fica perto de 3 s porque o build de demonstração precisa carregar e iniciar o MSW (chunk de ~175 kB gzip) antes de montar a aplicação: o `socket.io-client` guarda a referência de `WebSocket` no import, então o mock tem que estar ativo primeiro. A auditoria não desliga nada disso. O detalhe desktop tinha CLS de 0,079 (o rodapé aparecia e era empurrado enquanto o chunk da rota carregava); o fallback de rota agora ocupa a tela e o CLS caiu para 0.
 
 ## Fase 0 — Inspeção
 
@@ -87,7 +90,7 @@ Mapeamento E01–E12 do enunciado para os testes (nomes completos nos arquivos).
 | Responsividade 390 / 768 / 1440 sem overflow | done | `e2e/responsive.spec.ts` |
 | Regressão visual (início, detalhe, carrinho, pagamento; desktop e mobile) | done | `e2e/responsive.spec.ts` e baselines em `e2e/responsive.spec.ts-snapshots` |
 | Lighthouse 3x, medianas, JSON e HTML | done | tabela acima, `pnpm lighthouse` |
-| Verificação em clone limpo | todo | não executada |
+| Verificação em clone limpo | done | `pnpm install --frozen-lockfile` + typecheck/lint/test/build em clone novo (RELEASE_AUDIT.md) |
 
 Os 3 testes pulados no mobile estão justificados no próprio `test.skip` (ordenação só existe a partir de 768 px; teclado do header e foco por Tab são de desktop).
 
@@ -96,17 +99,18 @@ Os 3 testes pulados no mobile estão justificados no próprio `test.skip` (orden
 | # | Tarefa | Status | Observação |
 | --- | --- | --- | --- |
 | 4.1 | README e ARCHITECTURE.md | done | Atualizados com o estado real |
-| 4.2 | `vercel.json` com fallback de SPA | done | Arquivo criado; **não testado** em ambiente publicado |
+| 4.2 | `vercel.json` com fallback de SPA, build pelo lockfile e cabeçalhos | done | Guia no README; **não testado** em ambiente publicado |
 | 4.3 | Deploy público e teste de rotas diretas em HTTPS | blocked | Exige autorização do Cauã |
 | 4.4 | Envio à empresa | blocked | Exige autorização do Cauã. Não feito |
 
 ## Riscos e lacunas
 
-1. Fidelidade visual foi conferida por screenshot lado a lado com o Figma, sem métrica automática. As baselines do Playwright protegem contra regressão, mas foram geradas pelo próprio app. Divergências conhecidas em [FIGMA_AUDIT.md](FIGMA_AUDIT.md).
-2. Lighthouse em Início mobile passa com pouca folga (91 contra meta 90).
-3. Clone limpo e deploy ainda não foram testados; o `vercel.json` nunca rodou em ambiente publicado.
-4. Prazo informado em e-mail (19/10/2026): não verificável aqui; confirmar com o recrutador.
+1. Fidelidade visual conferida por screenshot lado a lado com 13 dos 15 frames nesta revisão (os 2 restantes, login e cadastro mobile, ficaram de fora pelo limite do MCP do Figma). Não há métrica automática; as baselines do Playwright protegem contra regressão, mas foram geradas pelo próprio app. Detalhes em [FIGMA_AUDIT.md](FIGMA_AUDIT.md).
+2. Baselines visuais valem para Linux + Chromium 141; em outro ambiente os testes visuais são pulados com o motivo.
+3. Performance mobile tem folga pequena (92 e 93 contra meta 90) por causa da inicialização do MSW.
+4. O `vercel.json` nunca rodou em ambiente publicado.
+5. Prazo informado em e-mail (19/10/2026): não verificável aqui; confirmar com o recrutador.
 
 ## Próximo passo
 
-Cauã revisa o PR e autoriza, se quiser, o deploy e a entrega. Antes disso, rodar a verificação em clone limpo.
+Cauã revisa a branch `claude/revisao-final-jungle` e decide: abrir PR/merge, autorizar o deploy na Vercel (guia no README) e, depois de conferir a URL publicada, fazer a entrega.

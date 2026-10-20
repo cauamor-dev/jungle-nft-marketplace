@@ -51,7 +51,25 @@ Status: **verificado** (executado e aprovado), **falhou** (executado e reprovado
 | Carrinho buscado antes de a sessão resolver (requisição dobrada e cache na chave do visitante) | Query espera a sessão | `features/cart/queries.ts` | E2E de carrinho e merge |
 | `avatarUrl` aceitava qualquer string como `src` | Zod só aceita data URL PNG/JPEG/WebP | `api/contracts.ts` | `pnpm test` (upload de avatar) |
 | Relatórios do Lighthouse fora do git (o enunciado pede HTML/JSON) | Execução mediana de cada combinação versionada; ambiente no `summary.json` | `scripts/lighthouse.mjs`, `lighthouse/` | ver "Lighthouse" |
+| Detalhe desktop com CLS 0,079: o rodapé aparecia e era empurrado enquanto o chunk lazy da rota carregava | Fallback de rota ocupa a tela | `src/app/layout.tsx` | Lighthouse detalhe desktop: CLS 0, Performance 98 → 100 |
 | Baselines visuais dependentes do Chromium | Regeradas depois de conferir cada diff; em outro ambiente os testes visuais são pulados com o motivo e o comando para gerar baselines locais | `e2e/responsive.spec.ts` | ver "Execução final" |
+
+## Lighthouse
+
+`pnpm lighthouse` contra `pnpm preview` do build final, 3 execuções por combinação, medianas. Relatório HTML/JSON da execução mediana em `lighthouse/<página>-<perfil>.report.*`; ambiente e todas as execuções em `lighthouse/summary.json`.
+
+| Página | Perfil | Perf | A11y | BP | SEO | LCP | TBT | CLS |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Início | mobile | 93 | 100 | 100 | 100 | 2,68 s | 172 ms | 0 |
+| Detalhe | mobile | 92 | 100 | 100 | 100 | 3,10 s | 17 ms | 0 |
+| Início | desktop | 100 | 100 | 100 | 100 | 0,73 s | 0 ms | 0,0002 |
+| Detalhe | desktop | 100 | 100 | 100 | 100 | 0,82 s | 0 ms | 0 |
+
+## Execução final
+
+`pnpm test:e2e` no build final (Chromium 141, desktop 1440 e mobile 390): **161 passaram, 3 pulados, 0 falhas** em 4,5 min. Os 3 pulados são do projeto mobile e estão justificados no próprio `test.skip` (ordenação, teclado do header e foco por Tab só existem a partir de 768 px). `pnpm typecheck`, `pnpm lint`, `pnpm test` (63) e `pnpm build` sem erros.
+
+Verificações manuais com script Playwright: sem erros de console em início e detalhe; sem rolagem lateral em 320, 720 e 1024 px nas telas principais; isolamento entre as duas contas após logout e login.
 
 ## P2 — polimento feito
 

@@ -1,6 +1,13 @@
 {
   "lighthouse": "13.5.0",
-  "chromium": "chromium",
+  "environment": {
+    "date": "2026-10-20T12:14:35.425Z",
+    "node": "v22.22.0",
+    "os": "Linux 6.18.44-fc-v139 x64",
+    "cpus": 4,
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36",
+    "server": "vite preview (build de produção com mocks ligados, cenário padrão)"
+  },
   "base": "http://localhost:4173",
   "runs": 3,
   "targets": {
@@ -23,43 +30,49 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2642.9597999999996,
-          "tbt": 139.9999999999999,
+          "lcp": 2627.04305,
+          "tbt": 120.49999999999989,
           "cls": 0
         },
         {
           "run": 2,
           "scores": {
-            "performance": 91,
+            "performance": 93,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2717.3619999999996,
-          "tbt": 234,
+          "lcp": 2684.6134,
+          "tbt": 179.5,
           "cls": 0
         },
         {
           "run": 3,
           "scores": {
-            "performance": 91,
+            "performance": 93,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2704.7332,
-          "tbt": 228.5,
+          "lcp": 2684.0498,
+          "tbt": 171.5,
           "cls": 0
         }
       ],
       "medians": {
-        "performance": 91,
+        "performance": 93,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
+      "medianMetrics": {
+        "lcpMs": 2684,
+        "tbtMs": 172,
+        "cls": 0
+      },
+      "report": "home-mobile.report.html",
       "passed": true
     },
     {
@@ -75,8 +88,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 3125.0898,
-          "tbt": 41,
+          "lcp": 3131.1469,
+          "tbt": 18,
           "cls": 0
         },
         {
@@ -88,8 +101,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 3103.0042000000003,
-          "tbt": 47,
+          "lcp": 3104.2452000000003,
+          "tbt": 17,
           "cls": 0
         },
         {
@@ -101,8 +114,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 3118.0189,
-          "tbt": 46,
+          "lcp": 3096.0959000000007,
+          "tbt": 13,
           "cls": 0
         }
       ],
@@ -112,6 +125,12 @@
         "best-practices": 100,
         "seo": 100
       },
+      "medianMetrics": {
+        "lcpMs": 3104,
+        "tbtMs": 17,
+        "cls": 0
+      },
+      "report": "detalhe-mobile.report.html",
       "passed": true
     },
     {
@@ -127,8 +146,66 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 740.59825,
-          "tbt": 1,
+          "lcp": 744.18425,
+          "tbt": 0,
+          "cls": 0.00017477555398567952
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 722.54675,
+          "tbt": 0,
+          "cls": 0.00017477555398567952
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 733.0532499999999,
+          "tbt": 0,
+          "cls": 0.00017477555398567952
+        }
+      ],
+      "medians": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "medianMetrics": {
+        "lcpMs": 733,
+        "tbtMs": 0,
+        "cls": 0.00017477555398567952
+      },
+      "report": "home-desktop.report.html",
+      "passed": true
+    },
+    {
+      "page": "detalhe",
+      "profile": "desktop",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 99,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 841.913,
+          "tbt": 0,
           "cls": 0
         },
         {
@@ -140,7 +217,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 747.16275,
+          "lcp": 814.9197999999999,
           "tbt": 0,
           "cls": 0
         },
@@ -153,7 +230,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 761.45825,
+          "lcp": 786.7399999999999,
           "tbt": 0,
           "cls": 0
         }
@@ -164,58 +241,12 @@
         "best-practices": 100,
         "seo": 100
       },
-      "passed": true
-    },
-    {
-      "page": "detalhe",
-      "profile": "desktop",
-      "runs": [
-        {
-          "run": 1,
-          "scores": {
-            "performance": 98,
-            "accessibility": 100,
-            "best-practices": 100,
-            "seo": 100,
-            "agentic-browsing": 49
-          },
-          "lcp": 811.5482000000001,
-          "tbt": 0,
-          "cls": 0.07850346641166626
-        },
-        {
-          "run": 2,
-          "scores": {
-            "performance": 98,
-            "accessibility": 100,
-            "best-practices": 100,
-            "seo": 100,
-            "agentic-browsing": 49
-          },
-          "lcp": 821.1055,
-          "tbt": 0,
-          "cls": 0.07850346641166626
-        },
-        {
-          "run": 3,
-          "scores": {
-            "performance": 98,
-            "accessibility": 100,
-            "best-practices": 100,
-            "seo": 100,
-            "agentic-browsing": 49
-          },
-          "lcp": 840.3413000000002,
-          "tbt": 0,
-          "cls": 0.07850346641166626
-        }
-      ],
-      "medians": {
-        "performance": 98,
-        "accessibility": 100,
-        "best-practices": 100,
-        "seo": 100
+      "medianMetrics": {
+        "lcpMs": 815,
+        "tbtMs": 0,
+        "cls": 0
       },
+      "report": "detalhe-desktop.report.html",
       "passed": true
     }
   ]
