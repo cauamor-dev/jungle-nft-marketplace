@@ -11,17 +11,17 @@ Branch de trabalho: `claude/correcoes-auditoria-teo`, criada a partir de `claude
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | sem erros |
 | `pnpm test` (Vitest) | 7 arquivos, 65 testes passando |
 | `pnpm test:e2e` antes das mudanças | 154 passaram, 3 pulados, 7 falharam (só regressão visual, por diferença de Chromium) |
-| `pnpm test:e2e` final (após a auditoria externa) | 178 passaram, 0 pulados, 0 falhas, 5,2 min; os 8 visuais também passam num clone limpo |
+| `pnpm test:e2e` final (revisão independente, 20/10 à noite) | 182 passaram, 0 pulados, 0 falhas; o mesmo resultado num clone limpo e na imagem oficial do Playwright |
 | `pnpm lighthouse` (3 execuções, mediana) | Todas as metas atingidas; relatórios em [lighthouse/](lighthouse/) |
 
 Lighthouse 13.5.0 contra `pnpm preview` (build de produção com mocks ligados, cenário padrão). Medianas de Performance / Accessibility / Best Practices / SEO e métricas medianas. Metas: 90 / 95 / 95 / 90.
 
 | Página | Perfil | Perf | A11y | BP | SEO | LCP | TBT | CLS |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Início (`/`) | mobile | 93 | 100 | 100 | 100 | 2,68 s | 172 ms | 0 |
-| Detalhe (`/nft/nft_12`) | mobile | 92 | 100 | 100 | 100 | 3,10 s | 17 ms | 0 |
-| Início | desktop | 100 | 100 | 100 | 100 | 0,78 s | 0 ms | 0,0002 |
-| Detalhe | desktop | 99 | 100 | 100 | 100 | 0,84 s | 0 ms | 0 |
+| Início (`/`) | mobile | 98 | 100 | 100 | 100 | 2.001 ms | 135 ms | 0 |
+| Detalhe (`/nft/nft_12`) | mobile | 98 | 100 | 100 | 100 | 2.325 ms | 14 ms | 0 |
+| Início | desktop | 100 | 100 | 100 | 100 | 548 ms | 0 ms | 0,000175 |
+| Detalhe | desktop | 100 | 100 | 100 | 100 | 665 ms | 0 ms | 0 |
 
 No mobile o LCP fica perto de 3 s porque o build de demonstração precisa carregar e iniciar o MSW (chunk de ~175 kB gzip) antes de montar a aplicação: o `socket.io-client` guarda a referência de `WebSocket` no import, então o mock tem que estar ativo primeiro. A auditoria não desliga nada disso. O detalhe desktop tinha CLS de 0,079 (o rodapé aparecia e era empurrado enquanto o chunk da rota carregava); o fallback de rota agora ocupa a tela e o CLS caiu para 0.
 

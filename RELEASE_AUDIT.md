@@ -4,6 +4,31 @@ Revisão feita em 20/10/2026 sobre a branch `cursor/fundacao-tecnica-145e` (comm
 
 Status: **verificado** (executado e aprovado), **falhou** (executado e reprovado), **pendente** (ainda não feito), **não testável** (depende de algo fora deste ambiente).
 
+## Revisão independente de 20/10/2026 (noite)
+
+Commits locais na branch `claude/correcoes-auditoria-teo`; sem push, PR ou deploy.
+
+| Tarefa | O que foi encontrado | O que foi feito | Prova |
+| --- | --- | --- | --- |
+| 1. Regressão visual | Na imagem oficial `v1.56.1-noble`, 8 de 8 testes visuais falhavam com as baselines versionadas. Causa medida: o Chromium seguia o fontconfig de cada sistema (hinting e antialiasing subpixel), a largura dos glifos mudava e a quebra de linha também. Ruído entre ambientes: 0,51% a 1,68% dos pixels, maior que o sinal de 1 px de padding num card (0,065% a 0,7%) | `--font-render-hinting=none` e `--disable-lcd-text` no `playwright.config.ts`: ruído caiu para 0 px nas 8 telas. Baselines geradas na imagem oficial (idênticas às versionadas). Tolerância 0,0005, abaixo do menor sinal medido; 2–3% esconderiam a mudança | 1 px de padding num único card: início desktop (1.260 px) e início mobile (2.029 px) falham; as outras 6 telas, sem card no viewport, passam |
+| 2. Skeleton do resumo do pagamento | Coluna vazia durante a cotação | `PaymentSummarySkeleton` com a mesma estrutura do resumo | `checkout.spec.ts`: skeleton visível, confirmar desabilitado, CLS da troca < 0,01. Sabotagem (sem as linhas de totais): CLS 0,0193, teste falha |
+| 3. Alvos de toque | ~40 tipos de controle abaixo de 44 px em 390 px | `h-11` abaixo de `md` em botões e campos; utilitário `touch-target` (`::after`) em ícones, chips, stepper e paginação; altura real em listas densas e abas roláveis | `responsive.spec.ts` "alvos de toque em 390px", 7 telas |
+| 4. Performance mobile | MSW carregava `tough-cookie` + `tldts` (~340 kB) sem usar cookies; LCP desktop da home esperava o JS para descobrir a imagem | Substituto mínimo do `tough-cookie`; chunks `msw`, `socket`, `socket-protocol`, `radix` (a primeira versão quebrou o tempo real; os testes pegaram e os parsers foram separados); preload do hero na home desktop | Lighthouse abaixo |
+| 5. Cosméticos | 18 cards no DOM para 9 visíveis; nome cortado no carrinho; `engines` ausente | Só o grid da largura atual; nome completo no mobile e até 2 linhas com `title` no desktop, colunas menos apertadas entre 1024 e 1279 px; README com começo rápido; `engines.node >=22.19` | Capturas em 320 e 1024 px |
+
+Execução final desta rodada (commit `5ef0c7a` + documentação):
+
+| Verificação | Resultado |
+| --- | --- |
+| `pnpm typecheck`, `pnpm lint`, `pnpm build` | sem erros |
+| `pnpm test` | 7 arquivos, 65 testes passando |
+| `pnpm test:e2e` no repositório (Linux, Node 22.22, Chromium 141) | 182 passaram, 0 pulados, 0 falhas, 5,4 min |
+| `pnpm test:e2e` num clone limpo (`pnpm install --frozen-lockfile`), mesmo Linux | 182 passaram, 0 pulados, 0 falhas, 5,5 min |
+| Comando Docker do README, clone limpo, imagem `v1.56.1-noble` (Node 22.20) | 182 passaram, 0 pulados, 0 falhas, 5,5 min |
+| `pnpm lighthouse` (3 execuções, mediana) | home mobile 98 (99, 97, 98), detalhe mobile 98 (98, 98, 97), desktop 100 e 100 |
+
+`engines.node` ficou em `>=22.19`, não em `>=20.19`: o Lighthouse 13 declara `>=22.19` e o Vitest 5 `^22.12`. A observação de que a suíte roda em Node 20.19 não foi verificada aqui.
+
 ## Auditoria externa (Téo, 20/10/2026)
 
 Branch das correções: `claude/correcoes-auditoria-teo`, criada a partir de `claude/revisao-final-jungle`. Cada achado foi conferido no código antes da correção.
@@ -78,10 +103,10 @@ Branch das correções: `claude/correcoes-auditoria-teo`, criada a partir de `cl
 
 | Página | Perfil | Perf | A11y | BP | SEO | LCP | TBT | CLS |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Início | mobile | 93 | 100 | 100 | 100 | 2,68 s | 172 ms | 0 |
-| Detalhe | mobile | 92 | 100 | 100 | 100 | 3,10 s | 17 ms | 0 |
-| Início | desktop | 100 | 100 | 100 | 100 | 0,78 s | 0 ms | 0,0002 |
-| Detalhe | desktop | 99 | 100 | 100 | 100 | 0,84 s | 0 ms | 0 |
+| Início | mobile | 98 | 100 | 100 | 100 | 2.001 ms | 135 ms | 0 |
+| Detalhe | mobile | 98 | 100 | 100 | 100 | 2.325 ms | 14 ms | 0 |
+| Início | desktop | 100 | 100 | 100 | 100 | 548 ms | 0 ms | 0,000175 |
+| Detalhe | desktop | 100 | 100 | 100 | 100 | 665 ms | 0 ms | 0 |
 
 ## Execução final
 
