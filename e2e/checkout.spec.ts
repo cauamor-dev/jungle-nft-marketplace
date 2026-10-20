@@ -1,0 +1,340 @@
+import { expect, test, type Page } from '@playwright/test'
+import { addFromDetail, api, demoScenario, expectNoHorizontalOverflow, goToPaymentLoggedIn, loginThroughDialog } from './helpers'
+
+test.setTimeout(60_000)
+
+const orderPosts = (page: Page) => {
+  const keys: (string | undefined)[] = []
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/orders') keys.push(request.headers()['idempotency-key'])
+  })
+  return keys
+}
+
+const cartSize = async (page: Page) => (await api<{ items: unknown[] }>(page, 'GET', '/api/cart')).body.items.length
+const ordersOf = async (page: Page) => (await api<{ items: { id: string; status: string; txReference: string | null }[] }>(page, 'GET', '/api/orders')).body.items
+
+test.describe('carrinho', () => {
+  test('visitante adiciona, altera quantidade, remove e o carrinho sobrevive ao refresh', async ({ page }) => {
+    await addFromDetail(page, 'nft_12')
+
+    const item = page.locator('[data-testid="cart-item"]:visible').first()
+    const before = await page.locator('[data-testid="total"]:visible').first().textContent()
+    await item.getByRole('button', { name: /aumentar|mais|\+/i }).first().click()
+    await expect.poll(async () => page.locator('[data-testid="total"]:visible').first().textContent()).not.toBe(before)
+
+    await page.reload()
+    await expect(page.locator('[data-testid="cart-item"]:visible')).toHaveCount(1)
+
+    await page.locator('[data-testid="cart-item"]:visible').first().getByRole('button', { name: /^Remover/ }).click()
+    await expect(page.getByTestId('cart-empty')).toBeVisible()
+  })
+
+  test('cupom válido, inválido e expirado têm mensagens e efeito no total', async ({ page }) => {
+    await addFromDetail(page, 'nft_12')
+    const total = page.locator('[data-testid="total"]:visible').first()
+    const original = await total.textContent()
+    const input = page.getByLabel('Código promocional')
+
+    await input.fill('NAOEXISTE')
+    await page.getByRole('button', { name: 'Aplicar' }).click()
+    await expect(page.getByTestId('coupon-message').first()).not.toBeEmpty()
+    await expect(total).toHaveText(original!)
+
+    await input.fill('JUNGLE10')
+    await page.getByRole('button', { name: 'Aplicar' }).click()
+    await expect(page.getByTestId('coupon-applied')).toContainText('JUNGLE10')
+    await expect(total).not.toHaveText(original!)
+
+    await page.getByTestId('coupon-applied').getByRole('button', { name: 'Remover' }).click()
+    await expect(total).toHaveText(original!)
+
+    await demoScenario(page, 'expired-coupon')
+    await page.getByLabel('Código promocional').fill('JUNGLE10')
+    await page.getByRole('button', { name: 'Aplicar' }).click()
+    await expect(page.getByTestId('coupon-message').first()).toContainText(/expir/i)
+  })
+
+  test('cupom que vence depois de aplicado pode ser removido do carrinho', async ({ page }) => {
+    await addFromDetail(page, 'nft_12')
+    await page.getByLabel('Código promocional').fill('JUNGLE10')
+    await page.getByRole('button', { name: 'Aplicar' }).click()
+    await expect(page.getByTestId('coupon-applied')).toContainText('aplicado')
+    await demoScenario(page, 'expired-coupon')
+    await page.reload()
+    const coupon = page.locator('[data-testid="coupon-applied"]:visible')
+    await expect(coupon).toContainText('JUNGLE10 sem efeito')
+    await expect(page.locator('[data-testid="coupon-message"]:visible')).toHaveText('Este cupom expirou.')
+    await coupon.getByRole('button', { name: 'Remover' }).click()
+    await expect(page.locator('[data-testid="coupon-applied"]:visible')).toHaveCount(0)
+    await expect(page.getByText('Este cupom expirou.')).toHaveCount(0)
+    expect((await api<{ couponCode: string | null }>(page, 'GET', '/api/cart')).body.couponCode).toBeNull()
+  })
+
+  test('item que esgota bloqueia o fechamento até ser resolvido', async ({ page }) => {
+    await addFromDetail(page, 'nft_12')
+    await demoScenario(page, 'edition-sold-out', { nftId: 'nft_12' })
+    await page.reload()
+    await expect(page.getByTestId('cart-item-issue').first()).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Conectar e finalizar' })).toBeDisabled()
+    await page.locator('[data-testid="cart-item"]:visible').first().getByRole('button', { name: /^Remover/ }).click()
+    await expect(page.getByTestId('cart-empty')).toBeVisible()
+  })
+})
+
+test.describe('checkout', () => {
+  test('compra completa: login pelo carrinho, pagamento, recibo pendente e confirmação em tempo real', async ({ page }) => {
+    const keys = orderPosts(page)
+    await goToPaymentLoggedIn(page)
+    const summaryTotal = (await page.locator('[data-testid="total"]:visible').first().textContent())!.trim()
+    await expectNoHorizontalOverflow(page)
+
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**')
+    await expect(page.getByTestId('order-receipt')).toBeVisible()
+    await page.evaluate(() => ((window as unknown as { __noReload: boolean }).__noReload = true))
+    await expect(page.getByTestId('order-receipt')).toHaveAttribute('data-status', 'pending')
+    await expect(page.getByTestId('order-receipt')).toHaveAttribute('data-status', 'confirmed', { timeout: 20_000 })
+    expect(await page.evaluate(() => (window as unknown as { __noReload?: boolean }).__noReload)).toBe(true)
+
+    await expect(page.getByTestId('receipt-total').first()).toContainText(summaryTotal.replace(/\s*ETH$/, ''))
+    await expect(page.getByTestId('receipt-item')).toHaveCount(1)
+    expect(keys).toHaveLength(1)
+    expect(keys[0]).toBeTruthy()
+
+    await expect(async () => expect((await ordersOf(page)).map((order) => order.status)).toEqual(['confirmed'])).toPass()
+    expect(await cartSize(page)).toBe(0)
+
+    // O "explorador" é simulado: mostra o hash que a API devolveu, sem abrir site externo
+    const [order] = await ordersOf(page)
+    await page.getByRole('button', { name: 'Ver no Etherscan' }).click()
+    const explorer = page.getByRole('dialog', { name: 'Explorador simulado' })
+    await expect(explorer.getByTestId('explorer-details')).toContainText(order.txReference!)
+    await page.keyboard.press('Escape')
+    await expect(explorer).toBeHidden()
+    await expect(page.getByRole('button', { name: 'Ver no Etherscan' })).toBeFocused()
+  })
+
+  test('voltar ao carrinho, mudar a quantidade e retornar atualiza a cotação do pagamento', async ({ page }) => {
+    await goToPaymentLoggedIn(page)
+    const total = page.locator('[data-testid="payment-summary"] [data-testid="total"]:visible').first()
+    const before = await total.textContent()
+    if ((page.viewportSize()?.width ?? 0) < 768) await page.getByRole('button', { name: 'Voltar' }).click()
+    else await page.locator('a[href="/carrinho"]:visible').first().click()
+    await page.waitForURL('**/carrinho')
+    const cartTotal = page.locator('[data-testid="total"]:visible').first()
+    const cartBefore = await cartTotal.textContent()
+    await page.locator('[data-testid="cart-item"]:visible').first().getByRole('button', { name: /Aumentar/i }).first().click()
+    await expect(cartTotal).not.toHaveText(cartBefore!)
+    const expected = await cartTotal.textContent()
+    await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
+    await page.waitForURL('**/pagamento')
+    await expect(total).toHaveText(expected!)
+    expect(expected).not.toBe(before)
+  })
+
+  test('cliques repetidos em confirmar criam um único pedido', async ({ page }) => {
+    const keys = orderPosts(page)
+    await goToPaymentLoggedIn(page)
+    const confirm = page.getByRole('button', { name: 'Confirmar compra' })
+    await confirm.dblclick()
+    await page.waitForURL('**/pedido/**')
+    expect(keys.length).toBe(1)
+    expect(await ordersOf(page)).toHaveLength(1)
+  })
+
+  test('timeout depois da criação: o app reencontra o pedido pela chave de idempotência', async ({ page }) => {
+    const keys = orderPosts(page)
+    await goToPaymentLoggedIn(page)
+    await demoScenario(page, 'post-create-order-timeout')
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**', { timeout: 30_000 })
+    await expect(page.getByTestId('order-receipt')).toBeVisible()
+    expect(new Set(keys).size).toBe(1)
+    expect(await ordersOf(page)).toHaveLength(1)
+  })
+
+  test('sem resposta e sem conseguir consultar o pedido, a compra fica bloqueada mesmo após refresh', async ({ page }) => {
+    test.setTimeout(90_000)
+    const keys = orderPosts(page)
+    await goToPaymentLoggedIn(page)
+    await demoScenario(page, 'payment-rejected')
+    await demoScenario(page, 'post-create-order-timeout')
+    const confirm = page.getByRole('button', { name: 'Confirmar compra' })
+    await confirm.click()
+    await expect.poll(() => keys.length).toBeGreaterThan(0)
+    await demoScenario(page, 'offline', { match: '/api/orders' })
+
+    const check = page.getByRole('button', { name: 'Conferir se o pedido foi criado' })
+    await expect(check).toBeVisible({ timeout: 40_000 })
+    await check.click()
+    await expect(page.getByTestId('payment-form-error')).toHaveText(/Não foi possível conferir/)
+    await expect(confirm).toBeDisabled()
+
+    // Depois do refresh a cotação é nova; sem a trava, ela geraria outra chave e outro pedido
+    await page.reload()
+    await expect(page.getByTestId('payment-form-error')).toHaveText(/Não foi possível conferir/, { timeout: 20_000 })
+    await expect(confirm).toBeDisabled()
+
+    await page.getByRole('button', { name: 'Restaurar condições normais' }).click()
+    await check.click()
+    await page.waitForURL('**/pedido/**')
+    expect(new Set(keys).size).toBe(1)
+    expect(await ordersOf(page)).toHaveLength(1)
+  })
+
+  test('enquanto a cotação carrega o resumo mostra skeleton, o pagamento fica bloqueado e nada se desloca', async ({ page }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as { __shift: number }
+      w.__shift = 0
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as (PerformanceEntry & { value: number; hadRecentInput: boolean })[]) {
+          if (!entry.hadRecentInput) w.__shift += entry.value
+        }
+      }).observe({ type: 'layout-shift', buffered: true })
+    })
+    await goToPaymentLoggedIn(page)
+    await demoScenario(page, 'slow-network', { ms: 2500 })
+    await page.reload()
+
+    const skeleton = page.getByTestId('payment-summary-skeleton')
+    await expect(skeleton).toBeVisible({ timeout: 20_000 })
+    // Só conta os deslocamentos a partir daqui: a troca skeleton -> resumo
+    await page.evaluate(() => ((window as unknown as { __shift: number }).__shift = 0))
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeDisabled()
+
+    await expect(page.getByTestId('payment-summary')).toBeVisible({ timeout: 20_000 })
+    await expect(skeleton).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeEnabled()
+    await page.waitForTimeout(500)
+    const shift = await page.evaluate(() => (window as unknown as { __shift: number }).__shift)
+    expect(shift).toBeLessThan(0.01)
+  })
+
+  test('cotação vencida é refeita sozinha (relógio controlado) e a compra continua possível', async ({ page }) => {
+    await page.clock.install()
+    const quotes: string[] = []
+    page.on('request', (request) => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/quotes') quotes.push(request.url())
+    })
+    await goToPaymentLoggedIn(page)
+    const before = quotes.length
+    expect(before).toBeGreaterThan(0)
+
+    // A cotação vale 5 minutos: sem esperar de verdade, o relógio da página avança e o app pede outra
+    await page.clock.fastForward('05:01')
+    await expect.poll(() => quotes.length).toBeGreaterThan(before)
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeEnabled()
+
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**')
+    await expect(page.getByTestId('order-receipt')).toHaveAttribute('data-status', 'confirmed', { timeout: 20_000 })
+    expect(await ordersOf(page)).toHaveLength(1)
+  })
+
+  test('preço alterado em tempo real pede para aceitar os novos valores antes de pagar', async ({ page }) => {
+    await goToPaymentLoggedIn(page)
+    const oldTotal = (await page.locator('[data-testid="total"]:visible').first().textContent())!.trim()
+
+    await demoScenario(page, 'price-changed', { nftId: 'nft_12', priceEth: '0.1' })
+    await expect(page.getByTestId('reconfirm')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeDisabled()
+    await expect(page.locator('[data-testid="total"]:visible').first()).not.toHaveText(oldTotal)
+    const newTotal = (await page.locator('[data-testid="total"]:visible').first().textContent())!.trim()
+
+    await page.getByRole('button', { name: 'Aceitar novos valores' }).click()
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**')
+    await expect(page.getByTestId('receipt-total').first()).toContainText(newTotal.replace(/\s*ETH$/, ''))
+    expect(await ordersOf(page)).toHaveLength(1)
+  })
+
+  test('sem socket, o servidor ainda rejeita a cotação antiga e o app mostra a nova', async ({ page }) => {
+    await goToPaymentLoggedIn(page)
+    const oldTotal = (await page.locator('[data-testid="total"]:visible').first().textContent())!.trim()
+
+    await demoScenario(page, 'disconnect-pending-order')
+    await demoScenario(page, 'price-changed', { nftId: 'nft_12', priceEth: '0.1' })
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+
+    await expect(page.getByTestId('payment-form-error')).toContainText(/valores mudaram/i)
+    await expect(page.getByTestId('reconfirm')).toBeVisible()
+    await expect(page.locator('[data-testid="total"]:visible').first()).not.toHaveText(oldTotal)
+    expect(await ordersOf(page)).toHaveLength(0)
+  })
+
+  test('carteira que recusa a conexão não cria pedido e permite tentar de novo', async ({ page }) => {
+    await goToPaymentLoggedIn(page)
+    await demoScenario(page, 'wallet-refused')
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await expect(page.getByTestId('payment-form-error')).toContainText(/recus/i)
+    expect(await ordersOf(page)).toHaveLength(0)
+
+    await demoScenario(page, 'happy-path')
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**')
+    expect(await ordersOf(page)).toHaveLength(1)
+  })
+
+  test('pagamento recusado aparece no recibo como não concluído e a compra pode ser refeita', async ({ page }) => {
+    await goToPaymentLoggedIn(page)
+    await demoScenario(page, 'payment-rejected')
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**')
+    await expect(page.getByTestId('order-receipt')).toHaveAttribute('data-status', 'rejected', { timeout: 20_000 })
+    await expect(page.getByTestId('order-message')).toBeVisible()
+    expect(await cartSize(page)).toBe(1)
+
+    // Nova tentativa sem recarregar: a cotação usada no pedido recusado não pode ser reaproveitada
+    await demoScenario(page, 'payment-confirmed')
+    await page.getByRole('link', { name: 'Voltar ao carrinho' }).click()
+    await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
+    await page.waitForURL('**/pagamento')
+    const confirm = page.getByRole('button', { name: 'Confirmar compra' })
+    await expect(confirm).toBeEnabled()
+    await confirm.click()
+    await page.waitForURL('**/pedido/**')
+    await expect(page.getByTestId('order-receipt')).toHaveAttribute('data-status', 'confirmed', { timeout: 20_000 })
+    expect((await ordersOf(page)).map((order) => order.status).sort()).toEqual(['confirmed', 'rejected'])
+  })
+
+  test('sessão expirada na hora de pagar leva ao login e devolve ao pagamento com os dados preservados', async ({ page }) => {
+    await goToPaymentLoggedIn(page)
+    const emailField = page.getByLabel(/e-mail/i).first()
+    const email = await emailField.inputValue()
+
+    await demoScenario(page, 'expired-session')
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await loginThroughDialog(page)
+    await expect(page.getByRole('dialog')).toBeHidden()
+    await expect(page).toHaveURL(/pagamento/)
+    await expect(page.getByLabel(/e-mail/i).first()).toHaveValue(email)
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**')
+  })
+
+  test('pagamento exige sessão: visitante vê o login em vez do formulário', async ({ page }) => {
+    await page.goto('/pagamento')
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toHaveCount(0)
+  })
+
+  test('recibo de pedido de outro usuário não é exibido', async ({ page }) => {
+    await goToPaymentLoggedIn(page)
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**')
+    const orderUrl = page.url()
+    await page.evaluate(() => {
+      localStorage.removeItem('jg-session-token')
+    })
+    await page.goto(orderUrl)
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await loginThroughDialog(page, { email: 'demo2@example.test', password: 'Demo@1234' })
+    await expect(page.getByTestId('order-error')).toContainText('Você não tem acesso a este pedido.')
+    await expect(page.getByRole('button', { name: 'Tentar de novo' })).toHaveCount(0)
+    await expect(page.getByTestId('order-receipt')).toHaveCount(0)
+  })
+})
