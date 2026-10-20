@@ -23,7 +23,7 @@ export function WalletPicker({ wallets, selectedId, onSelect }: WalletPickerProp
             )}
             data-testid="wallet-option"
           >
-            <input type="radio" name="wallet" checked={selected} onChange={() => onSelect(wallet)} className="size-4 accent-primary" />
+            <input type="radio" name="wallet" checked={selected} onChange={() => onSelect(wallet)} className="radio-control" />
             <span className="flex min-w-0 flex-1 flex-col gap-1.5">
               <span className="text-lg font-bold leading-5">{wallet.label}</span>
               <span className="truncate text-sm text-text-secondary">{wallet.ensName ? `${wallet.ensName}.${wallet.ensSuffix}` : shortAddress(wallet.address)}</span>

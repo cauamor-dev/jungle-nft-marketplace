@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import arrow from '@/assets/icons/arrow-right-sm.svg'
+import arrow from '@/assets/icons/arrow-right.svg'
 import mask from '@/assets/icons/promo-mask.svg'
 import esmeralda from '@/assets/nfts/esmeralda-400.webp'
 import ivory from '@/assets/nfts/ivory-400.webp'
@@ -50,7 +50,7 @@ export function Promos() {
               className="mt-auto flex h-10 w-[140px] items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-ink hover:bg-text-accent"
             >
               Explorar
-              <img src={arrow} alt="" className="size-[18px]" />
+              <img src={arrow} alt="" className="h-3 w-2.5 -rotate-90" />
             </Link>
           </div>
         </article>

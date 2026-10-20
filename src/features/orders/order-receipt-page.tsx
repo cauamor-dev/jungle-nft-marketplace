@@ -6,21 +6,18 @@ import type { Order } from '@/api/contracts'
 import closeIcon from '@/assets/icons/close.svg'
 import thankYou from '@/assets/icons/thank-you.svg'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { useToast } from '@/components/ui/toast'
 import { Skeleton } from '@/components/ui/skeleton'
 import { displayEth } from '@/domain/money'
 import { isApiError } from '@/domain/errors'
-import { RequireAuth } from '@/features/auth/require-auth'
 import { formatDate } from '@/lib/format'
 import { networkLabels } from '@/lib/categories'
 import { shortAddress, walletTypeLabels } from '@/lib/wallets'
 import { useOrder } from './queries'
 
 export function OrderReceiptPage({ orderId }: { orderId: string }) {
-  return (
-    <RequireAuth title="Entre para ver seu pedido" description="Os pedidos ficam disponíveis apenas para a conta que os criou.">
-      <Receipt orderId={orderId} />
-    </RequireAuth>
-  )
+  return <Receipt orderId={orderId} />
 }
 
 const titles = {
@@ -177,15 +174,9 @@ function TransactionDetails({ order }: { order: Order }) {
 
       <div className="flex flex-col items-center gap-4 border-t border-line-soft pt-4 text-center text-xs leading-5 text-text-secondary">
         <StatusMessage order={order} />
-        {order.status === 'confirmed' && order.explorerUrl && (
-          <Button asChild className="h-[30px] rounded-[3px] px-5 text-xs">
-            <a href={order.explorerUrl} target="_blank" rel="noreferrer">
-              Ver no Etherscan
-            </a>
-          </Button>
-        )}
+        {order.status === 'confirmed' && order.txReference && <ExplorerDialog order={order} />}
         {order.status === 'rejected' && (
-          <Button asChild className="h-[30px] rounded-[3px] px-5 text-xs">
+          <Button asChild className="h-[47px] rounded-[3px] px-4 text-[15px]">
             <Link to="/carrinho">Voltar ao carrinho</Link>
           </Button>
         )}
@@ -214,5 +205,54 @@ function StatusMessage({ order }: { order: Order }) {
     <p data-testid="order-message">
       {order.rejectionReason ?? 'A rede recusou a transação.'} Nenhum valor foi cobrado e seu carrinho continua guardado.
     </p>
+  )
+}
+
+// Não existe blockchain nesta demonstração: em vez de abrir um explorador externo que não teria a transação,
+// mostra o registro simulado que a API devolveu.
+function ExplorerDialog({ order }: { order: Order }) {
+  const { notify } = useToast()
+  const tx = order.txReference ?? ''
+  const rows = [
+    { label: 'Hash', value: tx, mono: true },
+    { label: 'Rede', value: networkLabels[order.receipt.network] },
+    { label: 'Status', value: 'Confirmada' },
+    { label: 'Data', value: formatDate(order.settledAt ?? order.createdAt) },
+    { label: 'Carteira', value: order.receipt.walletAddress, mono: true },
+    { label: 'Valor', value: `${displayEth(order.receipt.totalEth)} ETH` },
+  ]
+
+  async function copyHash() {
+    try {
+      await navigator.clipboard.writeText(tx)
+      notify('Hash da transação copiado.', 'success')
+    } catch {
+      notify('Não foi possível copiar. Selecione o hash e copie manualmente.', 'error')
+    }
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button className="h-[47px] rounded-[3px] px-4 text-[15px]">Ver no Etherscan</Button>
+      </DialogTrigger>
+      <DialogContent className="px-6 pb-8 pt-10 md:w-[520px] md:px-10" closeLabel="Fechar explorador">
+        <DialogTitle className="text-lg font-bold">Explorador simulado</DialogTitle>
+        <DialogDescription className="mt-2 text-xs leading-5 text-text-secondary">
+          Esta demonstração não envia transações para uma rede real. Os dados abaixo são o registro do pedido na API simulada.
+        </DialogDescription>
+        <dl className="mt-6 flex flex-col gap-3 text-sm" data-testid="explorer-details">
+          {rows.map((row) => (
+            <div key={row.label} className="flex flex-col gap-1 border-b border-line-soft pb-3 last:border-0">
+              <dt className="text-xs font-bold text-text-secondary">{row.label}</dt>
+              <dd className={row.mono ? 'break-all text-[13px]' : ''}>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <Button variant="outline" size="sm" className="mt-4" onClick={() => void copyHash()}>
+          Copiar hash
+        </Button>
+      </DialogContent>
+    </Dialog>
   )
 }

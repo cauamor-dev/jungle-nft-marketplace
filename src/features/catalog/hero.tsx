@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import heroDots from '@/assets/icons/hero-dots.svg'
+import heroDotsMobile from '@/assets/icons/hero-dots-mobile.svg'
 import arrow from '@/assets/icons/arrow-right-sm.svg'
 import maskMobile from '@/assets/icons/hero-mask-mobile.svg'
 import heroLarge from '@/assets/nfts/esmeralda-800.webp'
@@ -51,7 +52,7 @@ export function Hero() {
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <p className="text-xs font-medium leading-4">Bem-vindo à Kurio</p>
-              <h1 id="hero-title-mobile" className="text-lg font-bold leading-[29px]">
+              <h1 id="hero-title-mobile" className="whitespace-nowrap text-[min(18px,calc((100vw-230px)/9))] font-bold leading-[29px]">
                 SEJA DONO DA
                 <br />
                 CULTURA DIGITAL
@@ -60,7 +61,7 @@ export function Hero() {
             </div>
             <Link to="/mercado" className="flex items-center gap-2 text-xs font-bold leading-[14px] text-text-accent">
               EXPLORAR
-              <img src={arrow} alt="" className="size-4" />
+              <img src={arrow} alt="" className="h-3 w-2.5 -rotate-90" />
             </Link>
           </div>
           <div className="relative size-[138px] shrink-0">
@@ -68,6 +69,7 @@ export function Hero() {
             <img src={violeta} alt="" width={58} height={58} className="absolute left-[14px] top-[88px] size-[58px] rounded-2xl object-cover" />
           </div>
         </div>
+        <img src={heroDotsMobile} alt="" width={33} height={7} className="absolute bottom-2.5 left-1/2 h-[7px] w-[33px] -translate-x-1/2" />
       </section>
     </>
   )

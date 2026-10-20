@@ -48,6 +48,13 @@ export function AuthDialog() {
         closeLabel="Fechar"
         className="max-md:inset-0 max-md:left-0 max-md:top-0 max-md:h-dvh max-md:max-h-none max-md:w-screen max-md:translate-x-0 max-md:translate-y-0 max-md:border-b-0 max-md:bg-ink md:w-[500px]"
         aria-describedby="auth-description"
+        onOpenAutoFocus={(event) => {
+          // Começa no primeiro campo do formulário, não na aba
+          const field = (event.currentTarget as HTMLElement).querySelector<HTMLInputElement>('form input')
+          if (!field) return
+          event.preventDefault()
+          field.focus()
+        }}
         onCloseAutoFocus={(event) => {
           event.preventDefault()
           restoreFocus()
@@ -203,16 +210,18 @@ function LoginForm({ onDone }: { onDone: () => void }) {
   )
 }
 
+// O aviso fica dentro do diálogo: enquanto ele está aberto, o restante da página fica oculto para leitores de tela.
 function ForgotPassword() {
-  const { notify } = useToast()
+  const [notice, setNotice] = useState(false)
   return (
-    <button
-      type="button"
-      onClick={() => notify('A recuperação de senha não faz parte desta demonstração.')}
-      className="self-end text-sm text-text-accent hover:underline"
-    >
-      Esqueceu a senha?
-    </button>
+    <>
+      <button type="button" onClick={() => setNotice(true)} className="self-end text-sm text-text-accent hover:underline">
+        Esqueceu a senha?
+      </button>
+      <p role="status" className="self-end text-right text-xs text-text-secondary empty:hidden">
+        {notice ? 'A recuperação de senha não faz parte desta demonstração.' : ''}
+      </p>
+    </>
   )
 }
 
@@ -272,8 +281,8 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
 }
 
 function SocialBlock() {
-  const { notify } = useToast()
-  const unavailable = () => notify('O acesso social não está disponível nesta demonstração. Use e-mail e senha.')
+  const [notice, setNotice] = useState(false)
+  const unavailable = () => setNotice(true)
   return (
     <div className="mt-10 flex flex-col gap-3 md:mt-6 md:border-t md:border-line md:pt-6">
       <div className="flex items-center gap-2.5 md:gap-3">
@@ -284,6 +293,9 @@ function SocialBlock() {
       <div className="flex flex-col gap-4 md:gap-3 md:px-20">
         <SocialButton icon={googleLogo} label="Continuar com Google" onClick={unavailable} />
         <SocialButton icon={facebookLogo} label="Continuar com Facebook" onClick={unavailable} />
+        <p role="status" className="text-center text-xs text-text-secondary empty:hidden">
+          {notice ? 'O acesso social não está disponível nesta demonstração. Use e-mail e senha.' : ''}
+        </p>
       </div>
     </div>
   )

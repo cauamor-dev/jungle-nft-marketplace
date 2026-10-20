@@ -8,7 +8,6 @@ import logoutIcon from '@/assets/icons/account-logout.svg'
 import shoppingIcon from '@/assets/icons/account-shopping.svg'
 import supportIcon from '@/assets/icons/account-support.svg'
 import userIcon from '@/assets/icons/account-user.svg'
-import { RequireAuth } from '@/features/auth/require-auth'
 import { useLogout } from '@/features/auth/session'
 import { cn } from '@/lib/cn'
 
@@ -27,17 +26,15 @@ const upcoming = [
 
 export function AccountLayout({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <RequireAuth title="Entre para acessar sua conta" description="Perfil, carteiras, atividade e favoritos ficam disponíveis depois do login.">
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-6 pb-8 pt-8 md:pt-6 lg:flex-row lg:gap-7 xl:px-0">
-        <AccountSidebar />
-        <section aria-labelledby="account-title" className="flex min-w-0 flex-1 flex-col gap-8">
-          <h1 id="account-title" className="text-base font-bold leading-4">
-            {title}
-          </h1>
-          {children}
-        </section>
-      </div>
-    </RequireAuth>
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-6 pb-8 pt-8 md:pt-6 lg:flex-row lg:gap-7 xl:px-0">
+      <AccountSidebar />
+      <section aria-labelledby="account-title" className="flex min-w-0 flex-1 flex-col gap-8">
+        <h1 id="account-title" className="text-base font-bold leading-4">
+          {title}
+        </h1>
+        {children}
+      </section>
+    </div>
   )
 }
 
@@ -52,7 +49,7 @@ function AccountSidebar() {
   }
 
   return (
-    <nav aria-label="Minha conta" className="flex shrink-0 flex-col bg-surface-card py-2 lg:w-[310px]">
+    <nav aria-label="Minha conta" className="flex shrink-0 flex-col self-start bg-surface-card py-2 max-lg:w-full lg:w-[310px]">
       <p className="p-2.5 text-lg font-bold leading-4">Meu perfil</p>
       <ul className="flex gap-1 overflow-x-auto scrollbar-none lg:flex-col lg:gap-0 lg:overflow-visible">
         {links.map((link) => {

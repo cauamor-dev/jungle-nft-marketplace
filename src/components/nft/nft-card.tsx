@@ -62,7 +62,10 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
               height={400}
               loading={imageEager ? 'eager' : 'lazy'}
               decoding="async"
-              className={cn('aspect-square w-[96%] rounded-2xl object-cover md:rounded-[15px]', !nft.available && 'opacity-50 grayscale')}
+              className={cn(
+                'aspect-square w-[96%] rounded-2xl object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] md:rounded-[15px]',
+                !nft.available && 'opacity-50 grayscale',
+              )}
             />
           )}
         </Link>
@@ -84,16 +87,16 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
           aria-label={isFavorite ? `Remover ${nft.title} dos favoritos` : `Favoritar ${nft.title}`}
           className="absolute right-2 top-2 grid size-7 place-items-center rounded-full border border-line bg-surface-raised md:hidden"
         >
-          <img src={isFavorite ? heartLight : heartOutline} alt="" className="size-3.5" />
+          <img src={isFavorite ? heartLight : heartOutline} alt="" className={cn('size-3.5', isFavorite && 'animate-heart-pop')} />
         </button>
 
-        <div className="absolute inset-x-0 bottom-3 hidden items-center justify-center gap-2 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 md:flex">
+        <div className="absolute inset-x-0 bottom-3 hidden translate-y-1 items-center justify-center gap-2 opacity-0 transition-[opacity,transform] duration-200 focus-within:translate-y-0 focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 md:flex">
           <button
             type="button"
             onClick={handleAdd}
             disabled={!edition || addToCart.isPending}
             aria-label={`Adicionar ${nft.title} ao carrinho`}
-            className="grid size-8 place-items-center rounded-sm bg-ink/90 hover:bg-surface-raised disabled:opacity-40"
+            className="grid size-8 place-items-center rounded-sm bg-ink/90 transition-colors hover:bg-surface-raised active:scale-95 disabled:opacity-40"
           >
             <img src={cartIcon} alt="" className="size-4" />
           </button>
@@ -104,7 +107,7 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
             aria-label={isFavorite ? `Remover ${nft.title} dos favoritos` : `Favoritar ${nft.title}`}
             className="grid size-8 place-items-center rounded-sm bg-ink/90 hover:bg-surface-raised"
           >
-            <img src={isFavorite ? heartLight : heartOutline} alt="" className="size-4" />
+            <img src={isFavorite ? heartLight : heartOutline} alt="" className={cn('size-4', isFavorite && 'animate-heart-pop')} />
           </button>
           <Link
             {...detailLink}

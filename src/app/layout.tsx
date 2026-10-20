@@ -1,8 +1,9 @@
-import { Link, Outlet, useLocation } from '@tanstack/react-router'
+import { Link, Outlet, useLocation, useMatches } from '@tanstack/react-router'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { Footer } from '@/components/layout/footer'
 import { Header } from '@/components/layout/header'
 import { AuthDialog } from '@/features/auth/auth-dialog'
+import { RequireAuth } from '@/features/auth/require-auth'
 
 const marketSections = ['/mercado', '/nft', '/carrinho', '/pagamento']
 // No mobile estas telas ocupam a tela inteira, sem rodapé nem barra de abas.
@@ -53,4 +54,17 @@ export function NotFoundPage() {
 
 export function RouteFallback() {
   return <div role="status" aria-label="Carregando página" className="min-h-[70dvh]" />
+}
+
+// Layout das rotas privadas: o texto do aviso de login vem do staticData da rota aberta.
+export function PrivateLayout() {
+  const auth = useMatches({ select: (matches) => matches.findLast((match) => match.staticData.auth)?.staticData.auth })
+  return (
+    <RequireAuth
+      title={auth?.title ?? 'Entre para continuar'}
+      description={auth?.description ?? 'Esta área fica disponível depois do login.'}
+    >
+      <Outlet />
+    </RequireAuth>
+  )
 }

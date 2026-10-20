@@ -30,7 +30,7 @@ export function ProviderChoice({ value, onChange, variant }: ProviderChoiceProps
               value={type}
               checked={selected}
               onChange={() => onChange(type)}
-              className={cn('size-4 accent-primary', cards && 'order-last ml-auto')}
+              className={cn('radio-control', cards && 'order-last ml-auto')}
             />
             {cards && (
               <span aria-hidden="true" className="grid size-10 place-items-center rounded-full border border-line-soft bg-surface-raised text-sm font-bold text-text-accent">

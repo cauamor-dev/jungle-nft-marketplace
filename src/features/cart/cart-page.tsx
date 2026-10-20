@@ -208,10 +208,10 @@ function DesktopCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
                 <thead>
                   <tr className="text-[15px] font-medium leading-4">
                     <th scope="col" className="font-medium">NFTs</th>
-                    <th scope="col" className="w-[90px] font-medium">Preço</th>
-                    <th scope="col" className="w-[110px] font-medium">Edições</th>
-                    <th scope="col" className="w-[87px] font-medium">Total</th>
-                    <th scope="col" className="w-9"><span className="sr-only">Remover</span></th>
+                    <th scope="col" className="w-[112px] font-medium xl:w-[138px]">Preço</th>
+                    <th scope="col" className="w-[112px] font-medium xl:w-[136px]">Edições</th>
+                    <th scope="col" className="w-[120px] font-medium xl:w-[145px]">Total</th>
+                    <th scope="col" className="w-[52px]"><span className="sr-only">Remover</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -272,7 +272,7 @@ function DesktopRow({ item, actions }: { item: CartItem; actions: Actions }) {
           </div>
         </div>
       </td>
-      <td className="font-bold text-text-secondary">{displayEth(item.unitPriceEth)} ETH</td>
+      <td className="whitespace-nowrap font-bold text-text-secondary">{displayEth(item.unitPriceEth)} ETH</td>
       <td>
         <QuantityStepper
           value={item.quantity}
@@ -282,10 +282,10 @@ function DesktopRow({ item, actions }: { item: CartItem; actions: Actions }) {
           className="gap-3 [&_button]:h-[30px] [&_button]:w-[20px] [&_img]:size-4 [&_output]:text-[17px]"
         />
       </td>
-      <td className="font-bold text-text-accent" data-testid="line-total">
+      <td className="whitespace-nowrap font-bold text-text-accent" data-testid="line-total">
         {displayEth(item.lineTotalEth)} ETH
       </td>
-      <td className="pr-6">
+      <td>
         <button type="button" onClick={() => actions.remove(item)} aria-label={`Remover ${item.title}`} className="grid size-8 place-items-center rounded-md hover:bg-primary/15">
           <img src={trashIcon} alt="" className="size-5" />
         </button>

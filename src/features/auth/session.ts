@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import * as api from '@/api/endpoints'
 import { getGuestId, clearSessionToken, getSessionToken, setSessionToken } from '@/api/session-storage'
 import { guestOwner, queryKeys, userOwner } from '@/api/query-keys'
@@ -7,24 +7,27 @@ import { isApiError } from '@/domain/errors'
 import { clearAttempt } from '@/features/checkout/checkout-attempt'
 import { clearDrafts } from '@/features/checkout/checkout-draft'
 
-export function useSession() {
-  return useQuery({
-    queryKey: queryKeys.session,
-    queryFn: async ({ signal }): Promise<Session | null> => {
-      if (!getSessionToken()) return null
-      try {
-        return await api.fetchSession({ signal })
-      } catch (error) {
-        if (isApiError(error) && error.status === 401) {
-          clearSessionToken()
-          return null
-        }
-        throw error
+// Compartilhado entre o hook e o beforeLoad das rotas privadas.
+export const sessionQueryOptions = queryOptions({
+  queryKey: queryKeys.session,
+  queryFn: async ({ signal }): Promise<Session | null> => {
+    if (!getSessionToken()) return null
+    try {
+      return await api.fetchSession({ signal })
+    } catch (error) {
+      if (isApiError(error) && error.status === 401) {
+        clearSessionToken()
+        return null
       }
-    },
-    retry: false,
-    staleTime: 60_000,
-  })
+      throw error
+    }
+  },
+  retry: false,
+  staleTime: 60_000,
+})
+
+export function useSession() {
+  return useQuery(sessionQueryOptions)
 }
 
 export function useOwner() {

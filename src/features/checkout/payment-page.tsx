@@ -16,7 +16,6 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { isApiError, isUnknownOutcome } from '@/domain/errors'
 import { useConnectWallet, useWallets } from '@/features/account/queries'
-import { RequireAuth } from '@/features/auth/require-auth'
 import { useOwner, useSession } from '@/features/auth/session'
 import { useCart } from '@/features/cart/queries'
 import { apiFieldErrors, validate, type FieldErrors } from '@/lib/form'
@@ -31,15 +30,8 @@ import { submitOrder } from './place-order'
 import { WalletPicker } from './wallet-picker'
 import { ProviderChoice } from './provider-choice'
 
+// A sessão é garantida pelo layout privado do router (ver app/router.tsx).
 export function PaymentPage() {
-  return (
-    <RequireAuth title="Entre para finalizar a compra" description="O pagamento fica disponível para colecionadores com sessão ativa. Seu carrinho continua guardado.">
-      <PaymentGate />
-    </RequireAuth>
-  )
-}
-
-function PaymentGate() {
   const { data: session } = useSession()
   const wallets = useWallets()
   const cart = useCart()
@@ -285,7 +277,7 @@ function PaymentForm({ user, wallets, cart }: PaymentFormProps) {
           type="checkbox"
           checked={useOther}
           onChange={(event) => setUseOther(event.target.checked)}
-          className="size-[15px] accent-primary"
+          className="check-control"
         />
         Usar outra carteira?
       </label>

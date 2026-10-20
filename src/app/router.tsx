@@ -1,8 +1,10 @@
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import type { QueryClient } from '@tanstack/react-query'
+import { createRootRouteWithContext, createRoute, createRouter } from '@tanstack/react-router'
 import { lazy } from 'react'
+import { sessionQueryOptions } from '@/features/auth/session'
 import { CatalogPage } from '@/features/catalog/catalog-page'
 import { parseSearch, stringifySearch, validateCatalogSearch } from '@/features/catalog/search'
-import { NotFoundPage, RootLayout, RouteFallback } from './layout'
+import { NotFoundPage, PrivateLayout, RootLayout, RouteFallback } from './layout'
 
 // Só catálogo e layout entram no bundle inicial; as demais telas são carregadas na primeira visita.
 const ActivityPage = lazy(() => import('@/features/account/activity-page').then((m) => ({ default: m.ActivityPage })))
@@ -15,7 +17,21 @@ const NftDetailPage = lazy(() => import('@/features/nft/nft-detail-page').then((
 const OrderReceiptPage = lazy(() => import('@/features/orders/order-receipt-page').then((m) => ({ default: m.OrderReceiptPage })))
 const MockPanelPage = lazy(() => import('@/features/dev/mock-panel-page').then((m) => ({ default: m.MockPanelPage })))
 
-const rootRoute = createRootRoute({ component: RootLayout, notFoundComponent: NotFoundPage })
+type RouterContext = { queryClient: QueryClient }
+
+const rootRoute = createRootRouteWithContext<RouterContext>()({ component: RootLayout, notFoundComponent: NotFoundPage })
+
+// Rotas privadas ficam sob este layout sem caminho: a sessão é resolvida antes de renderizar e,
+// sem login, o guard abre o diálogo no próprio endereço para o usuário voltar ao mesmo ponto.
+const privateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'privado',
+  beforeLoad: async ({ context }) => {
+    // Uma falha de rede aqui não deve quebrar a navegação: o guard mostra o estado e tenta de novo.
+    await context.queryClient.ensureQueryData(sessionQueryOptions).catch(() => null)
+  },
+  component: PrivateLayout,
+})
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -55,38 +71,55 @@ const nftRoute = createRoute({
 })
 
 const cartRoute = createRoute({ getParentRoute: () => rootRoute, path: '/carrinho', component: CartPage })
-const paymentRoute = createRoute({ getParentRoute: () => rootRoute, path: '/pagamento', component: PaymentPage })
+const paymentRoute = createRoute({
+  getParentRoute: () => privateRoute,
+  path: '/pagamento',
+  staticData: {
+    auth: {
+      title: 'Entre para finalizar a compra',
+      description: 'O pagamento fica disponível para colecionadores com sessão ativa. Seu carrinho continua guardado.',
+    },
+  },
+  component: PaymentPage,
+})
 
 const orderRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => privateRoute,
   path: '/pedido/$orderId',
+  staticData: {
+    auth: { title: 'Entre para ver seu pedido', description: 'Os pedidos ficam disponíveis apenas para a conta que os criou.' },
+  },
   component: function OrderRoute() {
     const { orderId } = orderRoute.useParams()
     return <OrderReceiptPage orderId={orderId} />
   },
 })
 
-const profileRoute = createRoute({ getParentRoute: () => rootRoute, path: '/perfil', component: ProfilePage })
-const walletsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/perfil/carteiras', component: WalletsPage })
-const activityRoute = createRoute({ getParentRoute: () => rootRoute, path: '/perfil/atividade', component: ActivityPage })
-const favoritesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/perfil/favoritos', component: FavoritesPage })
+const accountAuth = {
+  auth: {
+    title: 'Entre para acessar sua conta',
+    description: 'Perfil, carteiras, atividade e favoritos ficam disponíveis depois do login.',
+  },
+}
+
+const profileRoute = createRoute({ getParentRoute: () => privateRoute, path: '/perfil', staticData: accountAuth, component: ProfilePage })
+const walletsRoute = createRoute({ getParentRoute: () => privateRoute, path: '/perfil/carteiras', staticData: accountAuth, component: WalletsPage })
+const activityRoute = createRoute({ getParentRoute: () => privateRoute, path: '/perfil/atividade', staticData: accountAuth, component: ActivityPage })
+const favoritesRoute = createRoute({ getParentRoute: () => privateRoute, path: '/perfil/favoritos', staticData: accountAuth, component: FavoritesPage })
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
   marketRoute,
   nftRoute,
   cartRoute,
-  paymentRoute,
-  orderRoute,
-  profileRoute,
-  walletsRoute,
-  activityRoute,
-  favoritesRoute,
+  privateRoute.addChildren([paymentRoute, orderRoute, profileRoute, walletsRoute, activityRoute, favoritesRoute]),
   mocksRoute,
 ])
 
 export const router = createRouter({
   routeTree,
+  // O queryClient real é passado pelo RouterProvider (ver mount.tsx)
+  context: { queryClient: undefined! },
   parseSearch,
   stringifySearch,
   defaultPreload: 'intent',
@@ -98,5 +131,8 @@ export const router = createRouter({
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
+  }
+  interface StaticDataRouteOption {
+    auth?: { title: string; description: string }
   }
 }

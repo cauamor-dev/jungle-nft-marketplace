@@ -90,7 +90,7 @@ function WalletSection({ kind, wallet, primary }: SectionProps) {
           {!isPrimary && !wallet && (
             <div className="flex items-center gap-3 text-sm">
               <label className="flex cursor-pointer items-center gap-2">
-                <input type="checkbox" checked={copyPrimary} onChange={(event) => setCopyPrimary(event.target.checked)} disabled={!primary} className="size-[15px] accent-primary" />
+                <input type="checkbox" checked={copyPrimary} onChange={(event) => setCopyPrimary(event.target.checked)} disabled={!primary} className="check-control" />
                 Igual à carteira principal
               </label>
               <button type="button" onClick={() => setAdding(true)} disabled={blockedBySecondaryRule} className="font-bold text-text-accent disabled:opacity-50">
