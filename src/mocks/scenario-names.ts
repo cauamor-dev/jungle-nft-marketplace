@@ -1,0 +1,29 @@
+export const scenarioNames = [
+  'happy-path',
+  'empty-results',
+  'slow-network',
+  'variable-latency',
+  'out-of-order-results',
+  'offline',
+  'timeout',
+  'http-4xx',
+  'http-5xx',
+  'expired-session',
+  'registration-conflict',
+  'wallet-refused',
+  'expired-coupon',
+  'price-changed',
+  'edition-sold-out',
+  'post-create-order-timeout',
+  'payment-rejected',
+  'payment-confirmed',
+  'duplicate-events',
+  'stale-events',
+  'disconnect-pending-order',
+  'reconnect-pending-order',
+] as const
+
+export type ScenarioName = (typeof scenarioNames)[number]
+
+// Evento de janela disparado pelo mock quando o cenário muda; a interface só conhece o nome.
+export const scenarioEvent = 'jg:mock-scenario'
