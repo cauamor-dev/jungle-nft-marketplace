@@ -4,6 +4,28 @@ Revisão feita em 20/10/2026 sobre a branch `cursor/fundacao-tecnica-145e` (comm
 
 Status: **verificado** (executado e aprovado), **falhou** (executado e reprovado), **pendente** (ainda não feito), **não testável** (depende de algo fora deste ambiente).
 
+## Simulação completa por usuário (20/10/2026, noite)
+
+Bug do teste manual: conta nova criada, nome de usuário trocado para "Cauã.Moreira", e o perfil continuava o antigo.
+
+| Item | Causa conferida | O que foi feito | Prova |
+| --- | --- | --- | --- |
+| Perfil não salvava | A conta nova nascia sem nome ENS e sem apelido da carteira, que o formulário do perfil exige; a validação falhava no cliente sem mensagem perto do botão e nenhuma requisição saía. O nome de usuário também recusava acento no perfil, mas o cadastro aceitava regras diferentes | Cadastro preenche ENS (derivado do nome de usuário) e apelido "Principal"; contas já gravadas são migradas ao carregar o banco do mock; regra única de nome de usuário (aceita letras acentuadas) no cadastro, no perfil e no mock; resumo "Nada foi salvo" e foco no primeiro campo inválido | `auth.test.ts` (conta nova salva "Cauã.Moreira"; migração v1 → v2); `user-journey.spec.ts` |
+| Cadastro, login, logout, sessão | Já funcionavam; faltava teste de ponta a ponta com conta nova | Nenhuma mudança de código | `user-journey.spec.ts` (desktop e mobile) |
+| Histórico, carteiras, favoritos e carrinho por usuário | Já separados por `userId` no mock e persistidos no localStorage | Nenhuma mudança de código | `user-journey.spec.ts`: a conta nova vê o próprio pedido, favorito, carteira digitada no pagamento e carrinho depois de logout e novo login; a demo2 não vê nada disso e recebe 403 no pedido da outra conta |
+| Google/Facebook | Botões já mostravam aviso, sem teste | Texto mais claro ("não faz parte desta demonstração... entre com e-mail e senha ou crie uma conta"). Não simulei login social com sucesso: o README do desafio pede que ações fora do escopo não pareçam funcionar | `auth.spec.ts`: aviso visível, diálogo continua aberto e nenhuma chamada de login sai |
+| Teste com nome enganoso | "carteira nova digitada no pagamento" não digitava carteira | Renomeado para o que ele testa; a carteira digitada é coberta pela jornada nova | `account.spec.ts` |
+
+Recibos são cópias imutáveis: editar o perfil não muda pedidos antigos, só os próximos.
+
+| Verificação | Resultado |
+| --- | --- |
+| `pnpm typecheck`, `pnpm lint`, `pnpm build` | sem erros |
+| `pnpm test` | 7 arquivos, 67 testes passando |
+| `pnpm test:e2e` (Linux, Chromium 141) | 188 passaram, 0 pulados, 0 falhas, 5,9 min; baselines visuais inalteradas |
+
+Clone limpo e Docker não foram repetidos nesta rodada.
+
 ## Revisão independente de 20/10/2026 (noite)
 
 Commits locais na branch `claude/correcoes-auditoria-teo`; sem push, PR ou deploy.

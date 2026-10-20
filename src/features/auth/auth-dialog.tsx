@@ -10,7 +10,7 @@ import { isApiError } from '@/domain/errors'
 import { apiFieldErrors, passwordMessage, passwordRule, readForm, validate, type FieldErrors } from '@/lib/form'
 import { cn } from '@/lib/cn'
 import { useIsDesktop } from '@/lib/use-media-query'
-import type { LoginResponse } from '@/api/contracts'
+import { usernameSchema, type LoginResponse } from '@/api/contracts'
 import * as api from '@/api/endpoints'
 import { useAuthDialog, type AuthMode } from './auth-context'
 import { useLogin } from './session'
@@ -22,12 +22,7 @@ const loginSchema = z.object({
 
 const registerSchema = z
   .object({
-    username: z
-      .string()
-      .trim()
-      .min(3, 'Use ao menos 3 caracteres')
-      .max(30, 'Use até 30 caracteres')
-      .regex(/^[A-Za-z0-9._-]+$/, 'Use letras, números, ponto, hífen ou sublinhado'),
+    username: usernameSchema,
     email: z.email('Informe um e-mail válido'),
     password: z.string().regex(passwordRule, passwordMessage),
     confirmPassword: z.string(),
@@ -297,7 +292,7 @@ function SocialBlock() {
         <SocialButton icon={googleLogo} label="Continuar com Google" onClick={unavailable} />
         <SocialButton icon={facebookLogo} label="Continuar com Facebook" onClick={unavailable} />
         <p role="status" className="text-center text-xs text-text-secondary empty:hidden">
-          {notice ? 'O acesso social não está disponível nesta demonstração. Use e-mail e senha.' : ''}
+          {notice ? 'Login com Google e Facebook não faz parte desta demonstração. Entre com e-mail e senha ou crie uma conta.' : ''}
         </p>
       </div>
     </div>

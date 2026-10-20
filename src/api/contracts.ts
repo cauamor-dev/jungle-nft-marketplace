@@ -223,6 +223,15 @@ export const walletTypeSchema = z.enum(walletTypes)
 export type WalletType = z.infer<typeof walletTypeSchema>
 
 export const evmAddressPattern = /^0x[0-9a-fA-F]{40}$/
+
+// Mesma regra no cadastro e no perfil (cliente e mock). Aceita letras acentuadas, como "Cauã.Moreira".
+export const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, 'Use ao menos 3 caracteres')
+  .max(30, 'Use até 30 caracteres')
+  .regex(/^[\p{L}\p{N}._-]+$/u, 'Use letras, números, ponto, hífen ou sublinhado')
+
 export const referralCodePattern = /^[A-Za-z0-9-]{4,20}$/
 
 export const collectorSchema = z.object({

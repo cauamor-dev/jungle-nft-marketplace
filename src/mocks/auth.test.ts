@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   changePassword,
   connectWallet,
@@ -16,7 +16,7 @@ import {
   uploadAvatar,
 } from '@/api/endpoints'
 import type { WalletInput } from '@/api/contracts'
-import { clearSessionToken } from '@/api/session-storage'
+import { clearSessionToken, setSessionToken } from '@/api/session-storage'
 import { getDb } from '@/mocks/db'
 import { demoScenario, DEMO_PASSWORD, loginAs } from '@/test/helpers'
 
@@ -119,6 +119,30 @@ describe('perfil', () => {
       fieldErrors: { name: expect.any(String), email: expect.any(String) },
     })
     expect((await fetchSession()).user.email).toBe('marina@example.test')
+  })
+
+  it('conta nova já nasce com ENS e apelido válidos e salva o perfil com acento no nome de usuário', async () => {
+    await register({ username: 'marina', email: 'nova@example.test', password: 'Senha123' })
+    const { token, session: { user } } = await login({ email: 'nova@example.test', password: 'Senha123' })
+    setSessionToken(token)
+    expect(user).toMatchObject({ ensName: 'marina', walletNickname: 'Principal' })
+    const updated = await updateProfile({ name: 'Cauã Moreira', username: 'Cauã.Moreira', email: user.email, ensName: user.ensName, ensSuffix: user.ensSuffix, walletNickname: user.walletNickname })
+    expect(updated).toMatchObject({ id: user.id, name: 'Cauã Moreira', username: 'Cauã.Moreira' })
+    expect((await fetchSession()).user.username).toBe('Cauã.Moreira')
+  })
+
+  it('dados gravados na versão 1 são migrados e contas sem ENS ou apelido ganham valores padrão', async () => {
+    const { scenario: _scenario, ...data } = await getDb()
+    const legacy = structuredClone(data)
+    legacy.schemaVersion = 1
+    Object.assign(legacy.users[0], { username: 'João Silva', ensName: '', walletNickname: '' })
+    localStorage.setItem('jg-mock-db', JSON.stringify(legacy))
+    vi.resetModules()
+    const fresh = await import('@/mocks/db')
+    const migrated = await fresh.getDb()
+    expect(migrated.schemaVersion).toBe(2)
+    expect(migrated.users[0]).toMatchObject({ ensName: 'joao-silva', walletNickname: 'Principal' })
+    expect(migrated.orders).toHaveLength(data.orders.length)
   })
 
   it('troca a senha exigindo a atual e aplicando a regra', async () => {

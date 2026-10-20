@@ -5,6 +5,7 @@ import {
   evmAddressPattern,
   networkSchema,
   referralCodePattern,
+  usernameSchema,
   walletTypeSchema,
 } from '@/api/contracts'
 import { nextId, persist, type DbState, type WalletRecord } from '../db'
@@ -18,7 +19,7 @@ const AVATAR_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, 'Informe o nome de exibição'),
-  username: z.string().trim().min(3, 'Use ao menos 3 caracteres').max(30, 'Use até 30 caracteres'),
+  username: usernameSchema,
   email: z.email('E-mail inválido'),
   ensName: z.string().trim().min(2, 'Informe o nome ENS').max(60, 'Use até 60 caracteres'),
   ensSuffix: ensSuffixSchema,

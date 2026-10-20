@@ -22,6 +22,23 @@ test.describe('autenticação', () => {
     await expect(dialog).toBeVisible()
   })
 
+  test('Google, Facebook e recuperação de senha avisam que estão fora da demonstração, sem login e sem requisição', async ({ page }) => {
+    const authCalls: string[] = []
+    page.on('request', (request) => {
+      if (request.url().includes('/api/auth/')) authCalls.push(request.url())
+    })
+    await page.goto('/perfil')
+    const dialog = page.getByRole('dialog')
+    await dialog.getByRole('button', { name: 'Continuar com Google' }).click()
+    await expect(dialog.getByRole('status').filter({ hasText: 'Login com Google e Facebook não faz parte desta demonstração' })).toBeVisible()
+    await dialog.getByRole('button', { name: 'Continuar com Facebook' }).click()
+    await dialog.getByRole('button', { name: 'Esqueceu a senha?' }).click()
+    await expect(dialog.getByText('A recuperação de senha não faz parte desta demonstração.')).toBeVisible()
+    await expect(dialog).toBeVisible()
+    await expect(page.getByTestId('profile-form')).toHaveCount(0)
+    expect(authCalls.filter((url) => !url.includes('/api/auth/session'))).toEqual([])
+  })
+
   test('cadastro valida a senha, rejeita e-mail repetido e entra após criar a conta', async ({ page }) => {
     await page.goto('/perfil')
     const dialog = page.getByRole('dialog')

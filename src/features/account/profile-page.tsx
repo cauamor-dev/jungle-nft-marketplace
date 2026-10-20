@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { z } from 'zod'
-import { ensSuffixSchema, ensSuffixes, type User } from '@/api/contracts'
+import { ensSuffixSchema, ensSuffixes, usernameSchema, type User } from '@/api/contracts'
 import imageIcon from '@/assets/icons/account-image.svg'
 import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
@@ -16,7 +16,7 @@ import { useChangePassword, useRemoveAvatar, useUpdateProfile, useUploadAvatar }
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, 'Informe o nome de exibição'),
-  username: z.string().trim().min(3, 'Use ao menos 3 caracteres').max(30, 'Use até 30 caracteres'),
+  username: usernameSchema,
   email: z.email('Informe um e-mail válido'),
   ensName: z.string().trim().min(2, 'Informe o nome ENS').max(60, 'Use até 60 caracteres'),
   ensSuffix: ensSuffixSchema,
@@ -64,7 +64,13 @@ function ProfileForm({ user }: { user: User }) {
     const wantsPassword = Boolean(values.currentPassword || values.newPassword || values.confirmPassword)
     const password = wantsPassword ? validate(passwordSchema, values) : null
     const found = { ...('errors' in profile ? profile.errors : {}), ...(password && 'errors' in password ? password.errors : {}) }
-    if (Object.keys(found).length > 0) return setErrors(found)
+    if (Object.keys(found).length > 0) {
+      // Nunca falhar em silêncio: aviso geral e foco no primeiro campo com problema
+      setErrors(found)
+      setFormError('Nada foi salvo. Corrija os campos destacados.')
+      form.querySelector<HTMLElement>(`[name="${Object.keys(found)[0]}"]`)?.focus()
+      return
+    }
     if (!('data' in profile)) return
 
     setErrors({})

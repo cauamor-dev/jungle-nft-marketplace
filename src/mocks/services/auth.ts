@@ -2,6 +2,7 @@ import type { User } from '@/api/contracts'
 import { persist, type DbState, type SessionRecord, type UserRecord } from '../db'
 import { MockHttpError } from '../http-error'
 import { randomId } from '@/lib/random-id'
+export { DEFAULT_WALLET_NICKNAME, defaultEnsName } from './user-defaults'
 
 export const SESSION_TTL_MS = 2 * 60 * 60 * 1000
 

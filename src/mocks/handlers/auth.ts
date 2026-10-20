@@ -1,14 +1,24 @@
 import { HttpResponse } from 'msw'
 import { z } from 'zod'
+import { usernameSchema } from '@/api/contracts'
 import { nextId, persist } from '../db'
 import { MockHttpError } from '../http-error'
 import { hashPassword, verifyPassword } from '../services/passwords'
-import { createSession, readBearerToken, readGuestId, requireSession, toUser, validatePassword } from '../services/auth'
+import {
+  createSession,
+  DEFAULT_WALLET_NICKNAME,
+  defaultEnsName,
+  readBearerToken,
+  readGuestId,
+  requireSession,
+  toUser,
+  validatePassword,
+} from '../services/auth'
 import { findCart, getOrCreateCart, mergeGuestCart } from '../services/cart'
 import { parseBody, readJson, route } from './route'
 
 const registerSchema = z.object({
-  username: z.string().trim().min(3, 'Use ao menos 3 caracteres').max(30, 'Use até 30 caracteres').regex(/^[A-Za-z0-9._-]+$/, 'Use letras, números, ponto, hífen ou sublinhado'),
+  username: usernameSchema,
   email: z.email('E-mail inválido'),
   password: z.string(),
 })
@@ -44,9 +54,9 @@ export const authHandlers = [
       email,
       name: input.username,
       username: input.username,
-      ensName: '',
+      ensName: defaultEnsName(input.username),
       ensSuffix: 'eth' as const,
-      walletNickname: '',
+      walletNickname: DEFAULT_WALLET_NICKNAME,
       avatarUrl: null,
       passwordSalt: salt,
       passwordHash: hash,

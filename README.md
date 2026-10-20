@@ -73,6 +73,8 @@ Relatório HTML em `playwright-report/` e traces das falhas em `test-results/`.
 | Marina Duarte | `demo1@example.test` | `Demo@1234` |
 | Rafael Torres | `demo2@example.test` | `Demo@1234` |
 
+Também dá para criar uma conta nova no diálogo de cadastro: ela vira a sessão atual e fica salva no navegador (localStorage) com perfil, carteiras, favoritos, carrinho e pedidos próprios, separados das outras contas. Login com Google e Facebook e recuperação de senha não fazem parte da demonstração; os botões dizem isso ao serem clicados.
+
 As senhas ficam no store do mock apenas como hash PBKDF2 com salt. Isso serve à simulação e não torna o mock um backend seguro.
 
 Cupons: `JUNGLE10` (10%), `BEMVINDO` (0,01 ETH), `EXPIRADO20` (expirado).

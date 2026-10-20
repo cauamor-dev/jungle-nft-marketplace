@@ -130,7 +130,7 @@ test.describe('carteiras', () => {
     await expect(secondary.getByText('Você já cadastrou este endereço.')).toBeVisible()
   })
 
-  test('carteira nova digitada no pagamento é cadastrada e usada no pedido', async ({ page }) => {
+  test('pagamento com carteira já cadastrada abre pronto para confirmar e sem scroll lateral', async ({ page }) => {
     await goToPaymentLoggedIn(page)
     await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeEnabled()
     await expectNoHorizontalOverflow(page)

@@ -8,6 +8,7 @@ import type {
   Wallet,
 } from '@/api/contracts'
 import { buildSeed } from './fixtures'
+import { DEFAULT_WALLET_NICKNAME, defaultEnsName } from './services/user-defaults'
 import { scenarioEvent } from './scenario-names'
 
 export type UserRecord = {
@@ -148,8 +149,13 @@ function parseData(): SeedData | null {
     // A versão 1 gravava o cenário junto dos dados; ele é descartado na migração.
     const data = JSON.parse(raw) as Partial<DbState> & SeedData
     delete data.scenario
-    if (data.schemaVersion === 1) return { ...data, schemaVersion: SCHEMA_VERSION }
-    return data.schemaVersion === SCHEMA_VERSION ? data : null
+    if (data.schemaVersion !== 1 && data.schemaVersion !== SCHEMA_VERSION) return null
+    // Contas criadas antes desta correção ficaram sem nome ENS e apelido, que o perfil exige
+    for (const user of data.users) {
+      if (!user.ensName) user.ensName = defaultEnsName(user.username)
+      if (!user.walletNickname) user.walletNickname = DEFAULT_WALLET_NICKNAME
+    }
+    return { ...data, schemaVersion: SCHEMA_VERSION }
   } catch {
     return null
   }

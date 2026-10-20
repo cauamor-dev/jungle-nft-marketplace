@@ -9,9 +9,10 @@ Branch de trabalho: `claude/correcoes-auditoria-teo`, criada a partir de `claude
 | --- | --- |
 | `pnpm install --frozen-lockfile` em clone novo | ok |
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | sem erros |
-| `pnpm test` (Vitest) | 7 arquivos, 65 testes passando |
+| `pnpm test` (Vitest) | 7 arquivos, 67 testes passando |
 | `pnpm test:e2e` antes das mudanças | 154 passaram, 3 pulados, 7 falharam (só regressão visual, por diferença de Chromium) |
 | `pnpm test:e2e` final (revisão independente, 20/10 à noite) | 182 passaram, 0 pulados, 0 falhas; o mesmo resultado num clone limpo e na imagem oficial do Playwright |
+| `pnpm test:e2e` depois das contas por usuário (20/10, noite) | 188 passaram, 0 pulados, 0 falhas, 5,9 min (só no repositório; clone limpo e Docker não repetidos nesta rodada) |
 | `pnpm lighthouse` (3 execuções, mediana) | Todas as metas atingidas; relatórios em [lighthouse/](lighthouse/) |
 
 Lighthouse 13.5.0 contra `pnpm preview` (build de produção com mocks ligados, cenário padrão). Medianas de Performance / Accessibility / Best Practices / SEO e métricas medianas. Metas: 90 / 95 / 95 / 90.
@@ -78,6 +79,7 @@ Mapeamento E01–E12 do enunciado para os testes (nomes completos nos arquivos).
 | E01 busca, filtros, ordenação, paginação na URL, histórico e reset de página | done | `e2e/catalog.spec.ts` (catálogo) |
 | E02 detalhe direto, inexistente, esgotado | done | `e2e/catalog.spec.ts` (detalhe) |
 | E03 cadastro, login, expiração, logout, troca de usuário, merge de carrinho | done | `e2e/auth.spec.ts` |
+| E03b conta nova: cadastro, perfil com acento, favorito, compra com carteira digitada, histórico, logout e novo login; isolamento entre duas contas | done | `e2e/user-journey.spec.ts` |
 | E04 favoritos com falha e rollback | done | `e2e/account.spec.ts` |
 | E05 carrinho, cupom, persistência, estoque, aviso de merge | done | `e2e/checkout.spec.ts` (carrinho), `e2e/auth.spec.ts` |
 | E06 compra completa até o recibo | done | `e2e/checkout.spec.ts` |
