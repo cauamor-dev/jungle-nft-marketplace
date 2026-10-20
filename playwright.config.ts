@@ -13,6 +13,9 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     serviceWorkers: 'allow',
+    // Hinting e antialiasing subpixel viriam do fontconfig de cada sistema e mudariam a largura dos glifos (e a
+    // quebra de linha) entre máquinas. Fixados aqui, a imagem oficial do Playwright e outro Linux renderizam igual.
+    launchOptions: { args: ['--font-render-hinting=none', '--disable-lcd-text'] },
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },

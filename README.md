@@ -41,12 +41,22 @@ pnpm test:e2e                           # suíte Playwright completa
 | `pnpm test:e2e` | Playwright em Chromium, viewports desktop (1440) e mobile (390). Compila e sobe o preview na porta 4173 sozinho (pare qualquer `pnpm preview` antes) |
 | `pnpm lighthouse` | Lighthouse 3x por página e perfil (início e detalhe, mobile e desktop), mediana e metas. Precisa do preview em `http://localhost:4173`; grava `lighthouse/summary.json` e o relatório HTML/JSON da execução mediana de cada combinação (as demais ficam em `lighthouse/runs/`, fora do git) |
 
-O Playwright está fixado em 1.56.1 no lockfile, então `pnpm exec playwright install chromium` baixa sempre o mesmo Chromium (141) com que as baselines visuais foram geradas, e os 8 testes de regressão visual rodam e passam num checkout limpo em Linux. Nenhum teste é pulado. Em macOS ou Windows a rasterização de texto é diferente; rode a suíte na imagem oficial do Playwright (comando não executado neste ambiente, que não tem Docker):
+### Regressão visual
+
+As 8 baselines (início, detalhe, carrinho e pagamento, desktop e mobile) são geradas na imagem oficial do Playwright, que é a forma de referência de rodar a regressão:
 
 ```bash
 docker run --rm --ipc=host -v "$PWD":/work -v /work/node_modules -w /work mcr.microsoft.com/playwright:v1.56.1-noble \
-  bash -lc "corepack enable && pnpm install --frozen-lockfile && pnpm test:e2e"
+  bash -lc "corepack enable && pnpm install --frozen-lockfile && pnpm exec playwright install chromium && pnpm test:e2e"
+# para regerar as baselines depois de uma mudança visual intencional, troque o último comando por:
+#   pnpm test:e2e -g "regressão visual" --update-snapshots=all
 ```
+
+O Playwright está fixado em 1.56.1 (Chromium 141) e o `playwright.config.ts` fixa hinting e antialiasing de fonte (`--font-render-hinting=none`, `--disable-lcd-text`). Sem isso, cada sistema aplicava as próprias configurações de fonte, os glifos mudavam de largura e a quebra de linha mudava (diferenças de 0,5% a 1,7% dos pixels entre a imagem oficial e outro Linux). Com as flags, a imagem oficial e o Linux usado no desenvolvimento geraram as 8 telas idênticas pixel a pixel.
+
+A tolerância é `maxDiffPixelRatio: 0.0005`. Medido: 1 px de padding num único card muda 0,065% a 0,7% dos pixels, e esse teste falha como esperado. Uma tolerância de 2% deixaria passar esse tipo de mudança.
+
+Verificado em: imagem oficial `v1.56.1-noble` (Node 22.20) e um clone limpo em outro Linux (Node 22.22, Chromium 141 do cache do Playwright). Em macOS e Windows a renderização de fonte do sistema é outra; use o comando Docker acima.
 
 Relatório HTML em `playwright-report/` e traces das falhas em `test-results/`.
 

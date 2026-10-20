@@ -215,10 +215,12 @@ test.describe('acessibilidade', () => {
   })
 })
 
-// Baselines geradas em Linux com o Chromium do Playwright fixado no lockfile (1.56.1 -> Chromium 141).
-// Em macOS ou Windows a rasterização de texto é outra: rode pela imagem Docker oficial (ver README).
+// Baselines geradas na imagem oficial mcr.microsoft.com/playwright:v1.56.1-noble (Chromium 141, o do lockfile).
+// Com hinting e antialiasing fixados no playwright.config.ts, outra máquina Linux renderiza pixel a pixel igual.
+// Tolerância medida: 1 px de padding num único card muda de 0,065% (carrinho desktop) a 0,7% (início mobile) dos
+// pixels, então o limite fica em 0,05%. Valores como 2% deixariam esse tipo de mudança passar.
 test.describe('regressão visual', () => {
-  const shot = { animations: 'disabled' as const, maxDiffPixelRatio: 0.005 }
+  const shot = { animations: 'disabled' as const, maxDiffPixelRatio: 0.0005 }
 
   test('início', async ({ page }, info) => {
     await page.goto('/')
