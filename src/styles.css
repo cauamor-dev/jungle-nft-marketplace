@@ -1,0 +1,240 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/roboto-mono';
+
+@theme {
+  --font-sans: 'Roboto Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --color-ink: #140d0a;
+  --color-surface-card: #241612;
+  --color-surface-raised: #2f1d15;
+  --color-surface-dark: #38220f;
+  --color-foreground: #f5f1eb;
+  --color-text-primary: #f7f3ec;
+  --color-text-accent: #e89b55;
+  --color-text-secondary: #cfb28c;
+  --color-text-coral: #f0805f;
+  --color-primary: #d28a4c;
+  --color-secondary: #b39463;
+  --color-line: #3f2319;
+  --color-line-soft: #55321f;
+  --color-elevated: #fbfbfb;
+  --color-success: #00a66c;
+  --color-danger: #f0805f;
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-rise-in: rise-in 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  --animate-heart-pop: heart-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  @keyframes heart-pop {
+    0% {
+      transform: scale(1);
+    }
+    45% {
+      transform: scale(1.3);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    background: var(--color-ink);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--color-ink);
+    overflow-x: hidden;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-text-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-ink);
+  }
+}
+
+@utility skeleton {
+  background-color: var(--color-surface-card);
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgb(245 241 235 / 0.07) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Abertura e fechamento de diálogos: só opacidade e escala, sem mexer no layout */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+}
+
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+@utility dialog-overlay {
+  &[data-state='open'] {
+    animation: fade-in 180ms ease-out;
+  }
+  &[data-state='closed'] {
+    animation: fade-out 140ms ease-in;
+  }
+}
+
+@utility dialog-panel {
+  &[data-state='open'] {
+    animation: dialog-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  &[data-state='closed'] {
+    animation: dialog-out 140ms ease-in;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* Painel que sobe da borda inferior (filtros no mobile) */
+@utility sheet-panel {
+  &[data-state='open'] {
+    animation: sheet-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  &[data-state='closed'] {
+    animation: sheet-out 180ms ease-in;
+  }
+}
+
+/* Área de toque mínima de 44 px sem mudar o desenho: um ::after invisível cresce até 44 px em torno do
+   elemento (que precisa estar posicionado). Nada muda quando o elemento já tem 44 px ou mais. */
+@utility touch-target {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2));
+  }
+}
+
+/* Rádio e checkbox no padrão do Figma: anel cor de cobre, preenchido quando marcado */
+@utility radio-control {
+  appearance: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 9999px;
+  background: transparent;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+  &:checked {
+    background: var(--color-primary);
+    box-shadow: inset 0 0 0 3px var(--color-ink);
+  }
+}
+
+@utility check-control {
+  appearance: none;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 9999px;
+  background: transparent center / 10px no-repeat;
+  transition: background-color 150ms ease;
+  &:checked {
+    background-color: var(--color-primary);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23140d0a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m2.5 6.2 2.3 2.3 4.7-5'/%3E%3C/svg%3E");
+  }
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .skeleton {
+    animation: none;
+    background-image: none;
+  }
+}

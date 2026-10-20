@@ -7,3 +7,6 @@ playwright-report/
 test-results/
 .lighthouseci/
 .DS_Store
+lighthouse/runs/
+lighthouse/*.report.html
+lighthouse/*.report.json
