@@ -59,7 +59,7 @@ export function Hero() {
               </h1>
               <p className="text-xs leading-[18px] text-text-secondary">Descubra NFTs selecionados de criadores do mundo todo.</p>
             </div>
-            <Link to="/mercado" className="flex items-center gap-2 text-xs font-bold leading-[14px] text-text-accent">
+            <Link to="/mercado" className="relative flex w-fit items-center gap-2 text-xs font-bold leading-[14px] text-text-accent touch-target">
               EXPLORAR
               <img src={arrow} alt="" className="h-3 w-2.5 -rotate-90" />
             </Link>

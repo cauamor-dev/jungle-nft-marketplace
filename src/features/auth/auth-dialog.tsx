@@ -141,7 +141,7 @@ function PasswordInput({ id, name, error, ...rest }: { id: string; name: string;
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? 'Ocultar senha' : 'Mostrar senha'}
         aria-pressed={visible}
-        className="absolute right-3 top-1/2 grid size-6 -translate-y-1/2 place-items-center"
+        className="absolute right-3 top-1/2 grid size-6 -translate-y-1/2 touch-target place-items-center"
       >
         <img src={eyeOff} alt="" className="size-[18px]" />
       </button>
@@ -309,7 +309,7 @@ function SocialButton({ icon, label, onClick }: { icon: string; label: string; o
     <button
       type="button"
       onClick={onClick}
-      className="flex h-10 w-full items-center justify-center gap-3 rounded-[5px] border border-line text-[13px] font-medium text-text-secondary hover:bg-surface-raised"
+      className="flex h-11 w-full items-center justify-center gap-3 rounded-[5px] md:h-10 border border-line text-[13px] font-medium text-text-secondary hover:bg-surface-raised"
     >
       <img src={icon} alt="" className="size-5" />
       {label}

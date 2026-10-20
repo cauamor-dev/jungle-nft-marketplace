@@ -75,6 +75,87 @@ for (const width of [320, 375, 390]) {
   })
 }
 
+// Alvos de toque de pelo menos 44 x 44 px no mobile (WCAG 2.5.5). Rádio e checkbox valem pela área do
+// <label>; ficam de fora o link "pular para o conteúdo" (oculto até receber foco) e links dentro de texto corrido.
+test.describe('alvos de toque em 390px', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('todo controle visível tem pelo menos 44 x 44 px', async ({ page }) => {
+    const pages: string[] = ['/', '/mercado', '/nft/nft_12']
+    await page.goto('/')
+    await settle(page)
+    await addFromDetail(page, 'nft_12')
+    pages.push('/carrinho')
+    await signIn(page)
+    pages.push('/pagamento', '/perfil', '/perfil/carteiras')
+
+    const small: string[] = []
+    for (const path of pages) {
+      await page.goto(path)
+      await settle(page)
+      const found = await page.evaluate(() => {
+        const selector = 'a[href], button, input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="tab"], [role="radio"], [role="checkbox"]'
+        const out: string[] = []
+        // Área de toque = caixa do elemento + ::after posicionado (utilitário touch-target), recortada por
+        // qualquer ancestral (ou o próprio elemento) com overflow, que esconderia a parte expandida.
+        const hitArea = (element: HTMLElement) => {
+          const rect = element.getBoundingClientRect()
+          let [left, top, right, bottom] = [rect.left, rect.top, rect.right, rect.bottom]
+          const after = getComputedStyle(element, '::after')
+          if (after.content !== 'none' && after.position === 'absolute') {
+            const own = getComputedStyle(element)
+            const px = (value: string) => parseFloat(value) || 0
+            left = Math.min(left, rect.left + px(own.borderLeftWidth) + px(after.left))
+            right = Math.max(right, rect.right - px(own.borderRightWidth) - px(after.right))
+            top = Math.min(top, rect.top + px(own.borderTopWidth) + px(after.top))
+            bottom = Math.max(bottom, rect.bottom - px(own.borderBottomWidth) - px(after.bottom))
+          }
+          // Só corta em eixo que não rola; dentro de uma faixa rolável o controle é alcançado rolando,
+          // então os ancestrais acima dela também deixam de cortar nesse eixo.
+          let scrollsX = false
+          let scrollsY = false
+          for (let node: HTMLElement | null = element; node; node = node.parentElement) {
+            const style = getComputedStyle(node)
+            const clip = node.getBoundingClientRect()
+            const cuts = (overflow: string) => overflow === 'hidden' || overflow === 'clip'
+            const scrolls = (overflow: string) => overflow === 'auto' || overflow === 'scroll'
+            if (!scrollsX && cuts(style.overflowX)) {
+              left = Math.max(left, clip.left)
+              right = Math.min(right, clip.right)
+            }
+            if (!scrollsY && cuts(style.overflowY)) {
+              top = Math.max(top, clip.top)
+              bottom = Math.min(bottom, clip.bottom)
+            }
+            scrollsX ||= scrolls(style.overflowX)
+            scrollsY ||= scrolls(style.overflowY)
+          }
+          return { width: right - left, height: bottom - top }
+        }
+        for (const element of document.querySelectorAll<HTMLElement>(selector)) {
+          if (element.closest('[aria-hidden="true"], [inert]')) continue
+          if (element.matches('a') && element.closest('p')) continue
+          if (element.getAttribute('href') === '#conteudo') continue
+          const isChoice = element instanceof HTMLInputElement && ['radio', 'checkbox'].includes(element.type)
+          const target = (isChoice && element.labels?.[0]) || element
+          const rect = target.getBoundingClientRect()
+          if (!target.checkVisibility({ visibilityProperty: true, contentVisibilityAuto: true })) continue
+          // Visualmente oculto (sr-only): o link de pular conteúdo e o input de arquivo acionado pelo botão "Alterar"
+          if (rect.width <= 1 && rect.height <= 1) continue
+          const box = hitArea(target)
+          if (box.width < 43.5 || box.height < 43.5) {
+            const name = (element.getAttribute('aria-label') ?? element.textContent ?? element.getAttribute('placeholder') ?? '').trim().slice(0, 30)
+            out.push(`${element.tagName.toLowerCase()} "${name}" ${Math.round(box.width)}x${Math.round(box.height)}`)
+          }
+        }
+        return out
+      })
+      small.push(...found.map((item) => `${path}: ${item}`))
+    }
+    expect(small).toEqual([])
+  })
+})
+
 test.describe('acessibilidade', () => {
   test('o foco do teclado é visível nos controles principais', async ({ page }) => {
     await page.goto('/mercado')

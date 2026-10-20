@@ -152,7 +152,7 @@ function CouponForm({ cart, actions, compact }: { cart: Cart; actions: Actions; 
           <span>
             Cupom <strong>{cart.couponCode}</strong> aplicado
           </span>
-          <button type="button" onClick={actions.removeCoupon} className="text-text-accent underline">
+          <button type="button" onClick={actions.removeCoupon} className="relative text-text-accent underline touch-target">
             Remover
           </button>
         </p>
@@ -167,7 +167,7 @@ function CouponForm({ cart, actions, compact }: { cart: Cart; actions: Actions; 
             aria-invalid={Boolean(message)}
             aria-describedby="coupon-message"
             autoComplete="off"
-            className="min-w-0 flex-1 bg-transparent text-xs placeholder:text-secondary focus-visible:outline-offset-4"
+            className="min-w-0 flex-1 self-stretch bg-transparent text-xs placeholder:text-secondary focus-visible:outline-offset-4"
           />
           <button
             type="submit"
@@ -260,7 +260,7 @@ function DesktopRow({ item, actions }: { item: CartItem; actions: Actions }) {
         <div className="flex items-center gap-4">
           <img src={item.image?.thumbSrc} alt={item.image?.alt ?? ''} width={70} height={70} className="size-[70px] rounded-md object-cover" />
           <div className="flex min-w-0 flex-col gap-1.5 leading-4">
-            <Link to="/nft/$id" params={{ id: item.nftId }} className="truncate font-bold hover:text-text-accent">
+            <Link to="/nft/$id" params={{ id: item.nftId }} title={item.title} className="truncate font-bold hover:text-text-accent">
               {item.title}
             </Link>
             <span className="text-sm text-secondary">Edição {item.editionLabel}</span>
@@ -286,7 +286,7 @@ function DesktopRow({ item, actions }: { item: CartItem; actions: Actions }) {
         {displayEth(item.lineTotalEth)} ETH
       </td>
       <td>
-        <button type="button" onClick={() => actions.remove(item)} aria-label={`Remover ${item.title}`} className="grid size-8 place-items-center rounded-md hover:bg-primary/15">
+        <button type="button" onClick={() => actions.remove(item)} aria-label={`Remover ${item.title}`} className="relative grid size-8 touch-target place-items-center rounded-md hover:bg-primary/15">
           <img src={trashIcon} alt="" className="size-5" />
         </button>
       </td>
@@ -306,7 +306,7 @@ function MobileCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
           type="button"
           onClick={() => (router.history.length > 1 ? router.history.back() : void navigate({ to: '/mercado' }))}
           aria-label="Voltar"
-          className="absolute left-7 top-5 grid size-9 place-items-center rounded-full border border-line-soft bg-surface-card text-text-accent"
+          className="absolute left-7 top-5 grid size-9 touch-target place-items-center rounded-full border border-line-soft bg-surface-card text-text-accent"
         >
           <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m14 6-6 6 6 6" />
@@ -356,12 +356,12 @@ function MobileRow({ item, actions }: { item: CartItem; actions: Actions }) {
       <div className="flex min-w-0 flex-1 flex-col gap-2 p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <Link to="/nft/$id" params={{ id: item.nftId }} className="block truncate font-bold">
-              {item.title}
+            <Link to="/nft/$id" params={{ id: item.nftId }} title={item.title} className="relative block font-bold touch-target">
+              <span className="block truncate">{item.title}</span>
             </Link>
             <p className="text-sm text-secondary">Edição: {item.editionLabel}</p>
           </div>
-          <button type="button" onClick={() => actions.remove(item)} aria-label={`Remover ${item.title}`} className="grid size-6 shrink-0 place-items-center">
+          <button type="button" onClick={() => actions.remove(item)} aria-label={`Remover ${item.title}`} className="relative grid size-6 shrink-0 touch-target place-items-center">
             <img src={trashIcon} alt="" className="size-4" />
           </button>
         </div>

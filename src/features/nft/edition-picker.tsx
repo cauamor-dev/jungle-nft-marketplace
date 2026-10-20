@@ -23,7 +23,7 @@ export function EditionPicker({ editions, selectedId, onSelect }: EditionPickerP
             onClick={() => !soldOut && onSelect(edition)}
             title={soldOut ? 'Edição esgotada' : `${edition.stock} disponíveis`}
             className={cn(
-              'h-7 rounded-full border px-2 text-sm leading-4 md:px-[7px]',
+              'relative h-7 rounded-full border px-2 text-sm leading-4 touch-target md:px-[7px]',
               selected ? 'border-primary font-medium text-text-accent' : 'border-line-soft text-text-secondary hover:border-primary',
               soldOut && 'cursor-not-allowed line-through opacity-50 hover:border-line-soft',
               edition.label === 'ABERTA' && 'px-3',

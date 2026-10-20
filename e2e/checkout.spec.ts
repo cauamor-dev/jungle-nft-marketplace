@@ -120,6 +120,34 @@ test.describe('checkout', () => {
     expect(await ordersOf(page)).toHaveLength(1)
   })
 
+  test('enquanto a cotação carrega o resumo mostra skeleton, o pagamento fica bloqueado e nada se desloca', async ({ page }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as { __shift: number }
+      w.__shift = 0
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as (PerformanceEntry & { value: number; hadRecentInput: boolean })[]) {
+          if (!entry.hadRecentInput) w.__shift += entry.value
+        }
+      }).observe({ type: 'layout-shift', buffered: true })
+    })
+    await goToPaymentLoggedIn(page)
+    await demoScenario(page, 'slow-network', { ms: 2500 })
+    await page.reload()
+
+    const skeleton = page.getByTestId('payment-summary-skeleton')
+    await expect(skeleton).toBeVisible({ timeout: 20_000 })
+    // Só conta os deslocamentos a partir daqui: a troca skeleton -> resumo
+    await page.evaluate(() => ((window as unknown as { __shift: number }).__shift = 0))
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeDisabled()
+
+    await expect(page.getByTestId('payment-summary')).toBeVisible({ timeout: 20_000 })
+    await expect(skeleton).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeEnabled()
+    await page.waitForTimeout(500)
+    const shift = await page.evaluate(() => (window as unknown as { __shift: number }).__shift)
+    expect(shift).toBeLessThan(0.01)
+  })
+
   test('cotação vencida é refeita sozinha (relógio controlado) e a compra continua possível', async ({ page }) => {
     await page.clock.install()
     const quotes: string[] = []

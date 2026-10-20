@@ -84,7 +84,7 @@ function AccountSidebar() {
           type="button"
           onClick={() => void signOut()}
           disabled={logout.isPending}
-          className="flex h-10 w-full items-center gap-2 px-4 text-[15px] font-bold text-text-accent hover:bg-primary/10 lg:px-4"
+          className="flex h-11 w-full items-center gap-2 px-4 md:h-10 text-[15px] font-bold text-text-accent hover:bg-primary/10 lg:px-4"
         >
           <img src={logoutIcon} alt="" className="size-5" />
           Sair

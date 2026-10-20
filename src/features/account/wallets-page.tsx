@@ -89,11 +89,11 @@ function WalletSection({ kind, wallet, primary }: SectionProps) {
           </h2>
           {!isPrimary && !wallet && (
             <div className="flex items-center gap-3 text-sm">
-              <label className="flex cursor-pointer items-center gap-2">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 md:min-h-0">
                 <input type="checkbox" checked={copyPrimary} onChange={(event) => setCopyPrimary(event.target.checked)} disabled={!primary} className="check-control" />
                 Igual à carteira principal
               </label>
-              <button type="button" onClick={() => setAdding(true)} disabled={blockedBySecondaryRule} className="font-bold text-text-accent disabled:opacity-50">
+              <button type="button" onClick={() => setAdding(true)} disabled={blockedBySecondaryRule} className="relative font-bold text-text-accent touch-target disabled:opacity-50">
                 Adicionar
               </button>
             </div>
@@ -240,12 +240,12 @@ function WalletForm({ kind, wallet, template, onCreated }: WalletFormProps) {
         </p>
       )}
       <div className="flex flex-wrap items-center gap-4">
-        <Button type="submit" disabled={pending} className="h-10 rounded-[3px] px-4 text-sm">
+        <Button type="submit" disabled={pending} className="h-11 rounded-[3px] px-4 text-sm md:h-10">
           {pending ? 'Salvando…' : 'Salvar carteira'}
         </Button>
         {wallet && (
           <>
-            <Button variant="outline" className="h-10 rounded-[3px] px-4 text-sm" onClick={toggleConnection} disabled={connect.isPending || disconnect.isPending}>
+            <Button variant="outline" className="h-11 rounded-[3px] px-4 text-sm md:h-10" onClick={toggleConnection} disabled={connect.isPending || disconnect.isPending}>
               {wallet.connection === 'connected' ? 'Desconectar' : 'Conectar'}
             </Button>
             <p className="text-sm text-text-secondary" data-testid="wallet-connection">

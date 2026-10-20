@@ -14,7 +14,7 @@ export function Pagination({ page, totalPages, search, to }: PaginationProps) {
   if (totalPages <= 1) return null
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1)
   const pageSearch = (target: number) => ({ ...search, page: target > 1 ? target : undefined })
-  const base = 'grid size-[35px] place-items-center rounded-[4px] text-lg leading-4'
+  const base = 'relative grid size-[35px] touch-target place-items-center rounded-[4px] text-lg leading-4'
 
   return (
     <nav aria-label="Paginação" className="self-end">

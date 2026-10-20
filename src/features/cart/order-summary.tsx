@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { displayDiscount, displayEth } from '@/domain/money'
 import { cn } from '@/lib/cn'
 
@@ -25,7 +26,29 @@ export function OrderTotals({ totals, className, children }: { totals: Totals; c
   )
 }
 
-function Row({ label, value, testId, small, className }: { label: string; value: string; testId: string; small?: boolean; className?: string }) {
+// Mesmas linhas e alturas do resumo, com os valores em skeleton: a troca pelo resumo real não desloca nada.
+export function OrderTotalsSkeleton() {
+  return (
+    <div className="flex flex-col gap-3 text-[15px]" aria-hidden="true">
+      <Row label="Subtotal" value={<Skeleton className="h-4 w-24" />} />
+      <Row label="Desconto do lançamento" value={<Skeleton className="h-4 w-14" />} small />
+      <div className="flex flex-col items-end gap-3">
+        <Row label="Taxa de rede" value={<Skeleton className="h-4 w-20" />} className="w-full" />
+        <p className="text-xs text-text-accent">Taxa estimada</p>
+      </div>
+      <div className="flex items-start justify-between pt-1 font-bold leading-4">
+        <span className="text-base">Total</span>
+        <span className="text-lg">
+          <Skeleton className="h-4 w-24" />
+        </span>
+      </div>
+    </div>
+  )
+}
+
+type RowProps = { label: string; value: ReactNode; testId?: string; small?: boolean; className?: string }
+
+function Row({ label, value, testId, small, className }: RowProps) {
   return (
     <div className={cn('flex items-start justify-between', className)}>
       <span>{label}</span>

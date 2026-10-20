@@ -14,10 +14,10 @@ export const buttonVariants = cva(
         link: 'text-text-accent underline-offset-4 hover:underline',
       },
       size: {
-        sm: 'h-8 px-3 text-sm',
-        md: 'h-10 px-5 text-base',
+        sm: 'h-11 px-3 text-sm md:h-8',
+        md: 'h-11 px-5 text-base md:h-10',
         lg: 'h-12 px-6 text-base',
-        icon: 'size-10',
+        icon: 'size-11 md:size-10',
       },
     },
     defaultVariants: { variant: 'primary', size: 'md' },

@@ -141,7 +141,7 @@ function NftDetail({ nft }: { nft: Nft }) {
             type="button"
             onClick={() => (router.history.length > 1 ? router.history.back() : void navigate({ to: '/mercado' }))}
             aria-label="Voltar"
-            className="absolute left-7 top-6 grid size-9 place-items-center rounded-full border border-line-soft bg-surface-card text-text-accent"
+            className="absolute left-7 top-6 grid size-9 touch-target place-items-center rounded-full border border-line-soft bg-surface-card text-text-accent"
           >
             <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="m14 6-6 6 6 6" />
@@ -152,7 +152,7 @@ function NftDetail({ nft }: { nft: Nft }) {
             onClick={favorite}
             aria-pressed={isFavorite}
             aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar'}
-            className="absolute right-7 top-6 grid size-9 place-items-center rounded-full border border-line-soft bg-surface-card"
+            className="absolute right-7 top-6 grid size-9 touch-target place-items-center rounded-full border border-line-soft bg-surface-card"
           >
             <img src={isFavorite ? heartLight : heart} alt="" className="size-4" />
           </button>

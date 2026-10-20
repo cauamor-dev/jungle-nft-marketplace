@@ -34,7 +34,7 @@ export function Footer() {
           <br />
           criadores e cultura
         </p>
-        <a href="mailto:contato@email.com" className="flex-1 text-sm leading-[22px] text-foreground">
+        <a href="mailto:contato@email.com" className="flex min-h-11 flex-1 items-center text-sm leading-[22px] text-foreground md:min-h-0 md:block">
           contato@email.com
         </a>
         <p className="text-sm leading-[22px] text-foreground md:w-[228px]">+55 11 4002 8922</p>
@@ -58,7 +58,7 @@ export function Footer() {
           <FooterColumn title="Coleções">
             {footerCategories.map((category) => (
               <li key={category}>
-                <Link to="/mercado" search={{ category: [category] }} className="text-sm leading-[30px] text-foreground hover:text-text-accent">
+                <Link to="/mercado" search={{ category: [category] }} className="inline-flex min-h-11 items-center text-sm text-foreground hover:text-text-accent md:min-h-0 md:leading-[30px]">
                   {categoryLabels[category]}
                 </Link>
               </li>
@@ -101,7 +101,7 @@ function FooterColumn({ title, children }: { title: string; children: React.Reac
 function FooterLink({ to, children }: { to: '/perfil' | '/perfil/atividade' | '/perfil/favoritos'; children: React.ReactNode }) {
   return (
     <li>
-      <Link to={to} className="text-sm leading-[30px] text-foreground hover:text-text-accent">
+      <Link to={to} className="inline-flex min-h-11 items-center text-sm text-foreground hover:text-text-accent md:min-h-0 md:leading-[30px]">
         {children}
       </Link>
     </li>
@@ -139,7 +139,7 @@ function Newsletter() {
       <div aria-hidden="true" className="hidden bg-primary lg:block" />
       <form onSubmit={submit} noValidate className="flex flex-col gap-3 md:col-span-3 lg:col-span-1 lg:px-4">
         <h2 className="text-lg font-bold leading-4">Antecipe-se ao próximo lançamento</h2>
-        <div className="flex h-10 overflow-hidden rounded-md bg-surface-dark shadow-[0_0_10px_rgba(10,6,4,0.45)]">
+        <div className="flex h-11 overflow-hidden rounded-md bg-surface-dark md:h-10 shadow-[0_0_10px_rgba(10,6,4,0.45)]">
           <label htmlFor="newsletter-email" className="sr-only">
             E-mail para receber lançamentos
           </label>

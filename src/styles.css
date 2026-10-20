@@ -172,6 +172,16 @@
   }
 }
 
+/* Área de toque mínima de 44 px sem mudar o desenho: um ::after invisível cresce até 44 px em torno do
+   elemento (que precisa estar posicionado). Nada muda quando o elemento já tem 44 px ou mais. */
+@utility touch-target {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2));
+  }
+}
+
 /* Rádio e checkbox no padrão do Figma: anel cor de cobre, preenchido quando marcado */
 @utility radio-control {
   appearance: none;

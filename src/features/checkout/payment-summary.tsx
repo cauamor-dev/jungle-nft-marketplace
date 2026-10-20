@@ -2,7 +2,8 @@ import { Link } from '@tanstack/react-router'
 import type { Cart, Quote } from '@/api/contracts'
 import { Button } from '@/components/ui/button'
 import { displayEth } from '@/domain/money'
-import { OrderTotals } from '@/features/cart/order-summary'
+import { Skeleton } from '@/components/ui/skeleton'
+import { OrderTotals, OrderTotalsSkeleton } from '@/features/cart/order-summary'
 import { useIsDesktop } from '@/lib/use-media-query'
 
 type PaymentSummaryProps = {
@@ -71,6 +72,55 @@ export function PaymentSummary({ quote, cart, refreshing, reconfirm }: PaymentSu
             Aceitar novos valores
           </Button>
         </div>
+      )}
+    </section>
+  )
+}
+
+// Enquanto a cotação é calculada: mesma estrutura do resumo, com os itens do carrinho (já conhecidos) e os valores
+// em skeleton. O botão de confirmar continua desabilitado porque ainda não há cotação.
+export function PaymentSummarySkeleton({ cart }: { cart: Cart }) {
+  const desktop = useIsDesktop()
+  return (
+    <section role="status" aria-label="Calculando a cotação" className="flex flex-col gap-3" data-testid="payment-summary-skeleton">
+      {desktop ? (
+        <>
+          <h2 className="text-[17px] font-bold leading-4">Seus NFTs</h2>
+          <div className="flex items-center justify-between border-b border-line-soft pb-3 text-base leading-4">
+            <span className="font-bold">NFTs</span>
+            <span className="font-medium">Subtotal</span>
+          </div>
+          <ul className="flex flex-col gap-3" aria-hidden="true">
+            {cart.items.map((item) => (
+              <li key={item.key} className="flex h-[70px] items-center gap-2 bg-surface-card pl-1 pr-4">
+                {item.image ? (
+                  <img src={item.image.thumbSrc} alt="" width={66} height={66} className="size-[66px] rounded-lg object-cover" />
+                ) : (
+                  <Skeleton className="size-[66px] rounded-lg" />
+                )}
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3.5 w-1/3" />
+                </div>
+                <Skeleton className="h-5 w-[72px] shrink-0" />
+              </li>
+            ))}
+          </ul>
+          <p className="text-center text-sm">
+            Tem um código promocional?{' '}
+            <Link to="/carrinho" className="text-text-accent underline">
+              Aplique aqui
+            </Link>
+          </p>
+          <OrderTotalsSkeleton />
+        </>
+      ) : (
+        <p className="flex items-center justify-end gap-6 font-bold">
+          <span>Total:</span>
+          <span className="text-xl">
+            <Skeleton className="my-1 h-5 w-28" />
+          </span>
+        </p>
       )}
     </section>
   )

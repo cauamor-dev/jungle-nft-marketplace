@@ -140,7 +140,7 @@ function ProfileForm({ user }: { user: User }) {
           {formError}
         </p>
       )}
-      <Button type="submit" disabled={saving} className="h-10 w-[131px] rounded-[3px] text-sm">
+      <Button type="submit" disabled={saving} className="h-11 w-[131px] rounded-[3px] text-sm md:h-10">
         {saving ? 'Salvando…' : 'Salvar'}
       </Button>
     </form>
@@ -173,14 +173,14 @@ function AvatarField({ user, error }: { user: User; error?: string }) {
           {user.avatarUrl ? <img src={user.avatarUrl} alt="Avatar atual" className="size-full object-cover" /> : <img src={imageIcon} alt="" className="size-6" />}
         </div>
         <div className="flex items-center gap-5">
-          <Button className="h-10 w-[98px] rounded-[3px] text-sm" onClick={() => input.current?.click()} disabled={upload.isPending}>
+          <Button className="h-11 w-[98px] rounded-[3px] text-sm md:h-10" onClick={() => input.current?.click()} disabled={upload.isPending}>
             Alterar
           </Button>
           <button
             type="button"
             onClick={() => remove.mutate(undefined, { onSuccess: () => notify('Avatar removido.', 'info') })}
             disabled={!user.avatarUrl || remove.isPending}
-            className="text-sm disabled:opacity-50"
+            className="relative text-sm touch-target disabled:opacity-50"
           >
             Remover
           </button>

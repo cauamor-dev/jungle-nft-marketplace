@@ -23,7 +23,7 @@ import { useIsDesktop } from '@/lib/use-media-query'
 import { clearAttempt, getAttemptKey, getPendingAttemptKey } from './checkout-attempt'
 import { clearDrafts, loadDraft, saveDraft } from './checkout-draft'
 import { CollectorForm, type CollectorValues } from './collector-form'
-import { PaymentSummary } from './payment-summary'
+import { PaymentSummary, PaymentSummarySkeleton } from './payment-summary'
 import { quoteSignature } from './quote-signature'
 import { useQuote } from './queries'
 import { submitOrder } from './place-order'
@@ -272,7 +272,7 @@ function PaymentForm({ user, wallets, cart }: PaymentFormProps) {
 
   const otherWallets = wallets.length > 1 && (
     <div className="flex flex-col gap-3">
-      <label className="flex w-fit cursor-pointer items-center gap-2 text-[15px]">
+      <label className="flex min-h-11 w-fit cursor-pointer items-center gap-2 text-[15px] md:min-h-0">
         <input
           type="checkbox"
           checked={useOther}
@@ -295,6 +295,8 @@ function PaymentForm({ user, wallets, cart }: PaymentFormProps) {
       refreshing={quoteQuery.isFetching}
       reconfirm={needsReconfirm ? { previousTotal: previousTotal(accepted?.signature), onAccept: () => setAccepted({ network: quote.network, signature: signature as string }) } : null}
     />
+  ) : network && !quoteQuery.isError ? (
+    <PaymentSummarySkeleton cart={cart} />
   ) : null
 
   const confirmButton = (
@@ -345,7 +347,7 @@ function PaymentForm({ user, wallets, cart }: PaymentFormProps) {
             type="button"
             onClick={() => (router.history.length > 1 ? router.history.back() : void navigate({ to: '/carrinho' }))}
             aria-label="Voltar"
-            className="absolute left-0 grid size-9 place-items-center rounded-full border border-line-soft bg-surface-card text-text-accent"
+            className="absolute left-0 grid size-9 touch-target place-items-center rounded-full border border-line-soft bg-surface-card text-text-accent"
           >
             <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="m14 6-6 6 6 6" />
@@ -357,7 +359,7 @@ function PaymentForm({ user, wallets, cart }: PaymentFormProps) {
         <section aria-labelledby="wallet-title" className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 id="wallet-title" className="text-[17px] font-bold">Carteira conectada</h2>
-            <Link to="/perfil/carteiras" className="text-sm font-bold text-text-accent">Trocar carteira</Link>
+            <Link to="/perfil/carteiras" className="relative text-sm font-bold text-text-accent touch-target">Trocar carteira</Link>
           </div>
           {wallets.length > 0 ? (
             <WalletPicker wallets={wallets} selectedId={selectedWallet?.id ?? null} onSelect={pickWallet} />

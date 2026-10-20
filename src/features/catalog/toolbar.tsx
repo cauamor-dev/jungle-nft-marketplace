@@ -26,7 +26,7 @@ type ToolbarProps = {
 export function Toolbar({ search, to, onSort }: ToolbarProps) {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <nav aria-label="Listagem" className="flex gap-4 overflow-x-auto scrollbar-none md:gap-5">
+      <nav aria-label="Listagem" className="-my-3 flex gap-4 overflow-x-auto py-3 scrollbar-none md:my-0 md:gap-5 md:py-0">
         {tabs.map((tab) => {
           const active = search.listing === tab.listing
           return (
@@ -36,12 +36,12 @@ export function Toolbar({ search, to, onSort }: ToolbarProps) {
               search={{ ...search, listing: tab.listing, page: undefined }}
               aria-current={active ? 'true' : undefined}
               className={cn(
-                'relative whitespace-nowrap pb-1 text-sm leading-4 md:text-[15px] md:font-medium',
+                'relative -my-3 whitespace-nowrap pb-4 pt-3 text-sm leading-4 md:my-0 md:pb-1 md:pt-0 md:text-[15px] md:font-medium',
                 active ? 'font-bold text-text-accent' : 'text-foreground hover:text-text-accent',
               )}
             >
               {tab.label}
-              {active && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary" />}
+              {active && <span aria-hidden="true" className="absolute inset-x-0 bottom-3 h-0.5 rounded-full bg-primary md:bottom-0" />}
             </Link>
           )
         })}

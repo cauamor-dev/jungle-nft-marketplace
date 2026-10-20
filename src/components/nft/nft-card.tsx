@@ -85,7 +85,7 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
           onClick={handleFavorite}
           aria-pressed={isFavorite}
           aria-label={isFavorite ? `Remover ${nft.title} dos favoritos` : `Favoritar ${nft.title}`}
-          className="absolute right-2 top-2 grid size-7 place-items-center rounded-full border border-line bg-surface-raised md:hidden"
+          className="absolute right-2 top-2 grid size-7 touch-target place-items-center rounded-full border border-line bg-surface-raised md:hidden"
         >
           <img src={isFavorite ? heartLight : heartOutline} alt="" className={cn('size-3.5', isFavorite && 'animate-heart-pop')} />
         </button>
@@ -121,7 +121,7 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
 
       <div className="flex flex-col gap-1.5 pl-2 md:pl-0">
         <h3 className="text-[15px] font-normal leading-tight md:text-base">
-          <Link {...detailLink} className="text-foreground hover:text-text-accent">
+          <Link {...detailLink} className="relative text-foreground touch-target hover:text-text-accent">
             {nft.title}
           </Link>
         </h3>

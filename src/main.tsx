@@ -1,4 +1,17 @@
 import { enableMocks } from './mocks'
+import heroImage from './assets/nfts/esmeralda-800.webp'
+
+// A imagem do hero é o LCP da home no desktop, mas só seria descoberta depois do MSW e da montagem.
+// O preload começa o download já, em paralelo; no mobile o LCP é o fundo do hero (SVG embutido) e nada é baixado.
+function preloadHomeHero() {
+  if (window.location.pathname !== '/' || !window.matchMedia('(min-width: 768px)').matches) return
+  const link = document.createElement('link')
+  link.rel = 'preload'
+  link.as = 'image'
+  link.href = heroImage
+  link.fetchPriority = 'high'
+  document.head.append(link)
+}
 
 // O socket.io-client guarda a referência de WebSocket quando é importado. Por isso o MSW precisa
 // estar ativo antes de qualquer módulo da aplicação ser carregado.
@@ -32,4 +45,5 @@ function renderFatal(error: unknown) {
   root.replaceChildren(box)
 }
 
+preloadHomeHero()
 bootstrap().catch(renderFatal)

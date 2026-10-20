@@ -14,7 +14,7 @@ type QuantityStepperProps = {
 
 export function QuantityStepper({ value, min = 1, max, onChange, label, disabled, className }: QuantityStepperProps) {
   const button =
-    'grid h-[34px] w-[22px] place-items-center rounded-full bg-primary text-ink shadow-[0_4px_6px_rgba(20,13,10,0.15)] disabled:opacity-50 md:h-[49.5px] md:w-[33px]'
+    'relative grid h-[34px] w-[22px] place-items-center touch-target rounded-full bg-primary text-ink shadow-[0_4px_6px_rgba(20,13,10,0.15)] disabled:opacity-50 md:h-[49.5px] md:w-[33px]'
   return (
     <div role="group" aria-label={label} className={cn('flex items-center gap-3', className)}>
       <button type="button" className={button} onClick={() => onChange(value - 1)} disabled={disabled || value <= min} aria-label={`Diminuir ${label}`}>

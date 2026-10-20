@@ -12,14 +12,25 @@ Nada foi publicado: não há deploy nem envio à empresa.
 
 ## Requisitos
 
-- Node 22 ou superior
+- Node 22.19 ou superior (declarado em `engines`; é o mínimo do Lighthouse 13, e o Vitest 5 pede 22.12)
 - pnpm 10 (`corepack enable` resolve a versão pelo campo `packageManager`)
+
+## Começo rápido
+
+```bash
+corepack enable
+pnpm install --frozen-lockfile
+pnpm exec playwright install chromium   # só na primeira vez: baixa o Chromium da versão fixada no lockfile
+pnpm dev                                # http://localhost:5173 com os mocks ligados
+pnpm test:e2e                           # suíte Playwright completa
+```
 
 ## Comandos
 
 | Comando | O que faz |
 | --- | --- |
-| `pnpm install` | Instala as dependências a partir do lockfile |
+| `pnpm install --frozen-lockfile` | Instala as dependências exatamente como no lockfile |
+| `pnpm exec playwright install chromium` | Baixa o Chromium do Playwright fixado (uma vez por máquina) |
 | `pnpm dev` | Servidor de desenvolvimento com os mocks ligados |
 | `pnpm dev:lan` | O mesmo, exposto na rede local para abrir no celular (ver "Testar no celular") |
 | `pnpm build` | Verifica tipos e gera `dist/` |
@@ -29,8 +40,6 @@ Nada foi publicado: não há deploy nem envio à empresa.
 | `pnpm test` | Testes de unidade e de API dos mocks (Vitest + MSW em Node) |
 | `pnpm test:e2e` | Playwright em Chromium, viewports desktop (1440) e mobile (390). Compila e sobe o preview na porta 4173 sozinho (pare qualquer `pnpm preview` antes) |
 | `pnpm lighthouse` | Lighthouse 3x por página e perfil (início e detalhe, mobile e desktop), mediana e metas. Precisa do preview em `http://localhost:4173`; grava `lighthouse/summary.json` e o relatório HTML/JSON da execução mediana de cada combinação (as demais ficam em `lighthouse/runs/`, fora do git) |
-
-Na primeira execução do Playwright: `pnpm exec playwright install chromium`.
 
 O Playwright está fixado em 1.56.1 no lockfile, então `pnpm exec playwright install chromium` baixa sempre o mesmo Chromium (141) com que as baselines visuais foram geradas, e os 8 testes de regressão visual rodam e passam num checkout limpo em Linux. Nenhum teste é pulado. Em macOS ou Windows a rasterização de texto é diferente; rode a suíte na imagem oficial do Playwright (comando não executado neste ambiente, que não tem Docker):
 

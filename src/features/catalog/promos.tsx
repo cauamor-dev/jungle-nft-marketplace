@@ -47,7 +47,7 @@ export function Promos() {
             <Link
               to="/mercado"
               search={{ listing: promo.listing }}
-              className="mt-auto flex h-10 w-[140px] items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-ink hover:bg-text-accent"
+              className="mt-auto flex h-11 w-[140px] md:h-10 items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-ink hover:bg-text-accent"
             >
               Explorar
               <img src={arrow} alt="" className="h-3 w-2.5 -rotate-90" />

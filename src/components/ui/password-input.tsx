@@ -13,7 +13,7 @@ export function PasswordInput({ className, ...props }: Omit<ComponentProps<'inpu
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? 'Ocultar senha' : 'Mostrar senha'}
         aria-pressed={visible}
-        className="absolute right-3 top-1/2 grid size-6 -translate-y-1/2 place-items-center"
+        className="absolute right-3 top-1/2 grid size-6 -translate-y-1/2 touch-target place-items-center"
       >
         <img src={eyeOff} alt="" className={cn('size-5', visible && 'opacity-50')} />
       </button>

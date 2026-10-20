@@ -103,7 +103,7 @@ function MobileSearch({ value, onSubmit, onOpenFilters }: { value: string; onSub
           type="search"
           defaultValue={value}
           placeholder="Explorar coleções"
-          className="min-w-0 flex-1 bg-transparent text-sm font-bold text-secondary placeholder:text-secondary focus:text-foreground"
+          className="min-w-0 flex-1 self-stretch bg-transparent text-sm font-bold text-secondary placeholder:text-secondary focus:text-foreground"
         />
       </label>
       <button

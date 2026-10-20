@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ErrorActions } from '@/components/ui/error-actions'
 import { isApiError, isUnknownOutcome } from '@/domain/errors'
+import { useIsDesktop } from '@/lib/use-media-query'
 
 export function ProductGridSkeleton() {
   return (
@@ -20,18 +21,18 @@ export function ProductGridSkeleton() {
   )
 }
 
+// Monta só a variante da largura atual (antes eram as duas no DOM, com 18 cards para 9 visíveis).
 export function ProductGrid({ items }: { items: Nft[] }) {
+  const desktop = useIsDesktop()
+  if (!desktop) return <MobileColumns items={items} />
   return (
-    <>
-      <ul className="hidden grid-cols-3 gap-x-[34px] gap-y-[72px] md:grid">
-        {items.map((nft, index) => (
-          <li key={nft.id}>
-            <NftCard nft={nft} imageEager={index < 3} />
-          </li>
-        ))}
-      </ul>
-      <MobileColumns items={items} />
-    </>
+    <ul className="grid grid-cols-3 gap-x-[34px] gap-y-[72px]">
+      {items.map((nft, index) => (
+        <li key={nft.id}>
+          <NftCard nft={nft} imageEager={index < 3} />
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -39,10 +40,10 @@ export function ProductGrid({ items }: { items: Nft[] }) {
 // então a ordem do DOM continua a da listagem para leitor de tela, teclado e ordenação.
 function MobileColumns({ items }: { items: Nft[] }) {
   return (
-    <ul className="grid grid-cols-2 gap-x-4 gap-y-6 pb-8 md:hidden">
-      {items.map((nft) => (
+    <ul className="grid grid-cols-2 gap-x-4 gap-y-6 pb-8">
+      {items.map((nft, index) => (
         <li key={nft.id} className="even:translate-y-8">
-          <NftCard nft={nft} />
+          <NftCard nft={nft} imageEager={index < 2} />
         </li>
       ))}
     </ul>
