@@ -1,7 +1,7 @@
 # TASKS
 
 Status: `todo`, `doing`, `done`, `blocked`. `done` só com evidência (comando executado ou arquivo).
-Branch de trabalho: `claude/revisao-final-jungle`, criada a partir de `cursor/fundacao-tecnica-145e` (PR #2 preservado). Nada foi publicado, enviado à empresa ou implantado. A auditoria completa desta revisão, com P0/P1/P2, está em [RELEASE_AUDIT.md](RELEASE_AUDIT.md).
+Branch de trabalho: `claude/correcoes-auditoria-teo`, criada a partir de `claude/revisao-final-jungle`, que veio de `cursor/fundacao-tecnica-145e` (PR #2 preservado). Nada foi publicado, enviado à empresa ou implantado. A auditoria completa desta revisão, com P0/P1/P2, está em [RELEASE_AUDIT.md](RELEASE_AUDIT.md).
 
 ## Resumo das verificações (20/10/2026, container Linux, Node 22.22, Chromium 141)
 
@@ -9,9 +9,9 @@ Branch de trabalho: `claude/revisao-final-jungle`, criada a partir de `cursor/fu
 | --- | --- |
 | `pnpm install --frozen-lockfile` em clone novo | ok |
 | `pnpm typecheck`, `pnpm lint`, `pnpm build` | sem erros |
-| `pnpm test` (Vitest) | 6 arquivos, 63 testes passando |
+| `pnpm test` (Vitest) | 7 arquivos, 65 testes passando |
 | `pnpm test:e2e` antes das mudanças | 154 passaram, 3 pulados, 7 falharam (só regressão visual, por diferença de Chromium) |
-| `pnpm test:e2e` final | 161 passaram, 3 pulados (justificados no `test.skip`: ordenação, teclado do header e foco por Tab só existem a partir de 768 px), 0 falhas, 4,5 min. Inclui os 8 testes visuais com as baselines novas |
+| `pnpm test:e2e` final (após a auditoria externa) | 178 passaram, 0 pulados, 0 falhas, 5,2 min; os 8 visuais também passam num clone limpo |
 | `pnpm lighthouse` (3 execuções, mediana) | Todas as metas atingidas; relatórios em [lighthouse/](lighthouse/) |
 
 Lighthouse 13.5.0 contra `pnpm preview` (build de produção com mocks ligados, cenário padrão). Medianas de Performance / Accessibility / Best Practices / SEO e métricas medianas. Metas: 90 / 95 / 95 / 90.
@@ -20,8 +20,8 @@ Lighthouse 13.5.0 contra `pnpm preview` (build de produção com mocks ligados, 
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Início (`/`) | mobile | 93 | 100 | 100 | 100 | 2,68 s | 172 ms | 0 |
 | Detalhe (`/nft/nft_12`) | mobile | 92 | 100 | 100 | 100 | 3,10 s | 17 ms | 0 |
-| Início | desktop | 100 | 100 | 100 | 100 | 0,73 s | 0 ms | 0,0002 |
-| Detalhe | desktop | 100 | 100 | 100 | 100 | 0,82 s | 0 ms | 0 |
+| Início | desktop | 100 | 100 | 100 | 100 | 0,78 s | 0 ms | 0,0002 |
+| Detalhe | desktop | 99 | 100 | 100 | 100 | 0,84 s | 0 ms | 0 |
 
 No mobile o LCP fica perto de 3 s porque o build de demonstração precisa carregar e iniciar o MSW (chunk de ~175 kB gzip) antes de montar a aplicação: o `socket.io-client` guarda a referência de `WebSocket` no import, então o mock tem que estar ativo primeiro. A auditoria não desliga nada disso. O detalhe desktop tinha CLS de 0,079 (o rodapé aparecia e era empurrado enquanto o chunk da rota carregava); o fallback de rota agora ocupa a tela e o CLS caiu para 0.
 
@@ -105,8 +105,8 @@ Os 3 testes pulados no mobile estão justificados no próprio `test.skip` (orden
 
 ## Riscos e lacunas
 
-1. Fidelidade visual conferida por screenshot lado a lado com 13 dos 15 frames nesta revisão (os 2 restantes, login e cadastro mobile, ficaram de fora pelo limite do MCP do Figma). Não há métrica automática; as baselines do Playwright protegem contra regressão, mas foram geradas pelo próprio app. Detalhes em [FIGMA_AUDIT.md](FIGMA_AUDIT.md).
-2. Baselines visuais valem para Linux + Chromium 141; em outro ambiente os testes visuais são pulados com o motivo.
+1. Fidelidade visual conferida por screenshot lado a lado com os 15 frames. Não há métrica automática; as baselines do Playwright protegem contra regressão, mas foram geradas pelo próprio app. Detalhes em [FIGMA_AUDIT.md](FIGMA_AUDIT.md).
+2. Baselines visuais valem para Linux com o Chromium do lockfile (141); em macOS/Windows use a imagem Docker oficial (README).
 3. Performance mobile tem folga pequena (92 e 93 contra meta 90) por causa da inicialização do MSW.
 4. O `vercel.json` nunca rodou em ambiente publicado.
 5. Prazo informado em e-mail (19/10/2026): não verificável aqui; confirmar com o recrutador.

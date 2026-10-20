@@ -1,7 +1,7 @@
 {
   "lighthouse": "13.5.0",
   "environment": {
-    "date": "2026-10-20T12:14:35.425Z",
+    "date": "2026-10-20T19:30:53.629Z",
     "node": "v22.22.0",
     "os": "Linux 6.18.44-fc-v139 x64",
     "cpus": 4,
@@ -30,8 +30,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2627.04305,
-          "tbt": 120.49999999999989,
+          "lcp": 2635.7969,
+          "tbt": 99.5,
           "cls": 0
         },
         {
@@ -43,8 +43,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2684.6134,
-          "tbt": 179.5,
+          "lcp": 2700.819,
+          "tbt": 170.5,
           "cls": 0
         },
         {
@@ -56,8 +56,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2684.0498,
-          "tbt": 171.5,
+          "lcp": 2731.3304000000003,
+          "tbt": 184.5,
           "cls": 0
         }
       ],
@@ -68,8 +68,8 @@
         "seo": 100
       },
       "medianMetrics": {
-        "lcpMs": 2684,
-        "tbtMs": 172,
+        "lcpMs": 2701,
+        "tbtMs": 171,
         "cls": 0
       },
       "report": "home-mobile.report.html",
@@ -88,8 +88,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 3131.1469,
-          "tbt": 18,
+          "lcp": 3104.4166,
+          "tbt": 24.5,
           "cls": 0
         },
         {
@@ -101,8 +101,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 3104.2452000000003,
-          "tbt": 17,
+          "lcp": 3112.0408,
+          "tbt": 14,
           "cls": 0
         },
         {
@@ -114,8 +114,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 3096.0959000000007,
-          "tbt": 13,
+          "lcp": 3103.7339999999995,
+          "tbt": 19,
           "cls": 0
         }
       ],
@@ -127,7 +127,7 @@
       },
       "medianMetrics": {
         "lcpMs": 3104,
-        "tbtMs": 17,
+        "tbtMs": 19,
         "cls": 0
       },
       "report": "detalhe-mobile.report.html",
@@ -140,14 +140,14 @@
         {
           "run": 1,
           "scores": {
-            "performance": 100,
+            "performance": 99,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 744.18425,
-          "tbt": 0,
+          "lcp": 910.3979999999999,
+          "tbt": 20,
           "cls": 0.00017477555398567952
         },
         {
@@ -159,7 +159,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 722.54675,
+          "lcp": 784.00275,
           "tbt": 0,
           "cls": 0.00017477555398567952
         },
@@ -172,7 +172,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 733.0532499999999,
+          "lcp": 780.1432500000001,
           "tbt": 0,
           "cls": 0.00017477555398567952
         }
@@ -184,7 +184,7 @@
         "seo": 100
       },
       "medianMetrics": {
-        "lcpMs": 733,
+        "lcpMs": 784,
         "tbtMs": 0,
         "cls": 0.00017477555398567952
       },
@@ -204,7 +204,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 841.913,
+          "lcp": 843.3472,
           "tbt": 0,
           "cls": 0
         },
@@ -217,32 +217,32 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 814.9197999999999,
+          "lcp": 819.1532,
           "tbt": 0,
           "cls": 0
         },
         {
           "run": 3,
           "scores": {
-            "performance": 100,
+            "performance": 99,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 786.7399999999999,
+          "lcp": 838.2339,
           "tbt": 0,
           "cls": 0
         }
       ],
       "medians": {
-        "performance": 100,
+        "performance": 99,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "medianMetrics": {
-        "lcpMs": 815,
+        "lcpMs": 838,
         "tbtMs": 0,
         "cls": 0
       },

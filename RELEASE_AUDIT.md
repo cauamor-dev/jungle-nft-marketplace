@@ -80,14 +80,22 @@ Branch das correções: `claude/correcoes-auditoria-teo`, criada a partir de `cl
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Início | mobile | 93 | 100 | 100 | 100 | 2,68 s | 172 ms | 0 |
 | Detalhe | mobile | 92 | 100 | 100 | 100 | 3,10 s | 17 ms | 0 |
-| Início | desktop | 100 | 100 | 100 | 100 | 0,73 s | 0 ms | 0,0002 |
-| Detalhe | desktop | 100 | 100 | 100 | 100 | 0,82 s | 0 ms | 0 |
+| Início | desktop | 100 | 100 | 100 | 100 | 0,78 s | 0 ms | 0,0002 |
+| Detalhe | desktop | 99 | 100 | 100 | 100 | 0,84 s | 0 ms | 0 |
 
 ## Execução final
 
-`pnpm test:e2e` no build final (Chromium 141, desktop 1440 e mobile 390): **161 passaram, 3 pulados, 0 falhas** em 4,5 min. Os 3 pulados são do projeto mobile e estão justificados no próprio `test.skip` (ordenação, teclado do header e foco por Tab só existem a partir de 768 px). `pnpm typecheck`, `pnpm lint`, `pnpm test` (63) e `pnpm build` sem erros.
+Após as correções da auditoria externa (commit da branch `claude/correcoes-auditoria-teo`):
 
-Verificações manuais com script Playwright: sem erros de console em início e detalhe; sem rolagem lateral em 320, 720 e 1024 px nas telas principais; isolamento entre as duas contas após logout e login.
+| Verificação | Resultado |
+| --- | --- |
+| Clone novo + `pnpm install --frozen-lockfile` | ok; Playwright 1.56.1 resolve o Chromium 141 (revisão 1194) |
+| `pnpm typecheck`, `pnpm lint`, `pnpm build` | sem erros |
+| `pnpm test` | 7 arquivos, 65 testes passando |
+| `pnpm test:e2e` (desktop 1440 e mobile 390) | **178 passaram, 0 pulados, 0 falhas**, 5,2 min |
+| Testes visuais no clone limpo | 8 de 8 passaram contra as baselines versionadas |
+| App aberto pelo IP da rede em HTTP | carrega, login e compra até "confirmado" (verificação manual por script) |
+| `pnpm lighthouse` | metas atingidas nas 4 combinações (tabela acima) |
 
 ## P2 — polimento feito
 
