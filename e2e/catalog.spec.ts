@@ -95,11 +95,18 @@ test.describe('catálogo', () => {
     await expect(cards(page)).toHaveCount(9)
   })
 
-  test('ordena por preço crescente (desktop)', async ({ page }) => {
-    test.skip((page.viewportSize()?.width ?? 0) < 768, 'A ordenação aparece a partir de 768px, como no design')
+  test('ordena por preço crescente (barra no desktop, painel de filtros no mobile)', async ({ page }) => {
     await page.goto('/mercado')
     await expect(cards(page)).toHaveCount(9)
-    await page.getByLabel('Ordenar por:').selectOption('price-asc')
+    if ((page.viewportSize()?.width ?? 0) < 768) {
+      await page.getByRole('button', { name: 'Abrir filtros' }).click()
+      const sheet = page.getByRole('dialog', { name: 'Filtros' })
+      await sheet.getByLabel('Ordenar por:').selectOption('price-asc')
+      await page.keyboard.press('Escape')
+      await expect(sheet).toBeHidden()
+    } else {
+      await page.getByLabel('Ordenar por:').selectOption('price-asc')
+    }
     await expect(page).toHaveURL(/sort=price-asc/)
     await settled(page)
     await expect(cards(page).first()).toBeVisible()

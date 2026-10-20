@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/toast'
 import { isApiError } from '@/domain/errors'
 import { apiFieldErrors, passwordMessage, passwordRule, readForm, validate, type FieldErrors } from '@/lib/form'
 import { cn } from '@/lib/cn'
+import { useIsDesktop } from '@/lib/use-media-query'
 import type { LoginResponse } from '@/api/contracts'
 import * as api from '@/api/endpoints'
 import { useAuthDialog, type AuthMode } from './auth-context'
@@ -226,6 +227,8 @@ function ForgotPassword() {
 }
 
 function RegisterForm({ onDone }: { onDone: () => void }) {
+  // Rótulos de cada frame do Figma: "Criar conta" no desktop, "Criar perfil" no mobile
+  const desktop = useIsDesktop()
   const login = useLogin()
   const { notify } = useToast()
   const [errors, setErrors] = useState<FieldErrors>({})
@@ -274,7 +277,7 @@ function RegisterForm({ onDone }: { onDone: () => void }) {
         <FormError message={formError} />
       </div>
       <button type="submit" disabled={pending} className={submitClass}>
-        {pending ? 'Criando…' : 'Criar conta'}
+        {pending ? 'Criando…' : desktop ? 'Criar conta' : 'Criar perfil'}
       </button>
     </form>
   )

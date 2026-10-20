@@ -3,7 +3,8 @@ import type { Nft } from '@/api/contracts'
 import { NftCard } from '@/components/nft/nft-card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { isApiError } from '@/domain/errors'
+import { ErrorActions } from '@/components/ui/error-actions'
+import { isApiError, isUnknownOutcome } from '@/domain/errors'
 
 export function ProductGridSkeleton() {
   return (
@@ -34,27 +35,17 @@ export function ProductGrid({ items }: { items: Nft[] }) {
   )
 }
 
-// No mobile as colunas são independentes e a da direita começa mais abaixo, como no design.
+// No mobile a coluna da direita começa mais abaixo, como no design. O deslocamento é só visual (transform),
+// então a ordem do DOM continua a da listagem para leitor de tela, teclado e ordenação.
 function MobileColumns({ items }: { items: Nft[] }) {
-  const left = items.filter((_, index) => index % 2 === 0)
-  const right = items.filter((_, index) => index % 2 === 1)
   return (
-    <div className="grid grid-cols-2 gap-x-4 md:hidden">
-      <ul className="flex flex-col gap-6">
-        {left.map((nft) => (
-          <li key={nft.id}>
-            <NftCard nft={nft} />
-          </li>
-        ))}
-      </ul>
-      <ul className="flex flex-col gap-6 pt-8">
-        {right.map((nft) => (
-          <li key={nft.id}>
-            <NftCard nft={nft} />
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ul className="grid grid-cols-2 gap-x-4 gap-y-6 pb-8 md:hidden">
+      {items.map((nft) => (
+        <li key={nft.id} className="even:translate-y-8">
+          <NftCard nft={nft} />
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -69,17 +60,21 @@ export function EmptyResults({ onClear }: { onClear: () => void }) {
 }
 
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry: () => void }) {
-  const message = isApiError(error) ? error.message : 'Não foi possível carregar os NFTs agora.'
+  const message = isApiError(error)
+    ? error.message
+    : isUnknownOutcome(error) && error.timedOut
+      ? 'O servidor demorou demais para responder. Tente de novo em instantes.'
+      : 'Sem conexão com o servidor. Confira sua internet e tente de novo.'
   return (
-    <div role="alert" className="flex flex-col items-center gap-4 rounded-lg border border-text-coral px-6 py-16 text-center" data-testid="catalog-error">
+    <div role="alert" className="flex flex-col items-center gap-4 rounded-lg border border-text-coral px-4 py-16 text-center sm:px-6" data-testid="catalog-error">
       <h2 className="text-lg font-bold">Algo deu errado</h2>
       <p className="max-w-sm text-sm text-text-secondary">{message}</p>
-      <div className="flex gap-3">
+      <ErrorActions>
         <Button onClick={onRetry}>Tentar de novo</Button>
         <Button variant="outline" asChild>
           <Link to="/">Voltar ao início</Link>
         </Button>
-      </div>
+      </ErrorActions>
     </div>
   )
 }

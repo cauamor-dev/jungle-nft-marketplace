@@ -3,6 +3,7 @@ import { BottomNav } from '@/components/layout/bottom-nav'
 import { Footer } from '@/components/layout/footer'
 import { Header } from '@/components/layout/header'
 import { AuthDialog } from '@/features/auth/auth-dialog'
+import { ScenarioBanner } from '@/features/dev/scenario-banner'
 import { RequireAuth } from '@/features/auth/require-auth'
 
 const marketSections = ['/mercado', '/nft', '/carrinho', '/pagamento']
@@ -24,6 +25,7 @@ export function RootLayout() {
       >
         Pular para o conteúdo
       </a>
+      <ScenarioBanner />
       {!isReceipt && <Header active={isMarket ? 'market' : 'home'} divider={showDivider} />}
       <main id="conteudo" className={isImmersive ? 'md:pb-0' : 'pb-[110px] md:pb-0'}>
         <Outlet />

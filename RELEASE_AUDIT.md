@@ -4,13 +4,31 @@ Revisão feita em 20/10/2026 sobre a branch `cursor/fundacao-tecnica-145e` (comm
 
 Status: **verificado** (executado e aprovado), **falhou** (executado e reprovado), **pendente** (ainda não feito), **não testável** (depende de algo fora deste ambiente).
 
+## Auditoria externa (Téo, 20/10/2026)
+
+Branch das correções: `claude/correcoes-auditoria-teo`, criada a partir de `claude/revisao-final-jungle`. Cada achado foi conferido no código antes da correção.
+
+| Achado | Causa conferida | Correção | Teste de regressão | Status |
+| --- | --- | --- | --- | --- |
+| B-01 (P0) catálogo preso em "Algo deu errado" | Confirmada: `persist()` gravava o cenário com os dados no `localStorage`; `offline` sem `remaining` falhava para sempre, em qualquer aba | Cenário em `sessionStorage` (só a aba), migração do esquema 1 descartando o cenário antigo, faixa de cenário ativo com "Restaurar condições normais", "Restaurar tudo" no `/dev/mocks`, `?mock-reset=1`, mensagem específica para falha de rede. Mantive `remaining` sem limite por padrão: um `offline` que se cura sozinho não simularia queda; a saída agora é visível e a aba nova começa limpa | `mock-persistence.spec.ts` (cenário ativo + reload + aba nova + restaurar; dados v1 com falha embutida; `?mock-reset=1`) | corrigido |
+| B-02 (P1) tela em branco por HTTP no IP | Confirmada: `crypto.subtle` e `randomUUID` inexistentes fora de contexto seguro; `bootstrap()` sem `catch` | Hash do mock e ids sem depender de contexto seguro (SHA-256/PBKDF2 em JS com bytes idênticos ao WebCrypto); aviso de falha de inicialização no lugar de tela em branco; `pnpm dev:lan`. O app funciona por HTTP no IP, exceto o tempo real (limitação do MSW 2.15 sem service worker, avisada na tela) | `sha256.test.ts` (compara com WebCrypto) e verificação manual pelo IP do container: compra completa até "confirmado" | corrigido |
+| B-03 (P1) botões do erro estouram em 320–390 | Confirmada: `flex gap-3` sem quebra dentro de dois paddings | `ErrorActions` empilha abaixo de 640 px; aplicado no catálogo, detalhe e recibo | `responsive.spec.ts` "estados de erro em 320/375/390px" (rolagem lateral e cada botão dentro da tela) | corrigido |
+| B-04 (P0 de entrega) sem deploy | Não é defeito de código | Configuração e guia prontos | — | depende de autorização |
+| B-05 (P1) regressão visual pulada | Confirmada: skip por versão do Chromium | Playwright fixado em 1.56.1 (Chromium 141, o mesmo das baselines); skip removido | os 8 testes visuais | corrigido |
+| B-06 (P2) erro sem teste de layout | Confirmada | Ver B-01 e B-03 | idem | corrigido |
+| B-07 (P2) `/dev/mocks` sem indicação | Confirmada | Aviso de painel técnico, restauração no topo, faixa global | `mock-persistence.spec.ts` | corrigido |
+| B-08 (P2) performance mobile no limite | Medido: mediana de 3 execuções 93 (início) e 92 (detalhe) | `modulepreload` testado e descartado (piorou para 83); ver ARCHITECTURE | Lighthouse | dentro da meta |
+| B-09 (P3) diferenças de Figma | Frames mobile de login e cadastro obtidos nesta rodada | "Criar perfil" no mobile, ícone de carteira oficial e ordem das carteiras do frame; demais desvios documentados em ARCHITECTURE | baselines `pagamento-*` | corrigido / documentado |
+| B-10 (P3) testes pulados no mobile | Confirmada; a ordenação **não existia** no mobile | Ordenação no painel de filtros mobile; lista do catálogo mobile em ordem de leitura correta; testes de ordenação, teclado e foco rodando no mobile | `catalog.spec.ts`, `realtime-ui.spec.ts`, `responsive.spec.ts` | corrigido |
+| Controle de relógio (README §9) | Nenhum uso de `page.clock` | Teste da cotação que vence em 5 min com `page.clock.fastForward` | `checkout.spec.ts` | corrigido |
+
 ## Ambiente
 
 | Item | Valor |
 | --- | --- |
 | Sistema | Linux 6.18 x64, 4 CPUs (container) |
 | Node / pnpm | 22.22.0 / 10.33.4 |
-| Playwright | 1.64.1 com Chromium 141.0.7390.37 já instalado no container (`PW_CHROMIUM_PATH`), não o 156 que o Playwright baixaria |
+| Playwright | 1.56.1 (fixado no lockfile) com o Chromium 141.0.7390.37 que ele instala |
 | Lighthouse | 13.5.0 |
 
 ## Baseline antes das mudanças

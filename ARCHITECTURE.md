@@ -100,7 +100,10 @@ Toda mudança no store passa por `publishNftUpdated` / `publishOrderUpdated`, qu
 
 ## Mocks
 
-- Estado único em `localStorage`, com semente determinística (36 NFTs, 2 usuários, 3 carteiras, 3 cupons, 1 pedido do `demo2`). `resetDb` restaura tudo.
+- Dados em `localStorage` (`jg-mock-db`, esquema 2), com semente determinística (36 NFTs, 2 usuários, 3 carteiras, 3 cupons, 1 pedido do `demo2`). `resetDb` restaura tudo.
+- O cenário (falhas, latência, socket bloqueado, resultado do pagamento) fica em `sessionStorage` (`jg-mock-scenario`): vale para a aba, sobrevive a reload e navegação, e não passa para abas ou sessões novas. Na versão 1 ele era gravado junto dos dados e uma falha como `offline` (sem `remaining`) travava o catálogo em qualquer aba, para sempre; a migração para o esquema 2 descarta esse cenário antigo e mantém os dados.
+- Cada mudança de cenário dispara o evento de janela `jg:mock-scenario`. A faixa `ScenarioBanner` escuta esse evento (e consulta `GET /__demo/state` ao montar) sem importar o mock, mostra o cenário ativo e restaura as condições normais com `happy-path`, preservando os dados. `?mock-reset=1` faz o reset completo antes de montar.
+- Fora de contexto seguro (HTTP pelo IP da rede) não há `crypto.subtle` nem `randomUUID`: o hash PBKDF2/SHA-256 do mock usa uma implementação em JS puro com os mesmos bytes do WebCrypto (`services/sha256.ts`, testada contra ele) e os ids usam `getRandomValues`. O MSW roda sem service worker (fallback) e, na versão 2.15, não aplica a interceptação de WebSocket nesse modo (as duas fontes de interceptação usam o mesmo nome global); por isso o cliente de tempo real não é iniciado ali e uma faixa avisa. `main.tsx` captura qualquer falha de inicialização e mostra um aviso em vez de tela em branco.
 - Toda rota `/api` passa por `route()` (`src/mocks/handlers/route.ts`): falhas do cenário, latência, validação e conversão de `MockHttpError`.
 - Latência variável usa um gerador pseudo-aleatório com semente persistida, então a sequência é reproduzível.
 - Detalhe que já causou um falso positivo: o handler lê o estado **depois** da latência, então uma requisição em andamento durante `price-changed` responde com o preço novo. Os testes esperam a carga inicial antes de mudar o cenário.
@@ -128,13 +131,23 @@ Toda mudança no store passa por `publishNftUpdated` / `publishOrderUpdated`, qu
 - `pnpm test` (Vitest, MSW em Node): contratos, dinheiro, auth, catálogo, carrinho, checkout.
 - `pnpm test:e2e` (Playwright, 1440 e 390): as specs usam só a UI e a rede, com cenários do mock via `/__demo/scenario`. `reuseExistingServer` é `false` para nunca testar um `dist` antigo.
 - Regressão visual: baselines de início, detalhe, carrinho e pagamento em `e2e/responsive.spec.ts-snapshots`, com `maxDiffPixelRatio` de 0,005. Elas foram geradas pelo próprio app depois da conferência manual com o Figma, então protegem contra regressões e não provam fidelidade.
-- A rasterização de texto muda entre sistemas e versões do Chromium (glifos deslocam frações de pixel e uma linha pode quebrar diferente). As baselines atuais são de Linux com Chromium 141; em outro ambiente os 8 testes visuais são pulados com o motivo e o comando para gerar baselines locais (`pnpm test:e2e -g "regressão visual" --update-snapshots`). Os demais testes rodam em qualquer ambiente.
-- `PW_CHROMIUM_PATH` aponta o Playwright e o script de Lighthouse para um Chromium já instalado, sem download.
+- A rasterização de texto muda entre sistemas e versões do Chromium. Por isso o `@playwright/test` está fixado em 1.56.1: `playwright install chromium` baixa sempre o Chromium 141 com que as baselines foram geradas, e os testes visuais rodam e passam num checkout limpo em Linux. Em macOS/Windows, usar a imagem `mcr.microsoft.com/playwright:v1.56.1-noble` (README).
+- Nenhum teste é pulado. Ordenação, login por teclado e foco visível rodam também no mobile (ordenação pelo painel de filtros, login pelo favorito de um card).
+- Regressões cobertas desde a auditoria externa: cenário de falha preso (aba nova, dados no formato antigo, `?mock-reset=1`, restauração pela faixa), estados de erro em 320/375/390 px sem rolagem lateral, cotação que vence com o relógio controlado por `page.clock`.
 
 ## Limites
 
 - O mock não tem backend: sessão, pedidos e estoque vivem em `localStorage` e valem por navegador.
 - O binding de Socket.IO do MSW não suporta namespaces, acknowledgments nem binários (ver "Tempo real").
-- Três testes são pulados no projeto mobile (ordenação, teclado do header e foco por Tab), porque o controle ou o cenário só existe a partir de 768 px.
+- Performance mobile: antes da primeira pintura o navegador precisa do MSW (~177 kB gzip) e da aplicação (~133 kB gzip), em sequência, porque o `socket.io-client` só pode ser importado depois do MSW ativo. Testei `modulepreload` dos chunks da aplicação em paralelo: no Lighthouse mobile a Performance caiu de 93 para 83 (LCP 2,7 s → 3,7 s), porque os downloads passam a disputar banda com o chunk do MSW. A mudança foi descartada.
+
+## Desvios intencionais em relação ao Figma
+
+- Login e cadastro são diálogos sobre a página atual (no Figma, telas inteiras), para o usuário voltar ao mesmo ponto depois de entrar.
+- As contagens da barra lateral vêm das facetas da API, não dos números fixos do frame.
+- O card "NFT em destaque" mostra o NFT destacado mais caro da API.
+- No pagamento mobile, "Dados do colecionador" fica num bloco recolhível: o frame não tem os campos, mas o enunciado exige validar os dados do colecionador.
+- Os pontos dos carrosséis só aparecem quando há mais de uma página para rolar.
+- No catálogo mobile a coluna da direita é deslocada só visualmente (`transform`), para a ordem de leitura e de teclado seguir a listagem.
 - O Lighthouse reporta uma categoria extra no v13 (`agentic-browsing`, 50), fora das metas do desafio.
 - `vercel.json` (fallback de SPA) não foi exercitado em ambiente publicado.

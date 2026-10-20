@@ -94,9 +94,12 @@ test.describe('estados de carregamento e falha', () => {
 
 test.describe('teclado e foco', () => {
   test('login pode ser feito só pelo teclado e o foco volta ao disparador ao fechar', async ({ page }) => {
-    test.skip((page.viewportSize()?.width ?? 0) < 768, 'Header de desktop')
+    const mobile = (page.viewportSize()?.width ?? 0) < 768
     await page.goto('/mercado')
-    const trigger = page.getByRole('button', { name: 'Entrar', exact: true })
+    // No mobile não há header: o login abre pelo favorito de um card, que exige conta
+    const trigger = mobile
+      ? page.getByRole('button', { name: /^Favoritar / }).first()
+      : page.getByRole('button', { name: 'Entrar', exact: true })
     await trigger.focus()
     await page.keyboard.press('Enter')
     const dialog = page.getByRole('dialog')
@@ -113,7 +116,8 @@ test.describe('teclado e foco', () => {
     await page.keyboard.type('Demo@1234')
     await page.keyboard.press('Enter')
     await expect(dialog).toBeHidden()
-    await expect(page.getByRole('link', { name: 'Marina' })).toBeVisible()
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('jg-session-token'))).toBeTruthy()
+    if (!mobile) await expect(page.getByRole('link', { name: 'Marina' })).toBeVisible()
   })
 
   test('campos do formulário de pagamento têm rótulo e erro anunciado', async ({ page }) => {

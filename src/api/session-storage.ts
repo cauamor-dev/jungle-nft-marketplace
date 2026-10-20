@@ -1,3 +1,5 @@
+import { randomId } from '@/lib/random-id'
+
 const TOKEN_KEY = 'jg-session-token'
 const GUEST_KEY = 'jg-guest-id'
 
@@ -20,7 +22,7 @@ export function clearSessionToken() {
 export function getGuestId() {
   let id = localStorage.getItem(GUEST_KEY)
   if (!id) {
-    id = crypto.randomUUID()
+    id = randomId()
     localStorage.setItem(GUEST_KEY, id)
   }
   return id

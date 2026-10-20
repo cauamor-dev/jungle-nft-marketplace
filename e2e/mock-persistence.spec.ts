@@ -63,3 +63,65 @@ test.describe('persistência dos mocks após refresh', () => {
     await expect(page.getByTestId('nft-state')).toContainText('1.19 ETH, versão 1')
   })
 })
+
+// Regressão: um cenário de falha ficava salvo no localStorage sem prazo e deixava o catálogo
+// em "Algo deu errado" em qualquer aba, mesmo depois de recarregar ou tentar de novo.
+test.describe('cenário simulado não fica preso', () => {
+  const cards = (page: import('@playwright/test').Page) => page.locator('[data-testid="nft-card"]:visible')
+
+  test('falha vale só para a aba, aparece no banner e é restaurada pela interface', async ({ page, context }) => {
+    await page.goto('/')
+    await expect(cards(page).first()).toBeVisible()
+    await demoScenario(page, 'offline')
+
+    await page.reload()
+    const banner = page.getByTestId('scenario-banner')
+    await expect(banner).toContainText('offline')
+    await expect(page.getByTestId('catalog-error')).toContainText('Sem conexão com o servidor')
+
+    // Outra aba do mesmo navegador começa no caminho feliz
+    const other = await context.newPage()
+    await other.goto('/')
+    await expect(cards(other).first()).toBeVisible()
+    await expect(other.getByTestId('scenario-banner')).toHaveCount(0)
+    await other.close()
+
+    await banner.getByRole('button', { name: 'Restaurar condições normais' }).click()
+    await expect(banner).toBeHidden()
+    await expect(cards(page).first()).toBeVisible()
+    await page.reload()
+    await expect(cards(page).first()).toBeVisible()
+  })
+
+  test('dados salvos no formato antigo, com falha embutida, não travam o catálogo', async ({ page }) => {
+    await page.goto('/')
+    await expect(cards(page).first()).toBeVisible()
+    await page.evaluate(() => {
+      const data = JSON.parse(localStorage.getItem('jg-mock-db')!)
+      const legacy = {
+        ...data,
+        schemaVersion: 1,
+        scenario: { label: 'offline', latency: { kind: 'none' }, failures: [{ match: null, kind: 'network', status: 0, remaining: null }] },
+      }
+      localStorage.setItem('jg-mock-db', JSON.stringify(legacy))
+      sessionStorage.clear()
+    })
+    await page.reload()
+    await expect(cards(page).first()).toBeVisible()
+    await expect(page.getByTestId('scenario-banner')).toHaveCount(0)
+  })
+
+  test('?mock-reset=1 restaura dados e cenário antes de montar e limpa a URL', async ({ page }) => {
+    await page.goto('/')
+    await expect(cards(page).first()).toBeVisible()
+    await api(page, 'POST', '/api/cart/items', { nftId: 'nft_12', editionId: 'nft_12_1of50', quantity: 1 })
+    await demoScenario(page, 'http-5xx', { match: 'GET /api/nfts' })
+
+    await page.goto('/mercado?mock-reset=1')
+    await expect(page).toHaveURL(/\/mercado$/)
+    await expect(cards(page).first()).toBeVisible()
+    await expect(page.getByTestId('scenario-banner')).toHaveCount(0)
+    const cart = await api<{ items: unknown[] }>(page, 'GET', '/api/cart')
+    expect(cart.body.items).toHaveLength(0)
+  })
+})

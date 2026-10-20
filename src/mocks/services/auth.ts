@@ -1,6 +1,7 @@
 import type { User } from '@/api/contracts'
 import { persist, type DbState, type SessionRecord, type UserRecord } from '../db'
 import { MockHttpError } from '../http-error'
+import { randomId } from '@/lib/random-id'
 
 export const SESSION_TTL_MS = 2 * 60 * 60 * 1000
 
@@ -18,7 +19,7 @@ export function toUser(user: UserRecord): User {
 }
 
 export function createSession(db: DbState, userId: string): SessionRecord {
-  const session = { token: crypto.randomUUID(), userId, expiresAt: Date.now() + SESSION_TTL_MS }
+  const session = { token: randomId(), userId, expiresAt: Date.now() + SESSION_TTL_MS }
   db.sessions.push(session)
   persist()
   return session

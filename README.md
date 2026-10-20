@@ -21,6 +21,7 @@ Nada foi publicado: não há deploy nem envio à empresa.
 | --- | --- |
 | `pnpm install` | Instala as dependências a partir do lockfile |
 | `pnpm dev` | Servidor de desenvolvimento com os mocks ligados |
+| `pnpm dev:lan` | O mesmo, exposto na rede local para abrir no celular (ver "Testar no celular") |
 | `pnpm build` | Verifica tipos e gera `dist/` |
 | `pnpm preview` | Serve o build em `http://localhost:4173` |
 | `pnpm typecheck` | `tsc --noEmit` |
@@ -31,14 +32,20 @@ Nada foi publicado: não há deploy nem envio à empresa.
 
 Na primeira execução do Playwright: `pnpm exec playwright install chromium`.
 
-Os testes de regressão visual comparam com baselines geradas em Linux com Chromium 141. Em outro sistema ou versão eles são pulados com o motivo; para gerar baselines do seu ambiente: `pnpm test:e2e -g "regressão visual" --update-snapshots`. Relatório HTML em `playwright-report/` e traces das falhas em `test-results/`.
+O Playwright está fixado em 1.56.1 no lockfile, então `pnpm exec playwright install chromium` baixa sempre o mesmo Chromium (141) com que as baselines visuais foram geradas, e os 8 testes de regressão visual rodam e passam num checkout limpo em Linux. Nenhum teste é pulado. Em macOS ou Windows a rasterização de texto é diferente; rode a suíte na imagem oficial do Playwright (comando não executado neste ambiente, que não tem Docker):
+
+```bash
+docker run --rm --ipc=host -v "$PWD":/work -v /work/node_modules -w /work mcr.microsoft.com/playwright:v1.56.1-noble \
+  bash -lc "corepack enable && pnpm install --frozen-lockfile && pnpm test:e2e"
+```
+
+Relatório HTML em `playwright-report/` e traces das falhas em `test-results/`.
 
 ## Variáveis de ambiente
 
 | Variável | Padrão | Efeito |
 | --- | --- | --- |
 | `VITE_ENABLE_MOCKS` | `true` | `false` desliga o MSW. O build de demonstração deve manter ligado |
-| `PW_CHROMIUM_PATH` | vazio | Opcional. Caminho de um Chromium já instalado para o Playwright e o Lighthouse usarem, sem download |
 
 ## Credenciais fictícias
 
@@ -53,7 +60,15 @@ Cupons: `JUNGLE10` (10%), `BEMVINDO` (0,01 ETH), `EXPIRADO20` (expirado).
 
 ## Cenários e reset
 
-Os mocks guardam o estado em `localStorage` (chave `jg-mock-db`), então sessão, carrinho e pedidos sobrevivem a refresh. Cada cenário é selecionado por requisição, também no build publicado:
+Os dados dos mocks (sessão, carrinho, pedidos, perfil) ficam em `localStorage` (chave `jg-mock-db`) e sobrevivem a refresh. O cenário ativo (falhas, latência, socket bloqueado...) fica em `sessionStorage` (`jg-mock-scenario`): vale para a aba atual, sobrevive a reload e navegação, e uma aba ou sessão nova sempre começa no caminho feliz. Enquanto um cenário está ativo, uma faixa no topo da página mostra o nome dele e o botão **Restaurar condições normais** (que mantém carrinho e pedidos).
+
+Três formas de voltar ao normal:
+
+- o botão da faixa ou de `/dev/mocks` (condições normais, dados preservados);
+- **Restaurar tudo** em `/dev/mocks`, ou `POST /__demo/reset` (dados e cenário iniciais);
+- abrir qualquer rota com `?mock-reset=1` (por exemplo `/?mock-reset=1`): restaura tudo antes de a aplicação montar e tira o parâmetro da URL.
+
+Cada cenário é selecionado por requisição, também no build publicado:
 
 ```js
 // no console do navegador
@@ -93,6 +108,10 @@ await fetch('/__demo/reset', { method: 'POST' })
 - **Timeout após criar o pedido**: ative `post-create-order-timeout`, finalize a compra. O cliente reenvia com a mesma `Idempotency-Key` e recupera o mesmo pedido.
 - **Preço mudou durante o checkout**: com um item no carrinho e uma cotação gerada, ative `price-changed` para o mesmo NFT. `POST /api/orders` responde 409 `QUOTE_STALE` com a nova cotação.
 - **Queda do socket com pedido pendente**: crie o pedido, ative `disconnect-pending-order`, espere o pedido concluir (1,5 s), ative `reconnect-pending-order`. Depois da reconexão o cliente consulta a REST.
+
+## Testar no celular
+
+O jeito mais fiel é abrir a URL HTTPS publicada. Na rede local: `pnpm dev:lan` e abra no celular o endereço `http://<IP>:5173` mostrado no terminal. Fora de HTTPS e de localhost o navegador não registra o service worker; o MSW passa a interceptar dentro da página e catálogo, conta, carrinho e compra funcionam (o recibo conclui pela consulta REST). O tempo real simulado fica desligado nesse modo, porque o MSW 2.15 não intercepta WebSocket sem service worker, e uma faixa no topo avisa isso. Se a inicialização falhar por qualquer outro motivo, a página mostra um aviso com o link para restaurar a demonstração, nunca uma tela em branco.
 
 ## Deploy
 

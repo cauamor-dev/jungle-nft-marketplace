@@ -6,7 +6,7 @@ import lighthouse from 'lighthouse'
 
 const base = process.env.LIGHTHOUSE_URL ?? 'http://localhost:4173'
 const runs = Number(process.env.LIGHTHOUSE_RUNS ?? 3)
-const chromePath = process.env.PW_CHROMIUM_PATH ?? chromium.executablePath()
+const chromePath = chromium.executablePath()
 const outDir = 'lighthouse'
 const runsDir = `${outDir}/runs`
 const pages = [

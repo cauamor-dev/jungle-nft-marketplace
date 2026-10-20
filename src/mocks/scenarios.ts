@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { addEth } from '@/domain/money'
-import { defaultScenario, persist, type DbState, type FailureRule } from './db'
+import { announceScenario, defaultScenario, persist, type DbState, type FailureRule } from './db'
 import { publishNftUpdated, replayEvent, replayOlderEvent } from './events'
 import { MockHttpError } from './http-error'
 import { disconnectAll } from './socket-hub'
@@ -143,5 +143,6 @@ export function applyScenario(db: DbState, name: ScenarioName, params: Params) {
       break
   }
   persist()
+  announceScenario(db.scenario)
   return db.scenario
 }

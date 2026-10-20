@@ -120,6 +120,27 @@ test.describe('checkout', () => {
     expect(await ordersOf(page)).toHaveLength(1)
   })
 
+  test('cotação vencida é refeita sozinha (relógio controlado) e a compra continua possível', async ({ page }) => {
+    await page.clock.install()
+    const quotes: string[] = []
+    page.on('request', (request) => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/quotes') quotes.push(request.url())
+    })
+    await goToPaymentLoggedIn(page)
+    const before = quotes.length
+    expect(before).toBeGreaterThan(0)
+
+    // A cotação vale 5 minutos: sem esperar de verdade, o relógio da página avança e o app pede outra
+    await page.clock.fastForward('05:01')
+    await expect.poll(() => quotes.length).toBeGreaterThan(before)
+    await expect(page.getByRole('button', { name: 'Confirmar compra' })).toBeEnabled()
+
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await page.waitForURL('**/pedido/**')
+    await expect(page.getByTestId('order-receipt')).toHaveAttribute('data-status', 'confirmed', { timeout: 20_000 })
+    expect(await ordersOf(page)).toHaveLength(1)
+  })
+
   test('preço alterado em tempo real pede para aceitar os novos valores antes de pagar', async ({ page }) => {
     await goToPaymentLoggedIn(page)
     const oldTotal = (await page.locator('[data-testid="total"]:visible').first().textContent())!.trim()

@@ -24,3 +24,6 @@ export const scenarioNames = [
 ] as const
 
 export type ScenarioName = (typeof scenarioNames)[number]
+
+// Evento de janela disparado pelo mock quando o cenário muda; a interface só conhece o nome.
+export const scenarioEvent = 'jg:mock-scenario'

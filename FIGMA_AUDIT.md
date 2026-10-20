@@ -28,7 +28,7 @@ O arquivo original (`Ff0SksUi7UFtPWUO8kyNtw`) não foi lido: a conta conectada t
 
 ## Revisão de 20/10/2026
 
-Nova leitura da cópia pelo Figma MCP (somente `get_screenshot`). 13 dos 15 frames foram baixados; Mobile / Login (`16:1022`) e Mobile / Cadastro (`16:1228`) ficaram de fora porque a conta atingiu o limite de chamadas do MCP no plano Starter. Esses dois foram conferidos na rodada anterior e o diálogo mobile não mudou desde então.
+Nova leitura da cópia pelo Figma MCP (somente leitura: `get_screenshot`, `get_metadata`, `download_assets`). Os 15 frames foram baixados e comparados: 13 na primeira rodada e Mobile / Login (`16:1022`) e Mobile / Cadastro (`16:1228`) numa segunda, depois que o limite de chamadas do plano Starter liberou.
 
 Cada frame foi comparado com a tela do build (`pnpm build` + `pnpm preview`) em 1440 px e 414 px, além das baselines do Playwright em 390 px. Desvios corrigidos nesta revisão:
 
@@ -41,6 +41,8 @@ Cada frame foi comparado com a tela do build (`pnpm build` + `pnpm preview`) em 
 | Início (mobile) | Título do hero quebrava em três linhas em 390 px; faltavam os pontos do carrossel | Título em duas linhas com tamanho proporcional à largura; pontos do frame (`hero-dots-mobile.svg`) |
 | Confirmação | Botão "Ver no Etherscan" menor que no frame (30 px) | 47 px, texto 15 px |
 | Perfil e Carteiras | Barra lateral esticava até o fim do formulário | Altura do conteúdo, como no frame |
+| Cadastro (mobile) | Botão "Criar conta"; o frame mobile usa "Criar perfil" (o desktop usa "Criar conta") | Rótulo de cada frame |
+| Pagamento (mobile) | Coinbase com a letra "C" e ordem MetaMask/WalletConnect/Coinbase | Ícone "Iconly/Curved/Wallet" exportado do frame (`src/assets/icons/wallet.svg`) e ordem WalletConnect, MetaMask, Coinbase |
 
 ## Como as referências foram obtidas
 

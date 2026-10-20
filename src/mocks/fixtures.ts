@@ -8,7 +8,7 @@ import ivory800 from '@/assets/nfts/ivory-800.webp'
 import violeta400 from '@/assets/nfts/violeta-400.webp'
 import violeta800 from '@/assets/nfts/violeta-800.webp'
 import { categories, networks, type Category, type Network } from '@/api/contracts'
-import type { CouponRecord, SeedData, WalletRecord } from './db'
+import { SCHEMA_VERSION, type CouponRecord, type SeedData, type WalletRecord } from './db'
 import { hashPassword, sha256 } from './services/passwords'
 
 export const DEMO_PASSWORD = 'Demo@1234'
@@ -279,7 +279,7 @@ export async function buildSeed(): Promise<SeedData> {
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: SCHEMA_VERSION,
     sequence: 100,
     rngSeed: 20261019,
     catalogRequests: 0,

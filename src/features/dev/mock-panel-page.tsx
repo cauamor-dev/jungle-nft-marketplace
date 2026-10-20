@@ -2,16 +2,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useLogin, useLogout, useSession } from '@/features/auth/session'
 import { useNftDetail } from '@/features/nft/queries'
 import { useRealtimeActivity } from '@/features/realtime/realtime-provider'
+import { applyScenario, resetDemo, restoreNormalConditions } from '@/lib/demo'
 import { scenarioNames } from '@/mocks/scenario-names'
-
-async function demoRequest(path: string, body?: unknown) {
-  const response = await fetch(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  return response.json()
-}
 
 // Painel técnico dos mocks: seleciona cenários e mostra a atividade do Socket.IO. Não faz parte do layout do Figma.
 export function MockPanelPage() {
@@ -23,8 +15,28 @@ export function MockPanelPage() {
   const nft = useNftDetail('nft_01')
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-4">
+    <div className="mx-auto max-w-3xl space-y-6 p-4">
       <h1 className="text-xl font-semibold">Painel dos mocks</h1>
+      <p className="text-sm text-text-secondary">
+        Painel técnico da demonstração. Os cenários valem só para esta aba (uma aba nova começa normal) e ficam
+        indicados no topo da página enquanto estiverem ativos.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="rounded bg-primary px-3 py-1.5 text-sm font-bold text-ink"
+          onClick={() => void restoreNormalConditions().then(() => queryClient.invalidateQueries())}
+        >
+          Restaurar condições normais
+        </button>
+        <button
+          type="button"
+          className="rounded border border-primary px-3 py-1.5 text-sm font-bold text-text-accent"
+          onClick={() => void resetDemo().then(() => queryClient.resetQueries())}
+        >
+          Restaurar tudo (dados e cenário)
+        </button>
+      </div>
 
       <section aria-labelledby="session-title" className="space-y-2">
         <h2 id="session-title" className="font-medium">Sessão</h2>
@@ -64,13 +76,10 @@ export function MockPanelPage() {
         <h2 id="scenario-title" className="font-medium">Cenários</h2>
         <div className="flex flex-wrap gap-2">
           {scenarioNames.map((name) => (
-            <button key={name} type="button" className="rounded border px-2 py-1 text-sm" onClick={() => void demoRequest('/__demo/scenario', { name })}>
+            <button key={name} type="button" className="rounded border px-2 py-1 text-sm" onClick={() => void applyScenario(name)}>
               {name}
             </button>
           ))}
-          <button type="button" className="rounded border px-2 py-1 text-sm" onClick={() => void demoRequest('/__demo/reset')}>
-            reset
-          </button>
         </div>
       </section>
 
@@ -85,6 +94,6 @@ export function MockPanelPage() {
           ))}
         </ol>
       </section>
-    </main>
+    </div>
   )
 }

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { addFromDetail, expectNoHorizontalOverflow, goToPaymentLoggedIn, signIn } from './helpers'
+import { addFromDetail, demoScenario, expectNoHorizontalOverflow, goToPaymentLoggedIn, signIn } from './helpers'
 
 const widths = [390, 768, 1440]
 
@@ -50,9 +50,33 @@ for (const width of widths) {
   })
 }
 
+// Regressão: os botões dos estados de erro estouravam a largura entre 320 e 390 px.
+for (const width of [320, 375, 390]) {
+  test.describe(`estados de erro em ${width}px`, () => {
+    test.use({ viewport: { width, height: 800 } })
+
+    test('erro do catálogo e do detalhe, com o banner do cenário, cabem na tela', async ({ page }) => {
+      await page.goto('/mercado')
+      await settle(page)
+      await demoScenario(page, 'http-5xx', { match: 'GET /api/nfts' })
+      for (const [path, testId] of [['/mercado?q=golden', 'catalog-error'], ['/nft/nft_12', 'nft-error']]) {
+        await page.goto(path)
+        const error = page.getByTestId(testId)
+        await expect(error).toBeVisible({ timeout: 15_000 })
+        await expect(page.getByTestId('scenario-banner')).toBeVisible()
+        await expectNoHorizontalOverflow(page)
+        for (const control of await error.locator('a, button').all()) {
+          const box = (await control.boundingBox())!
+          expect(box.x, `${testId}: início do controle`).toBeGreaterThanOrEqual(0)
+          expect(box.x + box.width, `${testId}: fim do controle`).toBeLessThanOrEqual(width)
+        }
+      }
+    })
+  })
+}
+
 test.describe('acessibilidade', () => {
   test('o foco do teclado é visível nos controles principais', async ({ page }) => {
-    test.skip((page.viewportSize()?.width ?? 0) < 768, 'Teclado físico: verificado no desktop')
     await page.goto('/mercado')
     await settle(page)
     await page.locator('body').click({ position: { x: 5, y: 5 } })
@@ -110,23 +134,10 @@ test.describe('acessibilidade', () => {
   })
 })
 
-// Screenshots dependem do sistema e da versão do Chromium (rasterização e largura dos glifos).
-// As baselines versionadas foram geradas em Linux com o Chromium abaixo; em outro ambiente a
-// comparação daria falso negativo, então o teste é pulado com o motivo e o comando para gerar baselines locais.
-const BASELINE_PLATFORM = 'linux'
-const BASELINE_CHROMIUM_MAJOR = '141'
-
+// Baselines geradas em Linux com o Chromium do Playwright fixado no lockfile (1.56.1 -> Chromium 141).
+// Em macOS ou Windows a rasterização de texto é outra: rode pela imagem Docker oficial (ver README).
 test.describe('regressão visual', () => {
   const shot = { animations: 'disabled' as const, maxDiffPixelRatio: 0.005 }
-
-  test.beforeEach(({ browser }) => {
-    const major = browser.version().split('.')[0]
-    test.skip(
-      process.platform !== BASELINE_PLATFORM || major !== BASELINE_CHROMIUM_MAJOR,
-      `baselines de ${BASELINE_PLATFORM}/Chromium ${BASELINE_CHROMIUM_MAJOR}; este ambiente é ${process.platform}/Chromium ${major}. ` +
-        'Gere baselines locais com: pnpm test:e2e -g "regressão visual" --update-snapshots',
-    )
-  })
 
   test('início', async ({ page }, info) => {
     await page.goto('/')

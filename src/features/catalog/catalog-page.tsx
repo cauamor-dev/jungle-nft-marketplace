@@ -10,7 +10,7 @@ import { EmptyResults, ErrorState, ProductGrid, ProductGridSkeleton } from './pr
 import { Blog, Promos } from './promos'
 import { useNftList } from './queries'
 import { searchToParams, type CatalogSearch } from './search'
-import { Toolbar } from './toolbar'
+import { SortSelect, Toolbar } from './toolbar'
 
 type CatalogPageProps = {
   variant: 'home' | 'market'
@@ -136,8 +136,14 @@ function FilterSheet({ open, onOpenChange, search, facets, onChange }: FilterShe
       >
         <DialogTitle className="px-5 pt-5 text-lg font-bold">Filtros</DialogTitle>
         <DialogDescription id="filters-description" className="sr-only">
-          Filtre os NFTs por coleção, faixa de preço e rede.
+          Ordene e filtre os NFTs por coleção, faixa de preço e rede.
         </DialogDescription>
+        <SortSelect
+          id="sort-mobile"
+          value={search.sort}
+          onSort={(sort) => onChange({ sort: sort === 'recent' ? undefined : sort })}
+          className="flex px-5 pt-4 md:hidden"
+        />
         <FiltersPanel search={search} facets={facets} onChange={onChange} />
       </DialogContent>
     </Dialog>

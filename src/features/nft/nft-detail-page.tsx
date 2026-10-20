@@ -12,6 +12,7 @@ import starEmpty from '@/assets/icons/star-empty.svg'
 import { pickDefaultEdition } from '@/components/nft/editions'
 import { Button } from '@/components/ui/button'
 import { QuantityStepper } from '@/components/ui/quantity-stepper'
+import { ErrorActions } from '@/components/ui/error-actions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/toast'
 import { displayEth } from '@/domain/money'
@@ -57,12 +58,12 @@ function DetailError({ notFound, onRetry }: { notFound: boolean; onRetry: () => 
       <p className="max-w-md text-sm text-text-secondary">
         {notFound ? 'Esta obra não existe ou foi removida do mercado.' : 'Verifique a conexão e tente de novo.'}
       </p>
-      <div className="flex gap-3">
+      <ErrorActions>
         {!notFound && <Button onClick={onRetry}>Tentar de novo</Button>}
         <Button variant={notFound ? 'primary' : 'outline'} asChild>
           <Link to="/mercado">Voltar ao mercado</Link>
         </Button>
-      </div>
+      </ErrorActions>
     </div>
   )
 }

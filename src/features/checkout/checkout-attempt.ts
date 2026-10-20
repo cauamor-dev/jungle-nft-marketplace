@@ -1,4 +1,5 @@
 import type { CreateOrderInput } from '@/api/contracts'
+import { randomId } from '@/lib/random-id'
 
 const STORAGE_KEY = 'jg-checkout-attempt'
 
@@ -19,7 +20,7 @@ export function getAttemptKey(userId: string, input: CreateOrderInput) {
   const signature = signatureOf(input)
   const current = load()
   if (current && current.userId === userId && current.signature === signature) return current.idempotencyKey
-  const attempt: Attempt = { userId, signature, idempotencyKey: crypto.randomUUID() }
+  const attempt: Attempt = { userId, signature, idempotencyKey: randomId() }
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(attempt))
   return attempt.idempotencyKey
 }

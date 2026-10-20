@@ -8,6 +8,7 @@ import type {
   Wallet,
 } from '@/api/contracts'
 import { buildSeed } from './fixtures'
+import { scenarioEvent } from './scenario-names'
 
 export type UserRecord = {
   id: string
@@ -103,7 +104,10 @@ export type DbState = {
 export type SeedData = Omit<DbState, 'scenario'>
 
 const STORAGE_KEY = 'jg-mock-db'
-export const SCHEMA_VERSION = 1
+// O cenário (falhas, latência, socket bloqueado...) vale só para a aba atual: sobrevive a reload e
+// navegação, mas uma aba ou sessão nova sempre começa no caminho feliz. Os dados ficam no localStorage.
+const SCENARIO_KEY = 'jg-mock-scenario'
+export const SCHEMA_VERSION = 2
 
 export function defaultScenario(): ScenarioState {
   return {
@@ -122,34 +126,49 @@ export function defaultScenario(): ScenarioState {
 
 const memoryStorage = new Map<string, string>()
 
-function readStorage(): string | null {
-  if (typeof localStorage === 'undefined') return memoryStorage.get(STORAGE_KEY) ?? null
-  return localStorage.getItem(STORAGE_KEY)
+function readStorage(storage: Storage | undefined, key: string): string | null {
+  return storage ? storage.getItem(key) : (memoryStorage.get(key) ?? null)
 }
 
-function writeStorage(value: string) {
-  if (typeof localStorage === 'undefined') memoryStorage.set(STORAGE_KEY, value)
-  else localStorage.setItem(STORAGE_KEY, value)
+function writeStorage(storage: Storage | undefined, key: string, value: string) {
+  if (storage) storage.setItem(key, value)
+  else memoryStorage.set(key, value)
 }
+
+const local = () => (typeof localStorage === 'undefined' ? undefined : localStorage)
+const session = () => (typeof sessionStorage === 'undefined' ? undefined : sessionStorage)
 
 let state: DbState | null = null
 let loading: Promise<DbState> | null = null
 
-function parseStored(): DbState | null {
-  const raw = readStorage()
+function parseData(): SeedData | null {
+  const raw = readStorage(local(), STORAGE_KEY)
   if (!raw) return null
   try {
-    const parsed = JSON.parse(raw) as DbState
-    return parsed.schemaVersion === SCHEMA_VERSION ? parsed : null
+    // A versão 1 gravava o cenário junto dos dados; ele é descartado na migração.
+    const data = JSON.parse(raw) as Partial<DbState> & SeedData
+    delete data.scenario
+    if (data.schemaVersion === 1) return { ...data, schemaVersion: SCHEMA_VERSION }
+    return data.schemaVersion === SCHEMA_VERSION ? data : null
   } catch {
     return null
+  }
+}
+
+function parseScenario(): ScenarioState {
+  const raw = readStorage(session(), SCENARIO_KEY)
+  if (!raw) return defaultScenario()
+  try {
+    return { ...defaultScenario(), ...(JSON.parse(raw) as Partial<ScenarioState>) }
+  } catch {
+    return defaultScenario()
   }
 }
 
 export function getDb(): Promise<DbState> {
   if (state) return Promise.resolve(state)
   loading ??= (async () => {
-    state = parseStored() ?? { ...(await buildSeed()), scenario: defaultScenario() }
+    state = { ...(parseData() ?? (await buildSeed())), scenario: parseScenario() }
     persist()
     return state
   })()
@@ -157,13 +176,23 @@ export function getDb(): Promise<DbState> {
 }
 
 export function persist() {
-  if (state) writeStorage(JSON.stringify(state))
+  if (!state) return
+  const { scenario, ...data } = state
+  writeStorage(local(), STORAGE_KEY, JSON.stringify(data))
+  writeStorage(session(), SCENARIO_KEY, JSON.stringify(scenario))
+}
+
+// Avisa a interface (banner de cenário ativo) sem que ela precise importar o mock.
+export function announceScenario(scenario: ScenarioState) {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent(scenarioEvent, { detail: { label: scenario.label } }))
 }
 
 export async function resetDb(scenario?: Partial<ScenarioState>) {
   state = { ...(await buildSeed()), scenario: { ...defaultScenario(), ...scenario } }
   loading = Promise.resolve(state)
   persist()
+  announceScenario(state.scenario)
   return state
 }
 

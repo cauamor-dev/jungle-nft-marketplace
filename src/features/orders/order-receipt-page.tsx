@@ -8,6 +8,7 @@ import thankYou from '@/assets/icons/thank-you.svg'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useToast } from '@/components/ui/toast'
+import { ErrorActions } from '@/components/ui/error-actions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { displayEth } from '@/domain/money'
 import { isApiError } from '@/domain/errors'
@@ -43,12 +44,12 @@ function Receipt({ orderId }: { orderId: string }) {
       <div role="alert" className="mx-auto flex max-w-[578px] flex-col items-center gap-4 px-6 py-24 text-center" data-testid="order-error">
         <h1 className="text-2xl font-bold">Pedido indisponível</h1>
         <p className="text-sm text-text-secondary">{message}</p>
-        <div className="flex gap-3">
+        <ErrorActions>
           {!(isApiError(error) && error.status < 500) && <Button onClick={() => void refetch()}>Tentar de novo</Button>}
           <Button variant="outline" asChild>
             <Link to="/mercado">Voltar ao mercado</Link>
           </Button>
-        </div>
+        </ErrorActions>
       </div>
     )
   }

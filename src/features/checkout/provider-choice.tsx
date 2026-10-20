@@ -1,4 +1,5 @@
-import { walletTypes, type WalletType } from '@/api/contracts'
+import type { WalletType } from '@/api/contracts'
+import walletIcon from '@/assets/icons/wallet.svg'
 import { cn } from '@/lib/cn'
 import { walletTypeInitials, walletTypeLabels } from '@/lib/wallets'
 
@@ -8,12 +9,15 @@ type ProviderChoiceProps = {
   variant: 'rows' | 'cards'
 }
 
+// Ordem do frame de pagamento do Figma.
+const providers: WalletType[] = ['walletconnect', 'metamask', 'coinbase']
+
 // Mesma escolha do select "Tipo de carteira", apresentada como rádios.
 export function ProviderChoice({ value, onChange, variant }: ProviderChoiceProps) {
   const cards = variant === 'cards'
   return (
     <div role="radiogroup" aria-label="Carteira e rede" className={cn('flex flex-col', cards ? 'gap-3' : 'gap-4')}>
-      {walletTypes.map((type) => {
+      {providers.map((type) => {
         const selected = type === value
         return (
           <label
@@ -34,7 +38,7 @@ export function ProviderChoice({ value, onChange, variant }: ProviderChoiceProps
             />
             {cards && (
               <span aria-hidden="true" className="grid size-10 place-items-center rounded-full border border-line-soft bg-surface-raised text-sm font-bold text-text-accent">
-                {walletTypeInitials[type]}
+                {type === 'coinbase' ? <img src={walletIcon} alt="" className="size-5" /> : walletTypeInitials[type]}
               </span>
             )}
             <span>{walletTypeLabels[type]}</span>

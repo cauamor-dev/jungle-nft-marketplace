@@ -46,25 +46,32 @@ export function Toolbar({ search, to, onSort }: ToolbarProps) {
           )
         })}
       </nav>
-      <div className="hidden items-center gap-1 text-[15px] md:flex">
-        <label htmlFor="sort" className="whitespace-nowrap">
-          Ordenar por:
-        </label>
-        <div className="relative">
-          <select
-            id="sort"
-            value={search.sort ?? 'recent'}
-            onChange={(event) => onSort(event.target.value as Sort)}
-            className="cursor-pointer appearance-none bg-transparent py-1 pl-1 pr-5 text-[15px] text-foreground"
-          >
-            {sortOptions.map((option) => (
-              <option key={option} value={option} className="bg-surface-card">
-                {sortLabels[option]}
-              </option>
-            ))}
-          </select>
-          <img src={chevron} alt="" className="pointer-events-none absolute right-0 top-1/2 w-3 -translate-y-1/2" />
-        </div>
+      <SortSelect id="sort" value={search.sort} onSort={onSort} className="hidden md:flex" />
+    </div>
+  )
+}
+
+// No desktop fica na barra do catálogo; no mobile, no topo do painel de filtros.
+export function SortSelect({ id, value, onSort, className }: { id: string; value: Sort | undefined; onSort: (sort: Sort) => void; className?: string }) {
+  return (
+    <div className={cn('items-center gap-1 text-[15px]', className)}>
+      <label htmlFor={id} className="whitespace-nowrap">
+        Ordenar por:
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value ?? 'recent'}
+          onChange={(event) => onSort(event.target.value as Sort)}
+          className="cursor-pointer appearance-none bg-transparent py-1 pl-1 pr-5 text-[15px] text-foreground"
+        >
+          {sortOptions.map((option) => (
+            <option key={option} value={option} className="bg-surface-card">
+              {sortLabels[option]}
+            </option>
+          ))}
+        </select>
+        <img src={chevron} alt="" className="pointer-events-none absolute right-0 top-1/2 w-3 -translate-y-1/2" />
       </div>
     </div>
   )
