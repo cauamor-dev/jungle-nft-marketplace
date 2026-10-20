@@ -1,0 +1,253 @@
+{
+  "lighthouse": "13.5.0",
+  "environment": {
+    "date": "2026-10-20T23:46:55.773Z",
+    "node": "v22.22.0",
+    "os": "Linux 6.18.44-fc-v140 x64",
+    "cpus": 4,
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36",
+    "server": "vite preview (build de produção com mocks ligados, cenário padrão)"
+  },
+  "base": "http://localhost:4173",
+  "runs": 3,
+  "targets": {
+    "performance": 90,
+    "accessibility": 95,
+    "best-practices": 95,
+    "seo": 90
+  },
+  "summary": [
+    {
+      "page": "home",
+      "profile": "mobile",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 98,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 1953.18085,
+          "tbt": 92,
+          "cls": 0
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 97,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 1941.7504,
+          "tbt": 162.5,
+          "cls": 0
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 98,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 1909.5929999999998,
+          "tbt": 123.5,
+          "cls": 0
+        }
+      ],
+      "medians": {
+        "performance": 98,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "medianMetrics": {
+        "lcpMs": 1942,
+        "tbtMs": 124,
+        "cls": 0
+      },
+      "report": "home-mobile.report.html",
+      "passed": true
+    },
+    {
+      "page": "detalhe",
+      "profile": "mobile",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 98,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 2326.2831,
+          "tbt": 10,
+          "cls": 0
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 98,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 2328.0144,
+          "tbt": 10.5,
+          "cls": 0
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 97,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 2345.8244,
+          "tbt": 16.500000000000114,
+          "cls": 0
+        }
+      ],
+      "medians": {
+        "performance": 98,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "medianMetrics": {
+        "lcpMs": 2328,
+        "tbtMs": 11,
+        "cls": 0
+      },
+      "report": "detalhe-mobile.report.html",
+      "passed": true
+    },
+    {
+      "page": "home",
+      "profile": "desktop",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 626.1442000000001,
+          "tbt": 2,
+          "cls": 0.00017477555398567952
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 543.654,
+          "tbt": 0,
+          "cls": 0.00017477555398567952
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 558.0802,
+          "tbt": 0,
+          "cls": 0.00017477555398567952
+        }
+      ],
+      "medians": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "medianMetrics": {
+        "lcpMs": 558,
+        "tbtMs": 0,
+        "cls": 0.00017477555398567952
+      },
+      "report": "home-desktop.report.html",
+      "passed": true
+    },
+    {
+      "page": "detalhe",
+      "profile": "desktop",
+      "runs": [
+        {
+          "run": 1,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 688.3576,
+          "tbt": 0,
+          "cls": 0
+        },
+        {
+          "run": 2,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 661.4359999999999,
+          "tbt": 0,
+          "cls": 0
+        },
+        {
+          "run": 3,
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100,
+            "agentic-browsing": 50
+          },
+          "lcp": 666.6458000000001,
+          "tbt": 0,
+          "cls": 0
+        }
+      ],
+      "medians": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "medianMetrics": {
+        "lcpMs": 667,
+        "tbtMs": 0,
+        "cls": 0
+      },
+      "report": "detalhe-desktop.report.html",
+      "passed": true
+    }
+  ]
+}
