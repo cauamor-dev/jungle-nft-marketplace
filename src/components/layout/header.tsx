@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
 import cartIcon from '@/assets/icons/cart.svg'
 import badgeIcon from '@/assets/icons/cart-badge.svg'
@@ -7,6 +7,7 @@ import searchIcon from '@/assets/icons/search.svg'
 import { useAuthDialog } from '@/features/auth/auth-context'
 import { useSession } from '@/features/auth/session'
 import { useCartCount } from '@/features/cart/queries'
+import { useLiveSearch } from '@/features/catalog/use-live-search'
 import { cn } from '@/lib/cn'
 
 type NavSection = 'home' | 'market'
@@ -22,6 +23,8 @@ type HeaderProps = { active: NavSection; divider?: boolean }
 
 export function Header({ active, divider = false }: HeaderProps) {
   const [searching, setSearching] = useState(false)
+  const search = useLiveSearch()
+  const open = searching || search.active
 
   return (
     <header className="mx-auto hidden w-full max-w-[1200px] px-6 md:block md:pt-6 xl:px-0">
@@ -50,10 +53,10 @@ export function Header({ active, divider = false }: HeaderProps) {
               )
             })}
           </nav>
-          <HeaderActions onToggleSearch={() => setSearching((current) => !current)} searching={searching} />
+          <HeaderActions onToggleSearch={() => setSearching((current) => !current)} searching={open} />
         </div>
       </div>
-      {searching && <HeaderSearch onDone={() => setSearching(false)} />}
+      {open && <HeaderSearch search={search} />}
     </header>
   )
 }
@@ -103,22 +106,20 @@ function HeaderActions({ onToggleSearch, searching }: { onToggleSearch: () => vo
   )
 }
 
-function HeaderSearch({ onDone }: { onDone: () => void }) {
-  const navigate = useNavigate()
-
+function HeaderSearch({ search }: { search: ReturnType<typeof useLiveSearch> }) {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const q = String(new FormData(event.currentTarget).get('q') ?? '').trim()
-    onDone()
-    void navigate({ to: '/mercado', search: { q: q || undefined } })
+    search.submit()
   }
 
   return (
-    <form role="search" onSubmit={submit} className="flex gap-2 pb-4 pt-3">
+    <form role="search" onSubmit={submit} className="flex animate-rise-in gap-2 pb-4 pt-3">
       <input
         name="q"
         type="search"
         autoFocus
+        value={search.value}
+        onChange={(event) => search.change(event.target.value)}
         aria-label="Buscar NFTs pelo nome"
         placeholder="Buscar por nome, coleção ou criador"
         className="h-10 flex-1 rounded-md border border-line bg-surface-card px-3 text-sm placeholder:text-secondary"

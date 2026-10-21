@@ -2,24 +2,28 @@ import { useState, type FormEvent } from 'react'
 import filterIcon from '@/assets/icons/filter.svg'
 import searchIcon from '@/assets/icons/search-mobile.svg'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import { useIsDesktop } from '@/lib/use-media-query'
 import { FeaturedBanner } from './featured-banner'
 import { FiltersPanel } from './filters-panel'
 import { Hero } from './hero'
 import { Pagination } from './pagination'
 import { EmptyResults, ErrorState, ProductGrid, ProductGridSkeleton } from './product-grid'
 import { Blog, Promos } from './promos'
+import { MobileFeed } from './mobile-feed'
 import { useNftList } from './queries'
+import { useLiveSearch } from './use-live-search'
 import { searchToParams, type CatalogSearch } from './search'
 import { SortSelect, Toolbar } from './toolbar'
 
 type CatalogPageProps = {
   variant: 'home' | 'market'
   search: CatalogSearch
-  onSearchChange: (next: CatalogSearch) => void
+  onSearchChange: (next: CatalogSearch, options?: { replace?: boolean }) => void
 }
 
 export function CatalogPage({ variant, search, onSearchChange }: CatalogPageProps) {
   const list = useNftList(searchToParams(search))
+  const desktop = useIsDesktop()
   const [filtersOpen, setFiltersOpen] = useState(false)
   const to = variant === 'home' ? '/' : '/mercado'
 
@@ -28,7 +32,7 @@ export function CatalogPage({ variant, search, onSearchChange }: CatalogPageProp
 
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-6 pt-10 md:gap-8 md:pt-8 xl:px-0 lg:gap-24">
-      <MobileSearch value={search.q ?? ''} onSubmit={(q) => update({ q: q || undefined })} onOpenFilters={() => setFiltersOpen(true)} />
+      <MobileSearch onOpenFilters={() => setFiltersOpen(true)} />
 
       {variant === 'home' ? <Hero /> : <h1 className="sr-only">Mercado de NFTs</h1>}
 
@@ -38,7 +42,7 @@ export function CatalogPage({ variant, search, onSearchChange }: CatalogPageProp
           {variant === 'home' && <FeaturedBanner />}
         </aside>
 
-        <section aria-label="Catálogo de NFTs" className="flex min-w-0 flex-1 flex-col gap-8 lg:gap-[88px]">
+        <section id="resultados" aria-label="Catálogo de NFTs" className="flex min-w-0 flex-1 scroll-mt-6 flex-col gap-8 lg:gap-[88px]">
           <div className="flex flex-col gap-6 md:gap-8">
             <div className="flex items-center justify-between gap-4 lg:block">
               <div className="min-w-0 flex-1">
@@ -53,9 +57,13 @@ export function CatalogPage({ variant, search, onSearchChange }: CatalogPageProp
               </button>
             </div>
 
-            <Results list={list} onClear={clearFilters} />
+            {desktop || list.isError || list.data?.total === 0 ? (
+              <Results list={list} onClear={clearFilters} />
+            ) : (
+              <MobileFeed search={search} onLoadMore={(page) => onSearchChange({ ...search, page }, { replace: true })} />
+            )}
           </div>
-          {list.data && <Pagination page={list.data.page} totalPages={list.data.totalPages} search={search} to={to} />}
+          {desktop && list.data && <Pagination page={list.data.page} totalPages={list.data.totalPages} search={search} to={to} />}
         </section>
       </div>
 
@@ -86,10 +94,12 @@ function Results({ list, onClear }: { list: ReturnType<typeof useNftList>; onCle
   )
 }
 
-function MobileSearch({ value, onSubmit, onOpenFilters }: { value: string; onSubmit: (q: string) => void; onOpenFilters: () => void }) {
+function MobileSearch({ onOpenFilters }: { onOpenFilters: () => void }) {
+  const search = useLiveSearch()
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    onSubmit(String(new FormData(event.currentTarget).get('q') ?? '').trim())
+    search.submit()
   }
 
   return (
@@ -98,10 +108,10 @@ function MobileSearch({ value, onSubmit, onOpenFilters }: { value: string; onSub
         <img src={searchIcon} alt="" className="size-[22px]" />
         <span className="sr-only">Buscar coleções e NFTs</span>
         <input
-          key={value}
           name="q"
           type="search"
-          defaultValue={value}
+          value={search.value}
+          onChange={(event) => search.change(event.target.value)}
           placeholder="Explorar coleções"
           className="min-w-0 flex-1 self-stretch bg-transparent text-sm font-bold text-secondary placeholder:text-secondary focus:text-foreground"
         />

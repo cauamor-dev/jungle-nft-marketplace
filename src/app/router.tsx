@@ -40,7 +40,7 @@ const indexRoute = createRoute({
   component: function HomeRoute() {
     const search = indexRoute.useSearch()
     const navigate = indexRoute.useNavigate()
-    return <CatalogPage variant="home" search={search} onSearchChange={(next) => void navigate({ search: next })} />
+    return <CatalogPage variant="home" search={search} onSearchChange={(next, options) => void navigate({ search: next, resetScroll: false, replace: options?.replace })} />
   },
 })
 
@@ -51,7 +51,7 @@ const marketRoute = createRoute({
   component: function MarketRoute() {
     const search = marketRoute.useSearch()
     const navigate = marketRoute.useNavigate()
-    return <CatalogPage variant="market" search={search} onSearchChange={(next) => void navigate({ search: next })} />
+    return <CatalogPage variant="market" search={search} onSearchChange={(next, options) => void navigate({ search: next, resetScroll: false, replace: options?.replace })} />
   },
 })
 
