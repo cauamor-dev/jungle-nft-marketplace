@@ -2,14 +2,13 @@ import { Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import type { Edition, Nft } from '@/api/contracts'
 import cartIcon from '@/assets/icons/card-cart.svg'
-import heartLight from '@/assets/icons/heart-light.svg'
-import heart from '@/assets/icons/heart.svg'
 import shareLinkedin from '@/assets/icons/share-linkedin.svg'
 import shareMail from '@/assets/icons/share-mail.svg'
 import shareTwitter from '@/assets/icons/share-twitter.svg'
 import star from '@/assets/icons/star.svg'
 import starEmpty from '@/assets/icons/star-empty.svg'
 import { pickDefaultEdition } from '@/components/nft/editions'
+import { HeartIcon } from '@/components/nft/heart-icon'
 import { Button } from '@/components/ui/button'
 import { QuantityStepper } from '@/components/ui/quantity-stepper'
 import { ErrorActions } from '@/components/ui/error-actions'
@@ -85,7 +84,6 @@ function NftDetail({ nft }: { nft: Nft }) {
   const navigate = useNavigate()
   const router = useRouter()
   const { notify } = useToast()
-  const requireAuth = useRequireAuth()
   const favorites = useFavorites()
   const toggleFavorite = useToggleFavorite()
   const addToCart = useAddToCart()
@@ -126,13 +124,15 @@ function NftDetail({ nft }: { nft: Nft }) {
 
   const buy = () => addAndThen(() => void navigate({ to: '/carrinho' }))
   const addOnly = () => addAndThen(() => notify(`${nft.title} foi para o carrinho.`, 'success'))
-  const favorite = () =>
-    requireAuth(() =>
-      toggleFavorite.mutate(
-        { nftId: nft.id, favorite: !isFavorite },
-        { onError: () => notify('Não foi possível atualizar seus favoritos.', 'error') },
-      ),
-    )
+  const favorite = useRequireAuth(() =>
+    toggleFavorite.mutate(
+      { nftId: nft.id, favorite: !isFavorite },
+      {
+        onSuccess: () => notify(isFavorite ? `${nft.title} saiu dos favoritos.` : `${nft.title} foi para os favoritos.`, 'success'),
+        onError: () => notify('Não foi possível atualizar seus favoritos.', 'error'),
+      },
+    ),
+  )
 
   const shareUrl = encodeURIComponent(window.location.href)
   const shareText = encodeURIComponent(`${nft.title} no Kurio`)
@@ -174,7 +174,7 @@ function NftDetail({ nft }: { nft: Nft }) {
             aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar'}
             className="absolute right-7 top-6 grid size-9 touch-target place-items-center rounded-full border border-line-soft bg-surface-card"
           >
-            <img src={isFavorite ? heartLight : heart} alt="" className="size-4" />
+            <HeartIcon filled={isFavorite} className="size-4" />
           </button>
           <div className="h-[330px] overflow-hidden rounded-t-[24px]">
             <img src={nft.images[0]?.src} alt={nft.images[0]?.alt} fetchPriority="high" className={cn('w-full rounded-[24px] object-cover', unavailable && 'opacity-60 grayscale')} />
@@ -266,9 +266,14 @@ function NftDetail({ nft }: { nft: Nft }) {
                 <Button className="h-10 w-[130px] text-sm" onClick={buy} disabled={unavailable || addToCart.isPending}>
                   COMPRAR
                 </Button>
-                <Button variant="outline" className="h-10 w-[130px] gap-2 text-sm font-medium" onClick={favorite} aria-pressed={isFavorite}>
-                  <img src={isFavorite ? heartLight : heart} alt="" className="size-5" />
-                  Favoritar
+                <Button
+                  variant="outline"
+                  className={cn('h-10 min-w-[130px] gap-2 px-3 text-sm font-medium', isFavorite && 'bg-primary/15')}
+                  onClick={favorite}
+                  aria-pressed={isFavorite}
+                >
+                  <HeartIcon filled={isFavorite} className="size-5" />
+                  {isFavorite ? 'Favoritado' : 'Favoritar'}
                 </Button>
               </div>
             </div>

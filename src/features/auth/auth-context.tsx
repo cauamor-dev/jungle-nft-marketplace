@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSession } from './session'
 
 export type AuthMode = 'login' | 'register'
@@ -35,14 +35,35 @@ export function useAuthDialog() {
   return value
 }
 
-export function useRequireAuth() {
+// Ação que exige conta: sem sessão abre o login e, quando a pessoa entra, executa a ação na hora (com o estado
+// já da conta nova). Fechar o login sem entrar descarta a intenção.
+export function useRequireAuth(action: () => void) {
   const { data: session } = useSession()
-  const { open } = useAuthDialog()
-  return useCallback(
-    (action: () => void) => {
-      if (session) action()
-      else open('login')
-    },
-    [session, open],
-  )
+  const { open, mode } = useAuthDialog()
+  const latest = useRef(action)
+  const pending = useRef(false)
+  const dialogShown = useRef(false)
+
+  useEffect(() => {
+    latest.current = action
+  })
+
+  useEffect(() => {
+    if (!pending.current) return
+    if (session) {
+      pending.current = false
+      latest.current()
+    } else if (mode) dialogShown.current = true
+    else if (dialogShown.current) {
+      dialogShown.current = false
+      pending.current = false
+    }
+  }, [session, mode])
+
+  return useCallback(() => {
+    if (session) return action()
+    pending.current = true
+    dialogShown.current = false
+    open('login')
+  }, [session, open, action])
 }

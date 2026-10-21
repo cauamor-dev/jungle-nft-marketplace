@@ -1,14 +1,13 @@
 import { Link } from '@tanstack/react-router'
 import type { Nft } from '@/api/contracts'
 import cartIcon from '@/assets/icons/card-cart.svg'
-import heartLight from '@/assets/icons/heart-light.svg'
-import heartOutline from '@/assets/icons/heart.svg'
 import zoomIcon from '@/assets/icons/zoom.svg'
 import { useRequireAuth } from '@/features/auth/auth-context'
 import { useAddToCart } from '@/features/cart/queries'
 import { useFavorites, useToggleFavorite } from '@/features/favorites/queries'
 import { useToast } from '@/components/ui/toast'
 import { cn } from '@/lib/cn'
+import { HeartIcon } from './heart-icon'
 import { Price } from './price'
 import { pickDefaultEdition } from './editions'
 
@@ -20,7 +19,6 @@ type NftCardProps = {
 
 export function NftCard({ nft, className, imageEager }: NftCardProps) {
   const image = nft.images[0]
-  const requireAuth = useRequireAuth()
   const favorites = useFavorites()
   const toggleFavorite = useToggleFavorite()
   const addToCart = useAddToCart()
@@ -28,14 +26,15 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
   const isFavorite = favorites.data?.nftIds.includes(nft.id) ?? false
   const edition = pickDefaultEdition(nft)
 
-  function handleFavorite() {
-    requireAuth(() =>
-      toggleFavorite.mutate(
-        { nftId: nft.id, favorite: !isFavorite },
-        { onError: () => notify('Não foi possível atualizar seus favoritos.', 'error') },
-      ),
-    )
-  }
+  const handleFavorite = useRequireAuth(() =>
+    toggleFavorite.mutate(
+      { nftId: nft.id, favorite: !isFavorite },
+      {
+        onSuccess: () => notify(isFavorite ? `${nft.title} saiu dos favoritos.` : `${nft.title} foi para os favoritos.`, 'success'),
+        onError: () => notify('Não foi possível atualizar seus favoritos.', 'error'),
+      },
+    ),
+  )
 
   function handleAdd() {
     if (!edition) return
@@ -87,7 +86,7 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
           aria-label={isFavorite ? `Remover ${nft.title} dos favoritos` : `Favoritar ${nft.title}`}
           className="absolute right-2 top-2 grid size-7 touch-target place-items-center rounded-full border border-line bg-surface-raised md:hidden"
         >
-          <img src={isFavorite ? heartLight : heartOutline} alt="" className={cn('size-3.5', isFavorite && 'animate-heart-pop')} />
+          <HeartIcon filled={isFavorite} className="size-3.5" />
         </button>
 
         <div className="absolute inset-x-0 bottom-3 hidden translate-y-1 items-center justify-center gap-2 opacity-0 transition-[opacity,transform] duration-200 focus-within:translate-y-0 focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 md:flex">
@@ -107,7 +106,7 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
             aria-label={isFavorite ? `Remover ${nft.title} dos favoritos` : `Favoritar ${nft.title}`}
             className="grid size-8 place-items-center rounded-sm bg-ink/90 hover:bg-surface-raised"
           >
-            <img src={isFavorite ? heartLight : heartOutline} alt="" className={cn('size-4', isFavorite && 'animate-heart-pop')} />
+            <HeartIcon filled={isFavorite} className="size-4" />
           </button>
           <Link
             {...detailLink}
