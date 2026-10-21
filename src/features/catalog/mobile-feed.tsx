@@ -32,6 +32,10 @@ export function MobileFeed({ search, onLoadMore }: MobileFeedProps) {
 
   return (
     <div className="flex flex-col items-center gap-4" data-testid="mobile-feed">
+      <h2 className="sr-only">Resultados</h2>
+      <p className="sr-only" role="status">
+        {last.total} {last.total === 1 ? 'NFT encontrado' : 'NFTs encontrados'}
+      </p>
       <ProductGrid items={items} />
       <div ref={sentinel} aria-hidden="true" />
       {hasMore ? (

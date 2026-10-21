@@ -257,6 +257,19 @@ test.describe('links e conteúdo', () => {
     }
   })
 
+  test('títulos seguem a ordem h1, h2, h3 sem pular nível', async ({ page }) => {
+    for (const path of ['/', '/mercado', '/nft/nft_12', '/ajuda', '/aprenda/como-proteger-sua-carteira']) {
+      await page.goto(path)
+      await expect(page.locator('[data-testid="nft-card"], [data-testid="nft-detail"], [data-testid="help"], [data-testid="article"]').first()).toBeVisible()
+      // Só os títulos expostos a leitores de tela (o painel de filtros do desktop fica com display: none no celular)
+      const levels = await page.locator('main').evaluate((main) =>
+        [...main.querySelectorAll('h1, h2, h3, h4')].filter((heading) => heading.checkVisibility()).map((heading) => Number(heading.tagName[1])),
+      )
+      const jumps = levels.filter((level, index) => index > 0 && level - levels[index - 1] > 1)
+      expect(jumps, `${path}: ${levels.join(',')}`).toEqual([])
+    }
+  })
+
   test('com movimento reduzido as animações de entrada ficam instantâneas', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/mercado')
