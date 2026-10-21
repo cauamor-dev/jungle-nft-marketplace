@@ -80,6 +80,8 @@ test.describe('autenticação', () => {
 
     await page.getByRole('button', { name: 'Sair' }).first().click()
     await page.waitForURL((url) => url.pathname === '/')
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('jg-session-token'))).toBeNull()
     await page.goto('/perfil')
     await expect(page.getByTestId('profile-form')).toHaveCount(0)
     await expect(page.getByRole('dialog')).toBeVisible()

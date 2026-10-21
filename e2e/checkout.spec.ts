@@ -127,7 +127,7 @@ test.describe('checkout', () => {
     await page.locator('[data-testid="cart-item"]:visible').first().getByRole('button', { name: /Aumentar/i }).first().click()
     await expect(cartTotal).not.toHaveText(cartBefore!)
     const expected = await cartTotal.textContent()
-    await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
+    await page.getByRole('button', { name: 'Finalizar compra' }).click()
     await page.waitForURL('**/pagamento')
     await expect(total).toHaveText(expected!)
     expect(expected).not.toBe(before)
@@ -289,7 +289,7 @@ test.describe('checkout', () => {
     // Nova tentativa sem recarregar: a cotação usada no pedido recusado não pode ser reaproveitada
     await demoScenario(page, 'payment-confirmed')
     await page.getByRole('link', { name: 'Voltar ao carrinho' }).click()
-    await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
+    await page.getByRole('button', { name: 'Finalizar compra' }).click()
     await page.waitForURL('**/pagamento')
     const confirm = page.getByRole('button', { name: 'Confirmar compra' })
     await expect(confirm).toBeEnabled()

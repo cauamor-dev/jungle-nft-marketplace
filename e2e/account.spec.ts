@@ -17,8 +17,8 @@ test.describe('favoritos', () => {
     await expect(page.getByRole('dialog')).toBeVisible()
     await loginThroughDialog(page)
     await expect(page.getByRole('dialog')).toBeHidden()
-    await page.getByRole('button', { name: /favoritar/i }).first().click()
-    await expect(page.getByRole('button', { name: /favorit/i }).first()).toHaveAttribute('aria-pressed', 'true')
+    // Sem segundo clique: a ação pedida antes do login é concluída sozinha
+    await expect(page.getByTestId('nft-detail').locator('button[aria-pressed]').first()).toHaveAttribute('aria-pressed', 'true')
     await savedFavorites(page).toContain('nft_12')
 
     await page.goto('/perfil/favoritos')

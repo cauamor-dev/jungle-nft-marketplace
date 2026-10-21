@@ -26,7 +26,7 @@ const field = (page: Page, name: string) => page.getByTestId('profile-form').loc
 // Conta recém-criada não tem carteira: o endereço digitado no pagamento é cadastrado e conectado antes do pedido.
 async function buyWithNewWallet(page: Page, nftId: string, address: string) {
   await addFromDetail(page, nftId)
-  await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
+  await page.getByRole('button', { name: 'Finalizar compra' }).click()
   await page.waitForURL('**/pagamento')
   if (isMobile(page)) await page.locator('summary', { hasText: 'Dados do colecionador' }).click()
   const form = page.getByTestId('collector-form')

@@ -4,14 +4,37 @@ import { api, demoScenario, expectNoHorizontalOverflow } from './helpers'
 type Page = import('@playwright/test').Page
 
 const cards = (page: Page) => page.locator('[data-testid="nft-card"]:visible')
+const isMobile = (page: Page) => (page.viewportSize()?.width ?? 0) < 768
+
+// Feed do celular: cada página carregada soma 9 cards (36 no total) e o número fica na URL
+async function feedMatchesUrl(page: Page) {
+  let expected = 0
+  await expect
+    .poll(async () => {
+      const loadedPages = Number(new URL(page.url()).searchParams.get('page') ?? '1')
+      expected = Math.min(36, loadedPages * 9)
+      return loadedPages >= 2 && (await cards(page).count()) === expected
+    })
+    .toBe(true)
+  return expected
+}
 
 // A lista antiga fica na tela (com opacidade reduzida) até a nova chegar; só vale ler depois disso.
 const settled = (page: Page) => expect(page.locator('[aria-busy="true"]')).toHaveCount(0)
 
 test.describe('catálogo', () => {
-  test('lista 9 itens por página e navega pela paginação mantendo a URL', async ({ page }) => {
+  test('lista 9 itens por página e navega pela paginação mantendo a URL (no celular, carrega mais no mesmo feed)', async ({ page }) => {
     await page.goto('/mercado')
     await expect(cards(page)).toHaveCount(9)
+
+    if (isMobile(page)) {
+      await page.getByRole('button', { name: 'Carregar mais' }).click()
+      // Perto do fim da lista a página seguinte também carrega sozinha: a URL diz quantas páginas estão na tela
+      const loaded = await feedMatchesUrl(page)
+      await page.reload()
+      await expect(cards(page)).toHaveCount(loaded)
+      return
+    }
 
     await page.getByRole('link', { name: 'Página 2' }).click()
     await expect(page).toHaveURL(/page=2/)
@@ -75,24 +98,29 @@ test.describe('catálogo', () => {
   test('filtro reinicia a página e o histórico restaura a lista anterior', async ({ page }) => {
     await page.goto('/mercado')
     await expect(cards(page)).toHaveCount(9)
-    await page.getByRole('link', { name: 'Página 2' }).click()
-    await expect(page).toHaveURL(/page=2/)
+    const mobile = isMobile(page)
+    if (mobile) await page.getByRole('button', { name: 'Carregar mais' }).click()
+    else await page.getByRole('link', { name: 'Página 2' }).click()
+    await expect(page).toHaveURL(/page=\d/)
+    const loaded = mobile ? await feedMatchesUrl(page) : 9
 
-    const isMobile = (page.viewportSize()?.width ?? 0) < 768
-    if (isMobile) await page.getByRole('button', { name: 'Abrir filtros' }).click()
-    const filters = isMobile ? page.getByRole('dialog') : page.getByRole('complementary', { name: 'Filtros' })
+    if (mobile) await page.getByRole('button', { name: 'Abrir filtros' }).click()
+    const filters = mobile ? page.getByRole('dialog') : page.getByRole('complementary', { name: 'Filtros' })
     await filters.getByText('Música').click()
     await expect(page).toHaveURL(/category=music/)
     await expect(page).not.toHaveURL(/[?&]page=/)
     await settled(page)
-    if (isMobile) await page.keyboard.press('Escape')
+    if (mobile) await page.keyboard.press('Escape')
 
     await page.goBack()
-    await expect(page).toHaveURL(/page=2/)
+    await expect(page).toHaveURL(/page=\d/)
     await expect(page).not.toHaveURL(/category=music/)
     await settled(page)
-    await expect(page.getByRole('link', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page')
-    await expect(cards(page)).toHaveCount(9)
+    if (mobile) expect(await feedMatchesUrl(page)).toBeGreaterThanOrEqual(loaded)
+    else {
+      await expect(page.getByRole('link', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page')
+      await expect(cards(page)).toHaveCount(9)
+    }
   })
 
   test('ordena por preço crescente (barra no desktop, painel de filtros no mobile)', async ({ page }) => {

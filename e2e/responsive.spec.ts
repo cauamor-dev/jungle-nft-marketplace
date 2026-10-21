@@ -8,6 +8,8 @@ async function settle(page: Page) {
   await expect(page.locator('[role="status"][aria-label^="Carregando"]')).toHaveCount(0)
   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0)
   await page.evaluate(() => document.fonts.ready)
+  // Cards e páginas entram com animação curta; medir no meio dela pegaria tamanhos intermediários
+  await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))))
 }
 
 for (const width of widths) {

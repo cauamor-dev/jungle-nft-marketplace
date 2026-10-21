@@ -72,7 +72,8 @@ export async function addFromDetail(page: Page, nftId: string) {
 
 export async function goToPaymentLoggedIn(page: Page, nftId = 'nft_12') {
   await addFromDetail(page, nftId)
-  await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
+  // Sem sessão o botão abre o login; com sessão ele já se chama "Finalizar compra"
+  await page.getByRole('button', { name: /^(Conectar e finalizar|Finalizar compra)$/ }).click()
   const dialog = page.getByRole('dialog')
   await expect(dialog.or(page.getByTestId('payment-page'))).toBeVisible()
   if (await dialog.isVisible()) await loginThroughDialog(page)
@@ -96,6 +97,7 @@ export async function signOut(page: Page) {
   await page.goto('/perfil')
   await page.getByRole('button', { name: 'Sair' }).first().click()
   await page.waitForURL((url) => url.pathname === '/')
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('jg-session-token'))).toBeNull()
 }
 
 // Deixa lenta uma única chamada (não GET) que contenha `pathPart`. 'send' atrasa a chegada ao servidor;
