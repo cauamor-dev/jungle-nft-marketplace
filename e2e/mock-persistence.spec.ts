@@ -143,3 +143,23 @@ test.describe('painel dos mocks', () => {
     expect(errors).toEqual([])
   })
 })
+
+test.describe('service worker dos mocks reiniciado', () => {
+  // O Chrome encerra o service worker parado; ao voltar, ele esquece que a aba ativou o mock e as chamadas
+  // à API iam para o servidor (que devolve o index.html), deixando a tela em "Sem conexão com o servidor".
+  test('catálogo continua carregando depois que o Chrome reinicia o service worker', async ({ page, context }) => {
+    await page.goto('/')
+    await expect(page.locator('[data-testid="nft-card"]:visible').first()).toBeVisible()
+    const cdp = await context.newCDPSession(page)
+    await cdp.send('ServiceWorker.enable')
+    await cdp.send('ServiceWorker.stopAllWorkers')
+
+    const catalog = page.waitForResponse(
+      (response) => response.url().includes('listing=trending') && String(response.headers()['content-type']).includes('application/json'),
+    )
+    await page.locator('a:visible', { hasText: 'Em alta' }).first().click()
+    expect((await catalog).fromServiceWorker()).toBe(true)
+    await expect(page.locator('[data-testid="nft-card"]:visible').first()).toBeVisible()
+    await expect(page.getByText('Algo deu errado')).toHaveCount(0)
+  })
+})
