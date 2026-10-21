@@ -2,7 +2,7 @@
 
 Minha solução para o [desafio de frontend da Jungle Gaming](https://github.com/junglegaming/frontend-challenge/blob/main/README.md): um marketplace de NFTs em React com catálogo, detalhe, carrinho, checkout com carteira, recibo, conta e atualização em tempo real. Não existe backend nem blockchain. Toda a API REST e o Socket.IO são simulados no navegador com MSW, e os dados ficam salvos no próprio navegador.
 
-Telas: início e mercado (`/`, `/mercado`), detalhe (`/nft/:id`), carrinho, pagamento, recibo (`/pedido/:id`), perfil, carteiras, atividade e favoritos (`/perfil/*`). Login e cadastro abrem em diálogo sobre a página atual. Em `/dev/mocks` fica um painel técnico para trocar cenários e ver os eventos do socket.
+Telas: início e mercado (`/`, `/mercado`), detalhe (`/nft/:id`), carrinho, pagamento, recibo (`/pedido/:id`), perfil, carteiras, atividade e favoritos (`/perfil/*`), artigos do Diário da Cunhagem (`/aprenda/:slug`) e ajuda (`/ajuda`). Login e cadastro abrem em diálogo sobre a página atual. Em `/dev/mocks` fica um painel técnico para trocar cenários e ver os eventos do socket.
 
 ## Como rodar
 
@@ -103,7 +103,13 @@ Alguns fluxos de falha para testar na mão:
 
 **Tempo real com a REST como fonte da verdade.** Os eventos têm `eventId` e `version`. Evento repetido ou mais antigo que o último aplicado é descartado. Eventos de pedido só vão para o dono. Depois de uma queda, o que foi emitido no meio se perdeu, então o app recarrega da API. O recibo pendente também consulta a API a cada 4 s se o socket estiver fora.
 
-**URL como estado do catálogo.** Busca, filtros, ordenação e página ficam na URL. Valores inválidos são descartados em vez de quebrar a página. A lista anterior continua na tela enquanto a próxima carrega.
+**URL como estado do catálogo.** Busca, filtros, ordenação e página ficam na URL. A busca atualiza os resultados enquanto a pessoa digita (300 ms depois da última tecla) e o termo continua no campo ao voltar de um NFT. Filtros e abas não mexem na rolagem; na paginação a lista sobe suavemente até o começo dos resultados. No celular, em vez de páginas, a lista cresce com "Carregar mais" (e sozinha perto do fim), e o número de páginas carregadas fica na URL para o feed voltar igual. Valores inválidos são descartados em vez de quebrar a página.
+
+**Edições com preço próprio.** Cada NFT tem as edições 1/1, 1/10, 1/50 e aberta. O preço do NFT é o da edição aberta, e quanto menor a tiragem mais cara a edição (1/50 custa 50% a mais, 1/10 o dobro, 1/1 quatro vezes). A regra fica em `src/domain/editions.ts` e é a mesma no detalhe, no carrinho, na cotação e no recibo. No detalhe, a edição escolhida mostra a tiragem, quantas restam e o limite por pessoa.
+
+**Ações que pedem conta.** Favoritar como visitante abre o login e o favorito é salvo assim que a pessoa entra, sem precisar clicar de novo. Fechar o login sem entrar descarta a intenção. O botão de finalizar do carrinho reflete a sessão ("Conectar e finalizar" sem conta, "Finalizar compra" com conta).
+
+**Movimento.** Entrada das páginas e dos cards, abas, contador do carrinho, favoritos e diálogos usam só `transform` e `opacity`, com 200 a 360 ms. Tudo fica instantâneo com `prefers-reduced-motion`.
 
 **Trade-offs que escolhi:**
 
@@ -112,6 +118,20 @@ Alguns fluxos de falha para testar na mão:
 - Uma variante de layout por vez (mobile abaixo de 768 px, desktop acima), em vez de esconder com CSS e ter tudo duplicado no DOM.
 - "Ver no Etherscan" abre um explorador simulado com o hash que a API devolveu, já que não existe transação real para linkar.
 - O código de indicação do pagamento é opcional. No layout ele é obrigatório, mas uma conta nova não teria de onde tirar um código.
+- Os links do rodapé que não tinham destino ganharam conteúdo de verdade: a coluna "Central de ajuda" leva às seções de `/ajuda`, e os cards do Diário da Cunhagem abrem o artigo. O que ainda não existe ("Estúdio do criador", "Ofertas", "Arquivos baixados") aparece com o selo "em breve", em vez de parecer um link quebrado.
+
+### Ajustes em relação ao layout
+
+Algumas coisas no Figma eu achei inconsistentes e acertei na implementação:
+
+- Coleções em ordem alfabética, no filtro e no rodapé. No layout elas estão numa ordem que não segue nenhum critério.
+- Card de NFT só com a imagem, quadrada e com cantos arredondados. No layout cada card tem uma caixa marrom atrás da imagem, com sobras diferentes em cima e embaixo de card para card.
+- Na promo, a imagem ocupa toda a altura do card. No layout sobra uma faixa do fundo embaixo dela.
+- No celular, a promo empilha a imagem em cima do texto, em vez de espremer o texto em seis linhas ao lado de uma imagem estreita.
+- Contadores da barra de filtros alinhados à direita na mesma coluna. No layout os números da rede ficam mais à direita que os das coleções.
+- Preço anterior riscado ao lado do preço atual. No layout os dois aparecem lado a lado sem indicar qual vale.
+- "Desconto do lançamento" com o mesmo formato dos outros valores ("(-) 0.00 ETH"). No layout aparece "(-) 00.00" no carrinho e no pagamento, e outro formato no recibo.
+- Ícones das redes sociais do rodapé como links que abrem em nova aba, com estado de foco e hover.
 
 ### Estrutura
 
@@ -130,7 +150,7 @@ scripts/      Lighthouse
 ## Testes e qualidade
 
 - **Vitest** testa dinheiro, contratos e a API simulada: cadastro concorrente, idempotência, cotação vencida ou desatualizada, estoque e migração dos dados salvos.
-- **Playwright** testa só pela interface e pela rede, em desktop e mobile. Cobre a jornada completa de uma conta nova (cadastro, perfil, compra, histórico, logout e login), o isolamento entre contas, todos os cenários de falha acima, corridas entre sessões, teclado e foco, alvos de toque de 44 px em 320 e 390 px, ausência de rolagem lateral em 390, 768 e 1440 px e CLS do pagamento.
+- **Playwright** testa só pela interface e pela rede, em desktop e mobile. Cobre a jornada completa de uma conta nova (cadastro, perfil, compra, histórico, logout e login), o isolamento entre contas, todos os cenários de falha acima, corridas entre sessões, teclado e foco, alvos de toque de 44 px em 320 e 390 px, ausência de rolagem lateral em 390, 768 e 1440 px e CLS do pagamento. `e2e/interactions.spec.ts` clica como uma pessoa e confere o resultado na tela e depois do reload: favoritar no card, no detalhe e na lista, posição da rolagem ao filtrar, busca ao vivo, edição e preço até o carrinho, links do rodapé, blog e ajuda.
 - **Regressão visual** de início, detalhe, carrinho e pagamento, com tolerância de 0,05% dos pixels. As referências foram geradas na imagem oficial do Playwright (`mcr.microsoft.com/playwright:v1.56.1-noble`). As flags de fonte no `playwright.config.ts` fazem outro Linux renderizar igual. Em macOS ou Windows, rode pelo Docker:
 
   ```bash
@@ -142,8 +162,8 @@ Lighthouse 13 no build de produção (com os mocks ligados), mediana de 3 execu�
 
 | Página | Perfil | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Início | mobile | 98 | 100 | 100 | 100 | 1,9 s | 0 |
-| Detalhe | mobile | 98 | 100 | 100 | 100 | 2,3 s | 0 |
+| Início | mobile | 97 | 100 | 100 | 100 | 2,1 s | 0 |
+| Detalhe | mobile | 97 | 100 | 100 | 100 | 2,3 s | 0 |
 | Início | desktop | 100 | 100 | 100 | 100 | 0,6 s | 0,0002 |
 | Detalhe | desktop | 100 | 100 | 100 | 100 | 0,7 s | 0 |
 
@@ -152,7 +172,7 @@ Para medir a qualidade da entrega, combinei Lighthouse, Playwright e uma revisã
 ## O que eu faria com mais tempo
 
 - Sincronizar abas com `BroadcastChannel`: logout e troca de conta em uma aba refletindo nas outras, e uma trava para duas abas não sobrescreverem o banco local uma da outra.
-- Retomar a ação depois do login. Hoje, favoritar como visitante abre o login, mas o usuário precisa clicar de novo depois de entrar.
+- Páginas de criador e de coleção, para os links "Criadores" e o nome da coleção no detalhe levarem a uma lista filtrada com a história de quem fez a obra.
 - Trocar o carregamento em duas etapas (MSW e depois app) por um service worker pré-registrado, para ganhar tempo na primeira visita no celular.
 - Testes de acessibilidade automatizados com axe em todas as telas, além das verificações que já existem.
 - Telas de perfil e carteiras desenhadas para mobile. O Figma não tem esses frames, então hoje as abas viram uma faixa rolável e os formulários empilham.
@@ -165,3 +185,5 @@ Para medir a qualidade da entrega, combinei Lighthouse, Playwright e uma revisã
 - O binding de Socket.IO do MSW só aceita o namespace padrão e eventos de texto (sem acknowledgments nem binários).
 - Aberto por HTTP pelo IP da rede (ex.: `pnpm dev:lan` no celular), o navegador não registra service worker. O app funciona, mas sem o tempo real simulado, e uma faixa avisa isso.
 - O `vercel.json` (fallback de SPA e cabeçalhos) está pronto, mas só vai ser exercitado de verdade no deploy.
+- Os links das redes sociais apontam para a página inicial de cada rede, já que o Kurio não tem perfis reais.
+- O conteúdo dos artigos e da ajuda é curto e fictício, escrito para explicar os fluxos da demo.
