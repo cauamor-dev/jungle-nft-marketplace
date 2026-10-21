@@ -191,6 +191,21 @@ test.describe('detalhe e carrinho', () => {
     await expect(item.getByTestId('line-total')).toHaveText('0.17 ETH')
   })
 
+  test('imagem principal e miniaturas do detalhe ficam sem moldura em volta', async ({ page }) => {
+    test.skip(isMobile(page), 'a galeria com miniaturas é do desktop')
+    await page.goto('/nft/nft_04')
+    const main = page.getByRole('button', { name: 'Ampliar imagem' }).locator('..')
+    const frame = await main.evaluate((box) => {
+      const image = box.querySelector('img')!.getBoundingClientRect()
+      const outer = box.getBoundingClientRect()
+      return [image.width - outer.width, image.height - outer.height].map(Math.round)
+    })
+    expect(frame).toEqual([0, 0])
+    const thumbs = page.getByRole('list', { name: 'Miniaturas' }).getByRole('button')
+    await expect(thumbs.first()).toHaveAttribute('aria-current', 'true')
+    expect(await thumbs.first().evaluate((button) => getComputedStyle(button).backgroundColor)).toBe('rgba(0, 0, 0, 0)')
+  })
+
   test('carrinho aberto sem login passa a mostrar "Finalizar compra" depois de entrar', async ({ page }) => {
     await addFromDetail(page, 'nft_12')
     await expect(page.getByRole('button', { name: 'Conectar e finalizar' })).toBeVisible()
@@ -230,6 +245,50 @@ test.describe('links e conteúdo', () => {
     const [popup] = await Promise.all([context.waitForEvent('page'), facebook.click()])
     expect(popup.url()).toContain('facebook.com')
     await popup.close()
+  })
+
+  test('selo "em breve" do rodapé não quebra o nome do link', async ({ page }) => {
+    const widths = isMobile(page) ? [390] : [1024, 1280, 1440]
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/ajuda')
+      const lines = await page.locator('footer li', { hasText: 'Estúdio do criador' }).evaluate((item) => {
+        const range = document.createRange()
+        range.selectNodeContents(item.firstElementChild!)
+        return new Set([...range.getClientRects()].map((rect) => Math.round(rect.top))).size
+      })
+      expect(lines, `largura ${width}`).toBe(1)
+    }
+  })
+
+  test('Criadores e Aprenda rolam suavemente até a seção; com movimento reduzido, direto', async ({ page }) => {
+    test.skip(isMobile(page), 'o menu do topo é do desktop')
+    for (const reduced of [false, true]) {
+      await page.emulateMedia({ reducedMotion: reduced ? 'reduce' : 'no-preference' })
+      await page.goto('/')
+      await expect(cards(page).first()).toBeVisible()
+      // Guarda o scrollY de cada frame: a rolagem suave passa por várias posições, a reduzida vai direto
+      await page.evaluate(() => {
+        const positions: number[] = []
+        Object.assign(window, { scrollPositions: positions })
+        const record = () => {
+          positions.push(Math.round(window.scrollY))
+          if (positions.length < 300) requestAnimationFrame(record)
+        }
+        requestAnimationFrame(record)
+      })
+      const link = page.getByRole('navigation', { name: 'Principal' }).getByRole('link', { name: 'Aprenda' })
+      const box = (await link.boundingBox())!
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+      const blogTop = () => page.locator('#blog').evaluate((section) => Math.round(section.getBoundingClientRect().top))
+      await expect.poll(blogTop).toBe(24)
+      const positions = await page.evaluate(() => (window as unknown as { scrollPositions: number[] }).scrollPositions)
+      const final = Math.max(...positions)
+      const between = new Set(positions.filter((y) => y > 0 && y < final)).size
+      if (reduced) expect(between).toBe(0)
+      else expect(between).toBeGreaterThan(2)
+      await expect(page).toHaveURL(/#blog$/)
+    }
   })
 
   test('cards do blog abrem o artigo e a ajuda do rodapé leva à seção certa', async ({ page }) => {

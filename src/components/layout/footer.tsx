@@ -40,7 +40,7 @@ export function Footer() {
         <p className="text-sm leading-[22px] text-foreground md:w-[228px]">+55 11 4002 8922</p>
       </div>
       <div className="mt-1.5 bg-surface-card px-6 py-8 md:px-8">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-[1fr_1fr_1fr_228px] lg:gap-x-[124px]">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-[repeat(3,minmax(0,1fr))_228px] lg:gap-x-12 xl:gap-x-[124px]">
           <FooterColumn title="Meu perfil">
             <FooterLink to="/perfil">Meu perfil</FooterLink>
             <FooterLink to="/perfil/atividade">Minha coleção</FooterLink>
@@ -118,9 +118,9 @@ function FooterLink({ to, hash, children }: { to: '/perfil' | '/perfil/atividade
 
 function FooterSoon({ children }: { children: React.ReactNode }) {
   return (
-    <li className="flex min-h-11 items-center gap-2 text-sm text-foreground/60 md:min-h-0 md:leading-[30px]">
-      {children}
-      <span className="rounded-sm border border-line-soft px-1.5 text-[10px] leading-4 text-text-secondary">em breve</span>
+    <li className="flex min-h-11 flex-wrap items-center gap-x-2 text-sm text-foreground/60 md:min-h-0 md:pb-1.5 md:leading-[30px] xl:flex-nowrap xl:whitespace-nowrap xl:pb-0">
+      <span>{children}</span>
+      <span className="rounded-full border border-line-soft px-2 text-[10px] uppercase leading-4 tracking-[0.08em] text-text-secondary">em breve</span>
     </li>
   )
 }
@@ -136,7 +136,7 @@ function Newsletter() {
   }
 
   return (
-    <div id="criadores" className="grid gap-8 bg-surface-card p-8 md:grid-cols-3 lg:grid-cols-[1fr_1px_1fr_1px_1fr_1px_357px] lg:gap-0">
+    <div id="criadores" className="grid scroll-mt-6 gap-8 bg-surface-card p-8 md:grid-cols-3 lg:grid-cols-[1fr_1px_1fr_1px_1fr_1px_357px] lg:gap-0">
       {medallions.map((item, index) => (
         <div key={item.letter} className="contents">
           {index > 0 && <div aria-hidden="true" className="hidden bg-primary lg:block" />}

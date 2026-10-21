@@ -9,6 +9,7 @@ import { useSession } from '@/features/auth/session'
 import { useCartCount } from '@/features/cart/queries'
 import { useLiveSearch } from '@/features/catalog/use-live-search'
 import { cn } from '@/lib/cn'
+import { useMediaQuery } from '@/lib/use-media-query'
 
 type NavSection = 'home' | 'market'
 
@@ -25,6 +26,7 @@ export function Header({ active, divider = false }: HeaderProps) {
   const [searching, setSearching] = useState(false)
   const search = useLiveSearch()
   const open = searching || search.active
+  const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
   return (
     <header className="mx-auto hidden w-full max-w-[1200px] px-6 md:block md:pt-6 xl:px-0">
@@ -41,6 +43,7 @@ export function Header({ active, divider = false }: HeaderProps) {
                   key={item.label}
                   to={item.to}
                   hash={item.hash}
+                  hashScrollIntoView={{ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }}
                   aria-current={isActive ? 'page' : undefined}
                   className={cn(
                     'relative h-[45px] text-base leading-[21px]',

@@ -22,7 +22,7 @@ export function Gallery({ images, title, unavailable }: GalleryProps) {
               onClick={() => setIndex(position)}
               aria-label={`Ver imagem ${position + 1} de ${images.length}`}
               aria-current={position === index ? 'true' : undefined}
-              className={cn('block size-[100px] overflow-hidden rounded-lg border bg-surface-card', position === index ? 'border-primary' : 'border-transparent')}
+              className={cn('block size-[100px] overflow-hidden rounded-lg transition-opacity', position === index ? 'ring-2 ring-primary' : 'opacity-70 hover:opacity-100')}
             >
               <img src={image.thumbSrc} alt="" width={100} height={100} loading="lazy" className="size-full object-cover" />
             </button>
@@ -30,7 +30,7 @@ export function Gallery({ images, title, unavailable }: GalleryProps) {
         ))}
       </ul>
 
-      <div className="relative grid aspect-square w-full place-items-center rounded-[24px] bg-surface-card p-3 md:size-[444px] md:rounded-md md:p-4">
+      <div className="relative aspect-square w-full max-w-[444px] md:size-[444px]">
         <img
           src={current.src}
           alt={current.alt}
