@@ -1,14 +1,14 @@
 {
   "lighthouse": "13.5.0",
   "environment": {
-    "date": "2026-10-21T03:43:04.448Z",
+    "date": "2026-10-21T04:38:25.824Z",
     "node": "v22.22.0",
     "os": "Linux 6.18.44-fc-v140 x64",
     "cpus": 4,
     "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36",
     "server": "vite preview (build de produção com mocks ligados, cenário padrão)"
   },
-  "base": "http://localhost:4173",
+  "base": "http://localhost:4180",
   "runs": 3,
   "targets": {
     "performance": 90,
@@ -24,14 +24,14 @@
         {
           "run": 1,
           "scores": {
-            "performance": 98,
+            "performance": 93,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2025.8917999999996,
-          "tbt": 94,
+          "lcp": 2289.8745500000005,
+          "tbt": 256.18757500000015,
           "cls": 0
         },
         {
@@ -43,8 +43,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2089.30625,
-          "tbt": 163,
+          "lcp": 2190.4156000000003,
+          "tbt": 147.5,
           "cls": 0
         },
         {
@@ -56,8 +56,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2097.836375,
-          "tbt": 164.5,
+          "lcp": 2188.7754000000004,
+          "tbt": 149,
           "cls": 0
         }
       ],
@@ -68,8 +68,8 @@
         "seo": 100
       },
       "medianMetrics": {
-        "lcpMs": 2089,
-        "tbtMs": 163,
+        "lcpMs": 2190,
+        "tbtMs": 149,
         "cls": 0
       },
       "report": "home-mobile.report.html",
@@ -82,52 +82,52 @@
         {
           "run": 1,
           "scores": {
-            "performance": 97,
+            "performance": 96,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2346.5292,
-          "tbt": 14.499999999999886,
+          "lcp": 2563.6068000000005,
+          "tbt": 14,
           "cls": 0
         },
         {
           "run": 2,
           "scores": {
-            "performance": 97,
+            "performance": 96,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2359.7565999999997,
-          "tbt": 18,
+          "lcp": 2587.3927999999996,
+          "tbt": 17.5,
           "cls": 0
         },
         {
           "run": 3,
           "scores": {
-            "performance": 98,
+            "performance": 96,
             "accessibility": 100,
             "best-practices": 100,
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 2323.7529000000004,
-          "tbt": 15,
+          "lcp": 2612.3027,
+          "tbt": 9,
           "cls": 0
         }
       ],
       "medians": {
-        "performance": 97,
+        "performance": 96,
         "accessibility": 100,
         "best-practices": 100,
         "seo": 100
       },
       "medianMetrics": {
-        "lcpMs": 2347,
-        "tbtMs": 15,
+        "lcpMs": 2587,
+        "tbtMs": 14,
         "cls": 0
       },
       "report": "detalhe-mobile.report.html",
@@ -146,7 +146,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 661.3000999999999,
+          "lcp": 646.8655,
           "tbt": 0,
           "cls": 0.00017477555398567952
         },
@@ -159,7 +159,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 633.6,
+          "lcp": 655.26425,
           "tbt": 0,
           "cls": 0.00017477555398567952
         },
@@ -172,8 +172,8 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 633.0780000000001,
-          "tbt": 0,
+          "lcp": 649.3135,
+          "tbt": 0.5,
           "cls": 0.00017477555398567952
         }
       ],
@@ -184,7 +184,7 @@
         "seo": 100
       },
       "medianMetrics": {
-        "lcpMs": 634,
+        "lcpMs": 649,
         "tbtMs": 0,
         "cls": 0.00017477555398567952
       },
@@ -204,7 +204,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 714.4428,
+          "lcp": 714.8163999999999,
           "tbt": 0,
           "cls": 0
         },
@@ -217,7 +217,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 714.9979999999999,
+          "lcp": 714.3643,
           "tbt": 0,
           "cls": 0
         },
@@ -230,7 +230,7 @@
             "seo": 100,
             "agentic-browsing": 50
           },
-          "lcp": 677.2766,
+          "lcp": 718.7713000000001,
           "tbt": 0,
           "cls": 0
         }
@@ -242,7 +242,7 @@
         "seo": 100
       },
       "medianMetrics": {
-        "lcpMs": 714,
+        "lcpMs": 715,
         "tbtMs": 0,
         "cls": 0
       },

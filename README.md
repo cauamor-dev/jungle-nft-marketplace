@@ -93,6 +93,8 @@ Alguns fluxos de falha para testar na mão:
 
 **A interface não sabe que existe mock.** Os componentes falam com hooks do TanStack Query, que chamam `src/api/endpoints.ts`. Só `src/mocks` conhece os dados. Trocar o MSW por uma API de verdade não muda nada fora de `src/mocks`. Os contratos ficam em `src/api/contracts.ts`, e os tipos saem dos schemas.
 
+**O mock se recupera quando o Chrome reinicia o service worker.** O service worker do MSW guarda só na memória quais abas ativaram o mock. Quando o Chrome encerra o worker parado e o religa, ele esquece a aba, e as chamadas à API vão para o servidor e voltam com o `index.html`. A tela ficava em "Sem conexão com o servidor", com as coleções zeradas. Agora, se uma chamada da API volta como HTML, a aba se registra de novo no worker e repete a chamada (`src/mocks/browser.ts`).
+
 **O MSW sobe antes do app.** O `socket.io-client` guarda a referência de `WebSocket` no momento do import. Por isso o `main.tsx` ativa os mocks e só depois importa a aplicação. O custo é um carregamento inicial em duas etapas, que pesa no Lighthouse mobile. Para compensar, troquei o `tough-cookie` que o MSW importa (cerca de 340 kB que os mocks não usam) por um substituto mínimo e separei os chunks de MSW, socket e Radix.
 
 **Dinheiro é string.** ETH circula como string decimal (`"0.0425"`) e só vira `Decimal` dentro de `src/domain/money.ts`. Nada de `Number` ou `parseFloat` em valores. Subtotal, desconto, taxa e total são calculados pela API, e a interface só mostra.
@@ -125,13 +127,13 @@ Alguns fluxos de falha para testar na mão:
 Algumas coisas no Figma eu achei inconsistentes e acertei na implementação:
 
 - Coleções em ordem alfabética, no filtro e no rodapé. No layout elas estão numa ordem que não segue nenhum critério.
-- Card de NFT só com a imagem, quadrada e com cantos arredondados. No layout cada card tem uma caixa marrom atrás da imagem, com sobras diferentes em cima e embaixo de card para card.
+- Card de NFT e imagem principal do detalhe só com a imagem, quadrada e com cantos arredondados. No layout cada uma tem uma caixa marrom atrás, com sobras diferentes em cima e embaixo de card para card.
 - Na promo, a imagem ocupa toda a altura do card. No layout sobra uma faixa do fundo embaixo dela.
 - No celular, a promo empilha a imagem em cima do texto, em vez de espremer o texto em seis linhas ao lado de uma imagem estreita.
 - Contadores da barra de filtros alinhados à direita na mesma coluna. No layout os números da rede ficam mais à direita que os das coleções.
 - Preço anterior riscado ao lado do preço atual. No layout os dois aparecem lado a lado sem indicar qual vale.
 - "Desconto do lançamento" com o mesmo formato dos outros valores ("(-) 0.00 ETH"). No layout aparece "(-) 00.00" no carrinho e no pagamento, e outro formato no recibo.
-- Ícones das redes sociais do rodapé como links que abrem em nova aba, com estado de foco e hover.
+- Ícones das redes sociais do rodapé como links que abrem em nova aba, com estado de foco e hover. O do YouTube foi redesenhado no mesmo estilo e tamanho dos outros.
 
 ### Estrutura
 
@@ -162,8 +164,8 @@ Lighthouse 13 no build de produção (com os mocks ligados), mediana de 3 execu�
 
 | Página | Perfil | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Início | mobile | 97 | 100 | 100 | 100 | 2,1 s | 0 |
-| Detalhe | mobile | 97 | 100 | 100 | 100 | 2,3 s | 0 |
+| Início | mobile | 97 | 100 | 100 | 100 | 2,2 s | 0 |
+| Detalhe | mobile | 96 | 100 | 100 | 100 | 2,6 s | 0 |
 | Início | desktop | 100 | 100 | 100 | 100 | 0,6 s | 0,0002 |
 | Detalhe | desktop | 100 | 100 | 100 | 100 | 0,7 s | 0 |
 
