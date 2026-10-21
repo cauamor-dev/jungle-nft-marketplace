@@ -15,6 +15,8 @@ const CartPage = lazy(() => import('@/features/cart/cart-page').then((m) => ({ d
 const PaymentPage = lazy(() => import('@/features/checkout/payment-page').then((m) => ({ default: m.PaymentPage })))
 const NftDetailPage = lazy(() => import('@/features/nft/nft-detail-page').then((m) => ({ default: m.NftDetailPage })))
 const OrderReceiptPage = lazy(() => import('@/features/orders/order-receipt-page').then((m) => ({ default: m.OrderReceiptPage })))
+const ArticlePage = lazy(() => import('@/features/content/content-pages').then((m) => ({ default: m.ArticlePage })))
+const HelpPage = lazy(() => import('@/features/content/content-pages').then((m) => ({ default: m.HelpPage })))
 const MockPanelPage = lazy(() => import('@/features/dev/mock-panel-page').then((m) => ({ default: m.MockPanelPage })))
 
 type RouterContext = { queryClient: QueryClient }
@@ -70,6 +72,17 @@ const nftRoute = createRoute({
   },
 })
 
+const articleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/aprenda/$slug',
+  component: function ArticleRoute() {
+    const { slug } = articleRoute.useParams()
+    return <ArticlePage slug={slug} />
+  },
+})
+
+const helpRoute = createRoute({ getParentRoute: () => rootRoute, path: '/ajuda', component: HelpPage })
+
 const cartRoute = createRoute({ getParentRoute: () => rootRoute, path: '/carrinho', component: CartPage })
 const paymentRoute = createRoute({
   getParentRoute: () => privateRoute,
@@ -112,6 +125,8 @@ const routeTree = rootRoute.addChildren([
   marketRoute,
   nftRoute,
   cartRoute,
+  articleRoute,
+  helpRoute,
   privateRoute.addChildren([paymentRoute, orderRoute, profileRoute, walletsRoute, activityRoute, favoritesRoute]),
   mocksRoute,
 ])

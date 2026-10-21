@@ -2,8 +2,7 @@ import { Link } from '@tanstack/react-router'
 import arrow from '@/assets/icons/arrow-right.svg'
 import esmeralda from '@/assets/nfts/esmeralda-400.webp'
 import ivory from '@/assets/nfts/ivory-400.webp'
-import dourado from '@/assets/nfts/dourado-400.webp'
-import violeta from '@/assets/nfts/violeta-400.webp'
+import { articles } from '@/features/content/articles'
 
 const promos = [
   {
@@ -68,13 +67,6 @@ function PromoArc() {
   )
 }
 
-export const blogPosts = [
-  { image: ivory, date: '12 de setembro', read: 'Leitura de 6 min', title: 'Como funciona a propriedade de NFTs', text: 'Aprenda a colecionar, negociar e verificar ativos digitais.' },
-  { image: esmeralda, date: '13 de setembro', read: 'Leitura de 2 min', title: '10 artistas digitais para acompanhar', text: 'Conheça criadores que moldam a cultura digital.' },
-  { image: violeta, date: '15 de setembro', read: 'Leitura de 3 min', title: 'Raridade, atributos e procedência', text: 'Entenda raridade, procedência, direitos autorais e utilidade.' },
-  { image: dourado, date: '15 de setembro', read: 'Leitura de 2 min', title: 'Como proteger sua carteira', text: 'Proteja sua carteira, seus ativos e sua identidade.' },
-]
-
 export function Blog() {
   return (
     <section id="blog" aria-labelledby="blog-title" className="flex scroll-mt-6 flex-col items-center gap-10">
@@ -85,20 +77,26 @@ export function Blog() {
         <p className="text-sm text-text-secondary">Histórias, guias e insights para colecionadores sobre o universo da propriedade digital.</p>
       </div>
       <ul className="grid w-full gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {blogPosts.map((post) => (
-          <li key={post.title} className="flex flex-col overflow-hidden rounded-lg bg-surface-card">
-            <img src={post.image} alt="" width={400} height={195} loading="lazy" className="h-[195px] w-full object-cover" />
-            <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-3">
-              <p className="text-xs font-medium leading-4 text-text-secondary">
-                {post.date}&nbsp;&nbsp;|&nbsp;&nbsp;{post.read}
-              </p>
-              <h3 className="text-base font-bold text-text-primary">{post.title}</h3>
-              <p className="text-xs font-medium leading-4 text-text-secondary">{post.text}</p>
-              <p className="mt-auto flex gap-1 text-xs text-text-accent">
-                <span className="font-bold leading-[14px]">Ler mais</span>
-                <span aria-hidden="true">→</span>
-              </p>
-            </div>
+        {articles.map((post) => (
+          <li key={post.slug}>
+            <Link
+              to="/aprenda/$slug"
+              params={{ slug: post.slug }}
+              className="group flex h-full flex-col overflow-hidden rounded-lg bg-surface-card transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-accent"
+            >
+              <img src={post.image} alt="" width={400} height={195} loading="lazy" className="h-[195px] w-full object-cover" />
+              <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-3">
+                <p className="text-xs font-medium leading-4 text-text-secondary">
+                  {post.date}&nbsp;&nbsp;|&nbsp;&nbsp;{post.read}
+                </p>
+                <h3 className="text-base font-bold text-text-primary">{post.title}</h3>
+                <p className="text-xs font-medium leading-4 text-text-secondary">{post.text}</p>
+                <p className="mt-auto flex gap-1 text-xs text-text-accent">
+                  <span className="font-bold leading-[14px] group-hover:underline">Ler mais</span>
+                  <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+                </p>
+              </div>
+            </Link>
           </li>
         ))}
       </ul>

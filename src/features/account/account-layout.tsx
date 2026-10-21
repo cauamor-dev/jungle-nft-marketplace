@@ -21,7 +21,6 @@ const links = [
 const upcoming = [
   { label: 'Ofertas', icon: activityIcon },
   { label: 'Arquivos baixados', icon: downloadIcon },
-  { label: 'Suporte', icon: supportIcon },
 ]
 
 export function AccountLayout({ title, children }: { title: string; children: ReactNode }) {
@@ -71,11 +70,21 @@ function AccountSidebar() {
             </li>
           )
         })}
+        <li className="shrink-0">
+          <Link
+            to="/ajuda"
+            className="flex items-center gap-3 border-b-2 border-transparent px-4 text-[15px] leading-[45px] text-text-accent hover:bg-primary/10 lg:border-b-0 lg:border-l-[6px]"
+          >
+            <img src={supportIcon} alt="" className="size-[18px]" />
+            Suporte
+          </Link>
+        </li>
         {upcoming.map((item) => (
           <li key={item.label} className="shrink-0">
-            <span aria-disabled="true" title="Em breve" className="flex cursor-not-allowed items-center gap-3 px-4 text-[15px] leading-[45px] text-text-accent opacity-60 border-b-2 border-transparent lg:border-b-0 lg:border-l-[6px]">
-              <img src={item.icon} alt="" className="size-[18px]" />
+            <span aria-disabled="true" className="flex cursor-not-allowed items-center gap-3 border-b-2 border-transparent px-4 text-[15px] leading-[45px] text-text-accent/60 lg:border-b-0 lg:border-l-[6px]">
+              <img src={item.icon} alt="" className="size-[18px] opacity-60" />
               {item.label}
+              <span className="rounded-sm border border-line-soft px-1.5 text-[10px] leading-4 text-text-secondary">em breve</span>
             </span>
           </li>
         ))}

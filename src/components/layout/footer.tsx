@@ -16,11 +16,11 @@ const medallions = [
 
 const footerCategories = categoriesByLabel.filter((category: Category) => ['art', 'photography', 'music', 'art3d', 'utility'].includes(category))
 const socials = [
-  { name: 'Facebook', icon: facebook },
-  { name: 'Instagram', icon: instagram },
-  { name: 'Twitter', icon: twitter },
-  { name: 'LinkedIn', icon: linkedin },
-  { name: 'YouTube', icon: youtube },
+  { name: 'Facebook', icon: facebook, href: 'https://www.facebook.com/' },
+  { name: 'Instagram', icon: instagram, href: 'https://www.instagram.com/' },
+  { name: 'Twitter', icon: twitter, href: 'https://x.com/' },
+  { name: 'LinkedIn', icon: linkedin, href: 'https://www.linkedin.com/' },
+  { name: 'YouTube', icon: youtube, href: 'https://www.youtube.com/' },
 ]
 
 export function Footer() {
@@ -45,15 +45,15 @@ export function Footer() {
             <FooterLink to="/perfil">Meu perfil</FooterLink>
             <FooterLink to="/perfil/atividade">Minha coleção</FooterLink>
             <FooterLink to="/perfil/atividade">Atividade</FooterLink>
-            <FooterText>Estúdio do criador</FooterText>
+            <FooterSoon>Estúdio do criador</FooterSoon>
             <FooterLink to="/perfil/favoritos">Lista de interesse</FooterLink>
           </FooterColumn>
           <FooterColumn title="Central de ajuda">
-            <FooterText>Central de ajuda</FooterText>
-            <FooterText>Como comprar NFTs</FooterText>
-            <FooterText>Carteira e segurança</FooterText>
-            <FooterText>Política do mercado</FooterText>
-            <FooterText>Denunciar item</FooterText>
+            <FooterLink to="/ajuda" hash="central-de-ajuda">Central de ajuda</FooterLink>
+            <FooterLink to="/ajuda" hash="como-comprar">Como comprar NFTs</FooterLink>
+            <FooterLink to="/ajuda" hash="carteira-e-seguranca">Carteira e segurança</FooterLink>
+            <FooterLink to="/ajuda" hash="politica-do-mercado">Política do mercado</FooterLink>
+            <FooterLink to="/ajuda" hash="denunciar-item">Denunciar item</FooterLink>
           </FooterColumn>
           <FooterColumn title="Coleções">
             {footerCategories.map((category) => (
@@ -70,7 +70,15 @@ export function Footer() {
               <ul className="flex gap-2.5">
                 {socials.map((social) => (
                   <li key={social.name}>
-                    <img src={social.icon} alt={social.name} className="size-[30px]" />
+                    <a
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${social.name} (abre em nova aba)`}
+                      className="relative block rounded-full touch-target transition-[transform,opacity] duration-150 hover:-translate-y-0.5 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-accent active:translate-y-0"
+                    >
+                      <img src={social.icon} alt="" className="size-[30px]" />
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -98,18 +106,23 @@ function FooterColumn({ title, children }: { title: string; children: React.Reac
   )
 }
 
-function FooterLink({ to, children }: { to: '/perfil' | '/perfil/atividade' | '/perfil/favoritos'; children: React.ReactNode }) {
+function FooterLink({ to, hash, children }: { to: '/perfil' | '/perfil/atividade' | '/perfil/favoritos' | '/ajuda'; hash?: string; children: React.ReactNode }) {
   return (
     <li>
-      <Link to={to} className="inline-flex min-h-11 items-center text-sm text-foreground hover:text-text-accent md:min-h-0 md:leading-[30px]">
+      <Link to={to} hash={hash} className="inline-flex min-h-11 items-center text-sm text-foreground hover:text-text-accent md:min-h-0 md:leading-[30px]">
         {children}
       </Link>
     </li>
   )
 }
 
-function FooterText({ children }: { children: React.ReactNode }) {
-  return <li className="text-sm leading-[30px] text-foreground">{children}</li>
+function FooterSoon({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex min-h-11 items-center gap-2 text-sm text-foreground/60 md:min-h-0 md:leading-[30px]">
+      {children}
+      <span className="rounded-sm border border-line-soft px-1.5 text-[10px] leading-4 text-text-secondary">em breve</span>
+    </li>
+  )
 }
 
 function Newsletter() {
