@@ -2,9 +2,17 @@ import { expect, test } from '@playwright/test'
 import { api, demoScenario, expectNoHorizontalOverflow } from './helpers'
 
 type Page = import('@playwright/test').Page
+type Locator = import('@playwright/test').Locator
 
 const cards = (page: Page) => page.locator('[data-testid="nft-card"]:visible')
 const isMobile = (page: Page) => (page.viewportSize()?.width ?? 0) < 768
+
+const sortNames = { 'price-asc': 'Preço: menor para maior', 'price-desc': 'Preço: maior para menor' }
+
+async function chooseSort(page: Page, scope: Page | Locator, sort: keyof typeof sortNames) {
+  await scope.getByLabel('Ordenar por:').click()
+  await page.getByRole('option', { name: sortNames[sort] }).click()
+}
 
 // Feed do celular: cada página carregada soma 9 cards (36 no total) e o número fica na URL
 async function feedMatchesUrl(page: Page) {
@@ -129,11 +137,21 @@ test.describe('catálogo', () => {
     if ((page.viewportSize()?.width ?? 0) < 768) {
       await page.getByRole('button', { name: 'Abrir filtros' }).click()
       const sheet = page.getByRole('dialog', { name: 'Filtros' })
-      await sheet.getByLabel('Ordenar por:').selectOption('price-asc')
+      await chooseSort(page, sheet, 'price-asc')
       await page.keyboard.press('Escape')
       await expect(sheet).toBeHidden()
     } else {
-      await page.getByLabel('Ordenar por:').selectOption('price-asc')
+      // Pelo teclado: Enter abre a lista, a seta desce de "Listados recentemente" e Enter escolhe
+      const sort = page.getByLabel('Ordenar por:')
+      await sort.focus()
+      await page.keyboard.press('Enter')
+      await expect(page.getByRole('option', { name: 'Listados recentemente' })).toBeFocused()
+      await page.keyboard.press('ArrowDown')
+      await expect(page.getByRole('option', { name: sortNames['price-asc'] })).toBeFocused()
+      await page.keyboard.press('Enter')
+      await expect(page.getByRole('listbox')).toBeHidden()
+      await expect(sort).toBeFocused()
+      await expect(sort).toHaveText(sortNames['price-asc'])
     }
     await expect(page).toHaveURL(/sort=price-asc/)
     await settled(page)
@@ -181,8 +199,8 @@ test.describe('catálogo', () => {
     await demoScenario(page, 'out-of-order-results')
     const mobile = (page.viewportSize()?.width ?? 0) < 768
     if (mobile) await page.getByRole('button', { name: 'Abrir filtros' }).click()
-    const sort = (mobile ? page.getByRole('dialog', { name: 'Filtros' }) : page).getByLabel('Ordenar por:')
-    for (const option of ['price-desc', 'price-asc', 'price-desc', 'price-asc']) await sort.selectOption(option)
+    const scope = mobile ? page.getByRole('dialog', { name: 'Filtros' }) : page
+    for (const option of ['price-desc', 'price-asc', 'price-desc', 'price-asc'] as const) await chooseSort(page, scope, option)
     if (mobile) await page.keyboard.press('Escape')
     await expect(page).toHaveURL(/sort=price-asc/)
     await page.waitForTimeout(1200) // a resposta lenta (900 ms) de uma ordenação anterior já chegou

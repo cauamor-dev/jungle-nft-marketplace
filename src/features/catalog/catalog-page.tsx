@@ -152,7 +152,8 @@ function FilterSheet({ open, onOpenChange, search, facets, onChange }: FilterShe
           id="sort-mobile"
           value={search.sort}
           onSort={(sort) => onChange({ sort: sort === 'recent' ? undefined : sort })}
-          className="flex px-5 pt-4 md:hidden"
+          className="flex flex-col items-stretch gap-2 px-5 pt-4 md:hidden"
+          triggerClassName="min-h-11 border border-line-soft px-3"
         />
         <FiltersPanel search={search} facets={facets} onChange={onChange} />
       </DialogContent>

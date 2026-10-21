@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { Select } from 'radix-ui'
 import { sortOptions, type Listing, type Sort } from '@/api/contracts'
 import chevron from '@/assets/icons/chevron-down-sm.svg'
 import { cn } from '@/lib/cn'
@@ -53,27 +54,49 @@ export function Toolbar({ search, to, onSort }: ToolbarProps) {
 }
 
 // No desktop fica na barra do catálogo; no mobile, no topo do painel de filtros.
-export function SortSelect({ id, value, onSort, className }: { id: string; value: Sort | undefined; onSort: (sort: Sort) => void; className?: string }) {
+type SortSelectProps = { id: string; value: Sort | undefined; onSort: (sort: Sort) => void; className?: string; triggerClassName?: string }
+
+export function SortSelect({ id, value, onSort, className, triggerClassName }: SortSelectProps) {
   return (
     <div className={cn('items-center gap-1 text-[15px]', className)}>
       <label htmlFor={id} className="whitespace-nowrap">
         Ordenar por:
       </label>
-      <div className="relative">
-        <select
+      <Select.Root value={value ?? 'recent'} onValueChange={(next) => onSort(next as Sort)}>
+        <Select.Trigger
           id={id}
-          value={value ?? 'recent'}
-          onChange={(event) => onSort(event.target.value as Sort)}
-          className="cursor-pointer appearance-none bg-transparent py-1 pl-1 pr-5 text-[15px] text-foreground"
+          className={cn(
+            'group flex min-h-9 items-center justify-between gap-2 whitespace-nowrap rounded-md px-2 text-[15px] text-foreground transition-colors hover:bg-primary/10 data-[state=open]:bg-primary/10',
+            triggerClassName,
+          )}
         >
-          {sortOptions.map((option) => (
-            <option key={option} value={option} className="bg-surface-card">
-              {sortLabels[option]}
-            </option>
-          ))}
-        </select>
-        <img src={chevron} alt="" className="pointer-events-none absolute right-0 top-1/2 w-3 -translate-y-1/2" />
-      </div>
+          <Select.Value />
+          <Select.Icon asChild>
+            <img src={chevron} alt="" className="w-3 transition-transform group-data-[state=open]:rotate-180" />
+          </Select.Icon>
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Content
+            position="popper"
+            align="end"
+            sideOffset={6}
+            className="z-[60] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-line-soft bg-surface-card/95 p-1 shadow-2xl backdrop-blur-md"
+          >
+            <Select.Viewport>
+              {sortOptions.map((option) => (
+                <Select.Item
+                  key={option}
+                  value={option}
+                  className="flex cursor-pointer select-none items-center justify-between gap-4 rounded-md px-3 py-2 text-sm text-foreground outline-none data-[highlighted]:bg-primary/15 data-[state=checked]:text-text-accent"
+                >
+                  <Select.ItemText>{sortLabels[option]}</Select.ItemText>
+                  <Select.ItemIndicator aria-hidden="true">✓</Select.ItemIndicator>
+                </Select.Item>
+              ))}
+            </Select.Viewport>
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
     </div>
   )
 }
