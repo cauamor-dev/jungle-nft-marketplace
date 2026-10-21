@@ -22,6 +22,26 @@ test.describe('autenticação', () => {
     await expect(dialog).toBeVisible()
   })
 
+  test('olho da senha mostra e oculta a senha e troca o ícone', async ({ page }) => {
+    await page.goto('/perfil')
+    const dialog = page.getByRole('dialog')
+    const field = dialog.getByPlaceholder('Senha', { exact: true })
+    await field.fill('Demo@1234')
+    const toggle = dialog.getByRole('button', { name: 'Mostrar senha' })
+    const hiddenIcon = await toggle.locator('img').getAttribute('src')
+    await expect(field).toHaveAttribute('type', 'password')
+
+    await toggle.click()
+    const hide = dialog.getByRole('button', { name: 'Ocultar senha' })
+    await expect(field).toHaveAttribute('type', 'text')
+    await expect(hide).toHaveAttribute('aria-pressed', 'true')
+    expect(await hide.locator('img').getAttribute('src')).not.toBe(hiddenIcon)
+
+    await hide.click()
+    await expect(field).toHaveAttribute('type', 'password')
+    expect(await dialog.getByRole('button', { name: 'Mostrar senha' }).locator('img').getAttribute('src')).toBe(hiddenIcon)
+  })
+
   test('Google, Facebook e recuperação de senha avisam que estão fora da demonstração, sem login e sem requisição', async ({ page }) => {
     const authCalls: string[] = []
     page.on('request', (request) => {

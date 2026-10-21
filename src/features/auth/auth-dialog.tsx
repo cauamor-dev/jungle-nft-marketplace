@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { z } from 'zod'
+import eye from '@/assets/icons/eye.svg'
 import eyeOff from '@/assets/icons/eye-off.svg'
 import facebookLogo from '@/assets/icons/facebook-logo.svg'
 import googleLogo from '@/assets/icons/google-logo.svg'
@@ -138,7 +139,7 @@ function PasswordInput({ id, name, error, ...rest }: { id: string; name: string;
         aria-pressed={visible}
         className="absolute right-3 top-1/2 grid size-6 -translate-y-1/2 touch-target place-items-center"
       >
-        <img src={eyeOff} alt="" className="size-[18px]" />
+        <img src={visible ? eye : eyeOff} alt="" className="size-[18px]" />
       </button>
     </div>
   )
