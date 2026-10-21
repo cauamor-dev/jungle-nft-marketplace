@@ -40,8 +40,8 @@ describe('cotação', () => {
 
   it('congela preços e totais e expira em cinco minutos', async () => {
     const { quote } = await prepareCheckout()
-    expect(quote.totalEth).toBe('0.101')
-    expect(quote.items[0]).toMatchObject({ quantity: 2, unitPriceEth: '0.0425', lineTotalEth: '0.085' })
+    expect(quote.totalEth).toBe('0.1435')
+    expect(quote.items[0]).toMatchObject({ quantity: 2, unitPriceEth: '0.06375', lineTotalEth: '0.1275' })
     expect(new Date(quote.expiresAt).getTime() - new Date(quote.createdAt).getTime()).toBe(5 * 60 * 1000)
   })
 
@@ -90,8 +90,8 @@ describe('pedido confirmado', () => {
     await demoScenario('price-changed', { nftId: 'nft_12', priceEth: '9.99' })
     const later = await getOrder(order.id)
     expect(later.receipt).toEqual(settled.receipt)
-    expect(later.receipt.items[0].unitPriceEth).toBe('0.0425')
-    expect(later.receipt.totalEth).toBe('0.101')
+    expect(later.receipt.items[0].unitPriceEth).toBe('0.06375')
+    expect(later.receipt.totalEth).toBe('0.1435')
   })
 
   it('gera eventos pending -> confirmed e nunca regride', async () => {
@@ -204,7 +204,7 @@ describe('revalidação antes de confirmar', () => {
       code: 'QUOTE_STALE',
       details: {
         reasons: expect.arrayContaining(['PRICE_CHANGED']),
-        currentQuote: { subtotalEth: '0.1', totalEth: '0.116' },
+        currentQuote: { subtotalEth: '0.15', totalEth: '0.166' },
       },
     })
     const db = await getDb()
@@ -213,7 +213,7 @@ describe('revalidação antes de confirmar', () => {
     const refreshed = await createQuote('ethereum')
     expect(refreshed.id).not.toBe(quote.id)
     const order = await createOrder({ ...input, quoteId: refreshed.id }, 'key-price-2')
-    expect(order.receipt.totalEth).toBe('0.116')
+    expect(order.receipt.totalEth).toBe('0.166')
   })
 
   it('bloqueia quando a edição esgota e a cotação nova não é possível', async () => {

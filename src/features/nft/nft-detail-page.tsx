@@ -15,6 +15,7 @@ import { QuantityStepper } from '@/components/ui/quantity-stepper'
 import { ErrorActions } from '@/components/ui/error-actions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/toast'
+import { editionPriceEth, editionSupply } from '@/domain/editions'
 import { displayEth } from '@/domain/money'
 import { isApiError } from '@/domain/errors'
 import { useRequireAuth } from '@/features/auth/auth-context'
@@ -101,6 +102,7 @@ function NftDetail({ nft }: { nft: Nft }) {
       A edição {soldOutChoice.label} esgotou. Selecionamos a edição {edition.label}.
     </p>
   )
+  const unitPriceEth = edition ? editionPriceEth(nft.priceEth, edition) : nft.priceEth
   const maxQuantity = edition ? Math.min(edition.maxPerBuyer, edition.stock) : 1
   const safeQuantity = Math.min(quantity, maxQuantity)
   const isFavorite = favorites.data?.nftIds.includes(nft.id) ?? false
@@ -138,7 +140,18 @@ function NftDetail({ nft }: { nft: Nft }) {
   const stepper = (
     <QuantityStepper value={safeQuantity} max={maxQuantity} onChange={setQuantity} label="quantidade" disabled={unavailable} />
   )
-  const price = <p className="text-[22px] font-bold leading-4 text-text-accent">{displayEth(nft.priceEth)} ETH</p>
+  const price = (
+    <p className="text-[22px] font-bold leading-4 text-text-accent" data-testid="edition-price">
+      {displayEth(unitPriceEth)} ETH
+    </p>
+  )
+  const editionPicker = (
+    <>
+      <EditionPicker editions={nft.editions} basePriceEth={nft.priceEth} selectedId={edition?.id ?? null} onSelect={selectEdition} />
+      {edition && <EditionInfo edition={edition} />}
+      {editionNote}
+    </>
+  )
 
   if (!desktop) {
     return (
@@ -180,8 +193,7 @@ function NftDetail({ nft }: { nft: Nft }) {
           <p className="text-sm leading-6 text-text-secondary">{nft.description}</p>
           <div className="flex flex-col gap-2">
             <p className="text-[15px] font-bold">Edição:</p>
-            <EditionPicker editions={nft.editions} selectedId={edition?.id ?? null} onSelect={selectEdition} />
-            {editionNote}
+            {editionPicker}
           </div>
           <TokenFacts nft={nft} />
           {unavailable && <UnavailableNote />}
@@ -193,7 +205,7 @@ function NftDetail({ nft }: { nft: Nft }) {
               <span className="text-sm font-bold text-text-secondary">Qtd.</span>
               {stepper}
             </div>
-            <p className="text-2xl font-bold text-text-accent">{displayEth(nft.priceEth)} ETH</p>
+            <p className="whitespace-nowrap text-xl font-bold text-text-accent min-[360px]:text-2xl" data-testid="edition-price">{displayEth(unitPriceEth)} ETH</p>
           </div>
           <div className="flex items-center gap-3">
             <Button size="lg" className="h-[60px] flex-1 rounded-full bg-gradient-to-br from-primary to-text-accent text-base" onClick={buy} disabled={unavailable || addToCart.isPending}>
@@ -245,8 +257,7 @@ function NftDetail({ nft }: { nft: Nft }) {
 
             <div className="flex flex-col gap-3">
               <h2 className="text-[15px] font-bold leading-4">Edição:</h2>
-              <EditionPicker editions={nft.editions} selectedId={edition?.id ?? null} onSelect={selectEdition} />
-              {editionNote}
+              {editionPicker}
             </div>
 
             <div className="flex items-start justify-between">
@@ -344,6 +355,19 @@ function TokenFacts({ nft }: { nft: Nft }) {
       <li>Coleção: {nft.collection}</li>
       <li>Atributos: {nft.attributes.join(', ')}</li>
     </ul>
+  )
+}
+
+// Explica o efeito da escolha: tiragem, disponibilidade e limite por pessoa mudam com a edição, e o preço acompanha.
+function EditionInfo({ edition }: { edition: Edition }) {
+  const supply = editionSupply(edition)
+  return (
+    <p id="edition-info" className="text-sm leading-6 text-text-secondary" data-testid="edition-info" aria-live="polite">
+      {supply === null ? 'Edição aberta, sem limite de tiragem' : supply === 1 ? 'Edição 1/1: peça única' : `Edição ${edition.label}: tiragem de ${supply} cópias`}
+      {` · ${edition.stock} ${edition.stock === 1 ? 'disponível' : 'disponíveis'} · até ${edition.maxPerBuyer} por pessoa.`}
+      <br />
+      Quanto menor a tiragem, mais rara e mais cara a edição.
+    </p>
   )
 }
 

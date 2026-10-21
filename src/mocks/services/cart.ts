@@ -1,4 +1,5 @@
 import type { Cart, CartItem, Edition, Network } from '@/api/contracts'
+import { editionPriceEth } from '@/domain/editions'
 import { multiplyEth } from '@/domain/money'
 import { nextId, persist, type CartLine, type CartRecord, type DbState } from '../db'
 import { MockHttpError } from '../http-error'
@@ -59,7 +60,7 @@ export function addLine(db: DbState, cart: CartRecord, nftId: string, editionId:
   const existing = cart.lines.find((line) => line.nftId === nftId && line.editionId === editionId)
   assertCanHold(found.edition, (existing?.quantity ?? 0) + quantity)
   if (existing) existing.quantity += quantity
-  else cart.lines.push({ nftId, editionId, quantity, addedPriceEth: found.nft.priceEth })
+  else cart.lines.push({ nftId, editionId, quantity, addedPriceEth: editionPriceEth(found.nft.priceEth, found.edition) })
   touch(cart)
 }
 
@@ -129,6 +130,7 @@ function buildItem(db: DbState, line: CartLine): CartItem | null {
   if (!found) return null
   const { nft, edition } = found
   const available = availableQuantity(edition)
+  const unitPriceEth = editionPriceEth(nft.priceEth, edition)
   return {
     key: lineKey(line.nftId, line.editionId),
     nftId: nft.id,
@@ -137,9 +139,9 @@ function buildItem(db: DbState, line: CartLine): CartItem | null {
     editionLabel: edition.label,
     image: nft.images[0] ?? null,
     quantity: line.quantity,
-    unitPriceEth: nft.priceEth,
+    unitPriceEth,
     addedPriceEth: line.addedPriceEth,
-    lineTotalEth: multiplyEth(nft.priceEth, line.quantity),
+    lineTotalEth: multiplyEth(unitPriceEth, line.quantity),
     availableQuantity: available,
     issue: edition.stock === 0 ? 'SOLD_OUT' : line.quantity > available ? 'QUANTITY_EXCEEDS_AVAILABLE' : null,
   }

@@ -1,5 +1,6 @@
 import type { Network, Quote, ReceiptSnapshot } from '@/api/contracts'
 import { canTransition } from '@/domain/order'
+import { editionPriceEth } from '@/domain/editions'
 import { multiplyEth } from '@/domain/money'
 import { nextId, nowIso, persist, type CartRecord, type DbState, type OrderRecord, type QuoteRecord } from '../db'
 import { publishNftUpdated, publishOrderUpdated } from '../events'
@@ -41,8 +42,8 @@ export function createQuote(db: DbState, userId: string, cart: CartRecord, netwo
       title: nft.title,
       editionLabel: edition.label,
       quantity: line.quantity,
-      unitPriceEth: nft.priceEth,
-      lineTotalEth: multiplyEth(nft.priceEth, line.quantity),
+      unitPriceEth: editionPriceEth(nft.priceEth, edition),
+      lineTotalEth: multiplyEth(editionPriceEth(nft.priceEth, edition), line.quantity),
       nftVersion: nft.version,
     }
   })
@@ -81,7 +82,7 @@ export function findStaleReasons(db: DbState, quote: QuoteRecord, cart: CartReco
       reasons.add('AVAILABILITY_CHANGED')
       continue
     }
-    if (found.nft.priceEth !== item.unitPriceEth) reasons.add('PRICE_CHANGED')
+    if (editionPriceEth(found.nft.priceEth, found.edition) !== item.unitPriceEth) reasons.add('PRICE_CHANGED')
     if (found.edition.stock === 0 || item.quantity > availableQuantity(found.edition)) reasons.add('AVAILABILITY_CHANGED')
   }
 

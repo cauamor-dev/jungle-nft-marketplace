@@ -11,13 +11,14 @@ import { demoScenario, loginAs } from '@/test/helpers'
 
 describe('carrinho do visitante', () => {
   it('soma subtotal, desconto, taxa e total com decimais exatos', async () => {
+    // Edição 1/50 do nft_12: 0.0425 + 50% = 0.06375 por unidade
     await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_1of50', quantity: 2 })
     const cart = await applyCoupon('jungle10')
     expect(cart.summary).toEqual({
-      subtotalEth: '0.085',
-      discountEth: '0.0085',
+      subtotalEth: '0.1275',
+      discountEth: '0.01275',
       networkFeeEth: '0.016',
-      totalEth: '0.0925',
+      totalEth: '0.13075',
     })
     expect(cart.couponCode).toBe('JUNGLE10')
   })
@@ -64,8 +65,17 @@ describe('carrinho do visitante', () => {
     await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_1of50', quantity: 1 })
     await demoScenario('price-changed', { nftId: 'nft_12', priceEth: '0.05' })
     const cart = await getCart()
-    expect(cart.items[0]).toMatchObject({ unitPriceEth: '0.05', addedPriceEth: '0.0425' })
-    expect(cart.summary.subtotalEth).toBe('0.05')
+    expect(cart.items[0]).toMatchObject({ unitPriceEth: '0.075', addedPriceEth: '0.06375' })
+    expect(cart.summary.subtotalEth).toBe('0.075')
+  })
+
+  it('cada edição tem o próprio preço: quanto menor a tiragem, mais cara', async () => {
+    await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_open', quantity: 1 })
+    await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_1of50', quantity: 1 })
+    await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_1of10', quantity: 1 })
+    await addCartItem({ nftId: 'nft_12', editionId: 'nft_12_1of1', quantity: 1 })
+    const prices = Object.fromEntries((await getCart()).items.map((item) => [item.editionLabel, item.unitPriceEth]))
+    expect(prices).toEqual({ ABERTA: '0.0425', '1/50': '0.06375', '1/10': '0.085', '1/1': '0.17' })
   })
 
   it('sinaliza edição esgotada depois de adicionada', async () => {

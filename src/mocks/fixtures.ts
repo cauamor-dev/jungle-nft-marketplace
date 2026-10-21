@@ -8,6 +8,8 @@ import ivory800 from '@/assets/nfts/ivory-800.webp'
 import violeta400 from '@/assets/nfts/violeta-400.webp'
 import violeta800 from '@/assets/nfts/violeta-800.webp'
 import { categories, networks, type Category, type Network } from '@/api/contracts'
+import { editionPriceEth } from '@/domain/editions'
+import { addEth } from '@/domain/money'
 import { SCHEMA_VERSION, type CouponRecord, type SeedData, type WalletRecord } from './db'
 import { hashPassword, sha256 } from './services/passwords'
 
@@ -132,7 +134,7 @@ function buildNfts(): Nft[] {
       id,
       slug: slugify(title),
       title,
-      description: `Um colecionável digital 1/50 finalizado à mão da coleção Kurio Editions, verificado na ${chainName(entry.chain)}, com arte desbloqueável e acesso para colecionadores.`,
+      description: `Colecionável digital finalizado à mão da coleção Kurio Editions, verificado na ${chainName(entry.chain)}, com arte desbloqueável e acesso para colecionadores.`,
       creator: entry.collection,
       category: entry.category,
       chain: entry.chain,
@@ -148,7 +150,7 @@ function buildNfts(): Nft[] {
       trending: index % 3 === 0 || index === 5,
       details: {
         overview: [
-          `${title} é uma obra digital 1/50 finalizada à mão da ${entry.collection} Editions. Cada atributo fica armazenado nos metadados do token e verificado na ${chainName(entry.chain)}. A obra explora identidade, movimento e luz em um mundo digital sem fronteiras.`,
+          `${title} é uma obra digital finalizada à mão da ${entry.collection} Editions. Cada atributo fica armazenado nos metadados do token e verificado na ${chainName(entry.chain)}. A obra explora identidade, movimento e luz em um mundo digital sem fronteiras.`,
           'A propriedade inclui a arte em alta resolução, lançamentos exclusivos para colecionadores e um registro permanente de procedência registrada na rede. Nova Seto recebe 5% de direitos autorais nas vendas secundárias, apoiando novos trabalhos e lançamentos da comunidade.',
         ],
         sections: [
@@ -245,6 +247,7 @@ export async function buildSeed(): Promise<SeedData> {
   const seedOrderTx = await sha256('seed-order')
   const nfts = buildNfts()
   const owned = nfts[8]
+  const ownedPrice = editionPriceEth(owned.priceEth, owned.editions[2])
   const receipt = {
     items: [
       {
@@ -253,17 +256,17 @@ export async function buildSeed(): Promise<SeedData> {
         title: owned.title,
         editionLabel: owned.editions[2].label,
         quantity: 1,
-        unitPriceEth: owned.priceEth,
-        lineTotalEth: owned.priceEth,
+        unitPriceEth: ownedPrice,
+        lineTotalEth: ownedPrice,
         nftVersion: 1,
       },
     ],
     couponCode: null,
     network: 'ethereum' as const,
-    subtotalEth: owned.priceEth,
+    subtotalEth: ownedPrice,
     discountEth: '0',
     networkFeeEth: '0.016',
-    totalEth: '0.406',
+    totalEth: addEth(ownedPrice, '0.016'),
     walletAddress: '0x9e5b2C71a0D84f36E1b7c92d5A08F4e3b6D17a25',
     collector: {
       displayName: 'Rafael Torres',
