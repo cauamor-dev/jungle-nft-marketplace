@@ -32,7 +32,7 @@ export function BottomNav() {
               <Link to={item.to} aria-label={item.label} aria-current={item.active ? 'page' : undefined} className="relative grid size-8 touch-target place-items-center">
                 <MaskIcon src={item.icon} className={cn('size-5', item.active ? 'text-text-accent' : 'text-text-secondary')} />
                 {item.label === 'Carrinho' && count > 0 && (
-                  <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-medium leading-4 text-ink">
+                  <span key={count} className="absolute -right-1 -top-1 grid min-w-4 animate-badge-pop place-items-center rounded-full bg-primary px-1 text-[10px] font-medium leading-4 text-ink">
                     {count}
                   </span>
                 )}

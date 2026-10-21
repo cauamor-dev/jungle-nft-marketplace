@@ -28,7 +28,7 @@ export function ProductGrid({ items }: { items: Nft[] }) {
   return (
     <ul className="grid grid-cols-3 gap-x-[34px] gap-y-[72px]">
       {items.map((nft, index) => (
-        <li key={nft.id}>
+        <li key={nft.id} className="animate-card-in" style={{ animationDelay: `${index * 40}ms` }}>
           <NftCard nft={nft} imageEager={index < 3} />
         </li>
       ))}
@@ -42,7 +42,7 @@ function MobileColumns({ items }: { items: Nft[] }) {
   return (
     <ul className="grid grid-cols-2 gap-x-4 gap-y-6 pb-8">
       {items.map((nft, index) => (
-        <li key={nft.id} className="even:translate-y-8">
+        <li key={nft.id} className="animate-card-in even:translate-y-8" style={{ animationDelay: `${index * 40}ms` }}>
           <NftCard nft={nft} imageEager={index < 2} />
         </li>
       ))}

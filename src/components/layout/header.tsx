@@ -79,7 +79,7 @@ function HeaderActions({ onToggleSearch, searching }: { onToggleSearch: () => vo
       </button>
       <Link to="/carrinho" aria-label={`Carrinho, ${count} ${count === 1 ? 'item' : 'itens'}`} className="relative grid size-6 place-items-center">
         <img src={cartIcon} alt="" className="size-6" />
-        <span className="absolute -right-1 -top-1 grid size-4 place-items-center" data-testid="cart-count">
+        <span key={count} className="absolute -right-1 -top-1 grid size-4 animate-badge-pop place-items-center" data-testid="cart-count">
           <img src={badgeIcon} alt="" className="absolute inset-0 size-full" />
           <span className="relative text-[10px] font-medium leading-none text-ink">{count > 99 ? '99+' : count}</span>
         </span>

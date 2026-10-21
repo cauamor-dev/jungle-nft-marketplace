@@ -28,7 +28,9 @@ export function RootLayout() {
       <ScenarioBanner />
       {!isReceipt && <Header active={isMarket ? 'market' : 'home'} divider={showDivider} />}
       <main id="conteudo" className={isImmersive ? 'md:pb-0' : 'pb-[110px] md:pb-0'}>
-        <Outlet />
+        <div key={pathname} className="animate-page-in">
+          <Outlet />
+        </div>
       </main>
       {!isReceipt && (
         <div className={isImmersive ? 'mt-16 pb-6 max-md:hidden md:mt-24' : 'mt-16 pb-6 md:mt-24'}>

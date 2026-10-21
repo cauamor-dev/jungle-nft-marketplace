@@ -42,7 +42,7 @@ export function Toolbar({ search, to, onSort }: ToolbarProps) {
               )}
             >
               {tab.label}
-              {active && <span aria-hidden="true" className="absolute inset-x-0 bottom-3 h-0.5 rounded-full bg-primary md:bottom-0" />}
+              {active && <span aria-hidden="true" className="absolute inset-x-0 bottom-3 h-0.5 animate-tab-in rounded-full bg-primary md:bottom-0" />}
             </Link>
           )
         })}
