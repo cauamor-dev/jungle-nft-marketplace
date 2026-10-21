@@ -50,7 +50,7 @@ export function CartPage() {
   return desktop ? <DesktopCart cart={cart.data} checkout={checkout} /> : <MobileCart cart={cart.data} checkout={checkout} />
 }
 
-// Ao tocar em "Conectar e finalizar" sem sessão, abre o login e segue para o pagamento assim que a sessão existir.
+// Ao tocar no botão de finalizar sem sessão, abre o login e segue para o pagamento assim que a sessão existir.
 // A intenção fica fora das telas de desktop/mobile porque o carrinho é recarregado (e a tela remontada) no login.
 function useCheckoutIntent() {
   const navigate = useNavigate()
@@ -91,6 +91,7 @@ function CartSkeleton() {
 // Fluxo compartilhado entre desktop e mobile: cupom, remoção, quantidade e ida ao pagamento.
 function useCartActions(cart: Cart, checkout: () => void) {
   const { notify } = useToast()
+  const signedIn = Boolean(useSession().data)
   const update = useUpdateCartItem()
   const remove = useRemoveCartItem()
   const applyCoupon = useApplyCoupon()
@@ -112,6 +113,8 @@ function useCartActions(cart: Cart, checkout: () => void) {
       applyCoupon.mutate(code, { onSuccess: handlers.onSuccess, onError: (error) => handlers.onFail(error.message) }),
     removeCoupon: () => removeCoupon.mutate(undefined, { onError }),
     checkout,
+    // Com sessão a carteira é escolhida no pagamento; sem sessão o mesmo botão abre o login antes
+    checkoutLabel: signedIn ? 'Finalizar compra' : 'Conectar e finalizar',
     couponPending: applyCoupon.isPending,
   }
 }
@@ -232,7 +235,7 @@ function DesktopCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
             <OrderTotals totals={cart.summary} />
             <div className="flex flex-col items-center gap-3">
               <Button className="h-10 w-full rounded-[3px] text-[15px]" onClick={actions.checkout} disabled={actions.empty || actions.blocked}>
-                Conectar e finalizar
+                {actions.checkoutLabel}
               </Button>
               {actions.blocked && (
                 <p role="alert" className="text-xs text-text-coral">
@@ -341,7 +344,7 @@ function MobileCart({ cart, checkout }: { cart: Cart; checkout: () => void }) {
           onClick={actions.checkout}
           disabled={actions.empty || actions.blocked}
         >
-          Conectar e finalizar
+          {actions.checkoutLabel}
         </Button>
       </aside>
     </div>

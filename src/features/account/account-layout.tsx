@@ -43,9 +43,10 @@ function AccountSidebar() {
   const navigate = useNavigate()
   const logout = useLogout()
 
+  // Sai da área privada antes de encerrar a sessão; na ordem inversa o guard da rota abriria o login
   async function signOut() {
+    await navigate({ to: '/' })
     await logout.mutateAsync()
-    void navigate({ to: '/' })
   }
 
   return (

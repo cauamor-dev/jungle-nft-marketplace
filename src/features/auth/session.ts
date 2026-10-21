@@ -57,8 +57,14 @@ export function useLogin() {
 export function useLogout() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => api.logout().catch(() => undefined),
-    onSettled: async () => {
+    mutationFn: async () => {
+      const token = getSessionToken()
+      await api.logout().catch(() => undefined)
+      return token
+    },
+    onSettled: async (token) => {
+      // Se outra conta entrou enquanto o logout respondia, a sessão atual não é mais a que estava saindo
+      if (getSessionToken() !== token) return
       clearSessionToken()
       clearDrafts()
       await resetPrivateState(queryClient)
