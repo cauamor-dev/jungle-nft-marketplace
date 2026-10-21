@@ -6,7 +6,7 @@ import instagram from '@/assets/icons/social-instagram.svg'
 import linkedin from '@/assets/icons/social-linkedin.svg'
 import twitter from '@/assets/icons/social-twitter.svg'
 import youtube from '@/assets/icons/social-youtube.svg'
-import { categoryLabels } from '@/lib/categories'
+import { categoriesByLabel, categoryLabels } from '@/lib/categories'
 
 const medallions = [
   { letter: 'W', title: 'Segurança da carteira', text: 'Proteja sua carteira e colecione arte digital verificada com confiança.' },
@@ -14,7 +14,7 @@ const medallions = [
   { letter: 'D', title: 'Alertas de lançamentos', text: 'Receba calendários de cunhagem, novidades de listas de acesso e análises do mercado.' },
 ]
 
-const footerCategories: Category[] = ['art', 'photography', 'music', 'art3d', 'utility']
+const footerCategories = categoriesByLabel.filter((category: Category) => ['art', 'photography', 'music', 'art3d', 'utility'].includes(category))
 const socials = [
   { name: 'Facebook', icon: facebook },
   { name: 'Instagram', icon: instagram },

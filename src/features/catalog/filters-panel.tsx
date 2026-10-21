@@ -1,7 +1,7 @@
 import { Slider } from 'radix-ui'
 import { useId, useState } from 'react'
-import { categories, networks, type Category, type Network, type NftList } from '@/api/contracts'
-import { categoryLabels, networkLabels } from '@/lib/categories'
+import { networks, type Category, type Network, type NftList } from '@/api/contracts'
+import { categoriesByLabel, categoryLabels, networkLabels } from '@/lib/categories'
 import { centsToDecimal, decimalToCents, formatRange, PRICE_MAX, PRICE_MIN } from '@/domain/price-range'
 import { cn } from '@/lib/cn'
 import type { CatalogSearch } from './search'
@@ -21,7 +21,7 @@ export function FiltersPanel({ search, facets, onChange, className }: FiltersPan
   return (
     <div className={cn('flex flex-col gap-10 bg-surface-card p-5', className)}>
       <FilterGroup title="Coleções">
-        {categories.map((category) => (
+        {categoriesByLabel.map((category) => (
           <FilterOption
             key={category}
             label={categoryLabels[category]}
