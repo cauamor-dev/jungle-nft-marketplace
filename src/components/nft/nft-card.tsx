@@ -51,8 +51,8 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
 
   return (
     <article className={cn('group relative flex flex-col gap-2 md:gap-3', className)} data-testid="nft-card" data-nft-id={nft.id}>
-      <div className="relative grid aspect-[175/200] place-items-center overflow-hidden rounded-[20px] bg-gradient-to-br from-surface-card from-[12%] to-surface-raised md:aspect-[258/300] md:rounded-none md:bg-none md:bg-surface-card">
-        <Link {...detailLink} tabIndex={-1} aria-hidden="true" className="grid size-full place-items-center">
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-surface-card md:rounded-[15px]">
+        <Link {...detailLink} tabIndex={-1} aria-hidden="true" className="block size-full">
           {image && (
             <img
               src={image.thumbSrc}
@@ -62,7 +62,7 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
               loading={imageEager ? 'eager' : 'lazy'}
               decoding="async"
               className={cn(
-                'aspect-square w-[96%] rounded-2xl object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] md:rounded-[15px]',
+                'size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]',
                 !nft.available && 'opacity-50 grayscale',
               )}
             />
@@ -74,7 +74,7 @@ export function NftCard({ nft, className, imageEager }: NftCardProps) {
           </span>
         )}
         {!nft.available && (
-          <span className="pointer-events-none absolute inset-x-0 bottom-3 mx-auto w-fit rounded-sm bg-ink/85 px-3 py-1 text-xs font-bold text-text-coral">
+          <span className="pointer-events-none absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-sm bg-ink/85 px-3 py-1 text-xs font-bold text-text-coral">
             Indisponível
           </span>
         )}

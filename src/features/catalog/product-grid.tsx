@@ -12,7 +12,7 @@ export function ProductGridSkeleton() {
     <div role="status" aria-label="Carregando NFTs" className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 md:gap-x-[34px] md:gap-y-[72px]" data-testid="grid-skeleton">
       {Array.from({ length: 9 }, (_, index) => (
         <div key={index} className="flex flex-col gap-3">
-          <Skeleton className="aspect-[175/200] rounded-[20px] md:aspect-[258/300] md:rounded-none" />
+          <Skeleton className="aspect-square rounded-2xl md:rounded-[15px]" />
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-4 w-1/3" />
         </div>

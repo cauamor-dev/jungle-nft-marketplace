@@ -52,7 +52,7 @@ function FavoritesContent() {
   return (
     <ul className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 md:gap-x-[34px] md:gap-y-12" data-testid="favorites-list">
       {nfts.map((query, index) => (
-        <li key={ids[index]}>{query.data ? <NftCard nft={query.data} /> : <Skeleton className="aspect-[258/300]" />}</li>
+        <li key={ids[index]}>{query.data ? <NftCard nft={query.data} /> : <Skeleton className="aspect-square rounded-2xl md:rounded-[15px]" />}</li>
       ))}
     </ul>
   )

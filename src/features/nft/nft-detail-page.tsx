@@ -176,8 +176,8 @@ function NftDetail({ nft }: { nft: Nft }) {
           >
             <HeartIcon filled={isFavorite} className="size-4" />
           </button>
-          <div className="h-[330px] overflow-hidden rounded-t-[24px]">
-            <img src={nft.images[0]?.src} alt={nft.images[0]?.alt} fetchPriority="high" className={cn('w-full rounded-[24px] object-cover', unavailable && 'opacity-60 grayscale')} />
+          <div className="overflow-hidden rounded-t-[24px]">
+            <img src={nft.images[0]?.src} alt={nft.images[0]?.alt} fetchPriority="high" className={cn('aspect-square max-h-[330px] w-full rounded-[24px] object-cover', unavailable && 'opacity-60 grayscale')} />
           </div>
         </div>
 

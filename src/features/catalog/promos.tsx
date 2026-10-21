@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router'
 import arrow from '@/assets/icons/arrow-right.svg'
-import mask from '@/assets/icons/promo-mask.svg'
 import esmeralda from '@/assets/nfts/esmeralda-400.webp'
 import ivory from '@/assets/nfts/ivory-400.webp'
 import dourado from '@/assets/nfts/dourado-400.webp'
@@ -11,14 +10,14 @@ const promos = [
     title: ['Lançamentos gênesis', 'de edição limitada'],
     text: 'Colecione edições escassas diretamente dos criadores antes da revelação pública.',
     image: esmeralda,
-    imageClass: '-left-[5px] rounded-[18px]',
+    imageClass: 'lg:-left-[5px] lg:rounded-[18px]',
     listing: 'new' as const,
   },
   {
     title: ['Arte digital selecionada', 'e muito mais'],
     text: 'Explore novos artistas, coleções verificadas e obras digitais que definem a cultura.',
     image: ivory,
-    imageClass: 'left-0.5 rounded-[17px]',
+    imageClass: 'lg:left-0.5 lg:rounded-[17px]',
     listing: undefined,
   },
 ]
@@ -27,17 +26,17 @@ export function Promos() {
   return (
     <section aria-label="Destaques" className="grid gap-6 lg:grid-cols-2 lg:gap-0 lg:[&>*:last-child]:justify-self-end">
       {promos.map((promo) => (
-        <article key={promo.title[0]} className="relative flex min-h-[250px] overflow-hidden rounded-lg bg-surface-card lg:w-[586px]">
-          <img src={mask} alt="" className="pointer-events-none absolute inset-0 size-full object-cover" />
+        <article key={promo.title[0]} className="relative flex flex-col overflow-hidden rounded-lg bg-surface-card sm:min-h-[250px] sm:flex-row lg:w-[586px]">
           <img
             src={promo.image}
             alt=""
             width={292}
             height={250}
             loading="lazy"
-            className={`absolute top-0 h-[250px] w-[42%] max-w-[292px] object-cover ${promo.imageClass}`}
+            className={`h-44 w-full object-cover sm:absolute sm:inset-y-0 sm:left-0 sm:h-full sm:w-[42%] sm:max-w-[292px] lg:w-[292px] ${promo.imageClass}`}
           />
-          <div className="relative ml-[46%] flex flex-1 flex-col items-end gap-3 py-[37px] pr-5 text-right sm:pr-[30px]">
+          <PromoArc />
+          <div className="relative flex flex-1 flex-col items-end gap-3 px-5 py-6 text-right sm:ml-[46%] sm:py-[37px] sm:pl-0 sm:pr-[30px]">
             <h2 className="text-lg font-bold leading-6">
               {promo.title[0]}
               <br />
@@ -56,6 +55,16 @@ export function Promos() {
         </article>
       ))}
     </section>
+  )
+}
+
+// Arco dourado do Figma: dois círculos com centro fora do card, por cima da imagem e recortados pela borda do card.
+function PromoArc() {
+  return (
+    <svg aria-hidden="true" width="586" height="250" viewBox="0 0 586 250" fill="none" className="pointer-events-none absolute left-0 top-0 text-primary max-sm:-top-[74px]">
+      <circle cx="-63" cy="270" r="127" stroke="currentColor" strokeWidth="2" />
+      <circle cx="-71" cy="262" r="127.5" stroke="currentColor" />
+    </svg>
   )
 }
 
